@@ -10,6 +10,7 @@ use std::ops::{
     Neg,
 };
 
+use serde_derive::{Serialize, Deserialize};
 use noisy_float::prelude::*;
 use num_traits::{
     real::Real,        
@@ -23,13 +24,32 @@ pub type Vector2f = Vector2<N32>;
 pub type Vector3i = Vector3<u32>;
 pub type Vector3f = Vector3<N32>;
 
+#[derive(Serialize, Deserialize)]
 #[derive(Copy, Clone, Default, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Vector2<N: Num> {
-    pub x: N,
-    pub y: N,
+    x: N,
+    y: N,
 }
 
 impl<N: Num> Vector2<N> {
+
+    #[inline]
+    pub fn x(&self) -> N { self.x }
+
+    #[inline]
+    pub fn y(&self) -> N { self.y }
+
+    #[inline]
+    pub fn set(&mut self, x: N, y: N) {
+        self.x = x;
+        self.y = y;
+    }
+
+    #[inline]
+    pub fn new(x: N, y: N) -> Self {
+        Vector2 { x, y }
+    }
+
     #[inline]
     pub fn fill(v: N) -> Self {
         Vector2 { x: v, y: v }
@@ -55,6 +75,7 @@ impl<N: Num> Vector2<N> {
 }
 
 impl <N: Num + cmp::Ord> Vector2<N> {
+
     #[inline]
     pub fn max(&self, rhs: &Self) -> Self {
         Vector2 {
@@ -160,16 +181,39 @@ impl_vs2!(Sub, SubAssign, sub, sub_assign, ((x, y), s) => (x - s, y - s));
 impl_vs2!(Mul, MulAssign, mul, mul_assign, ((x, y), s) => (x * s, y * s));
 impl_vs2!(Div, DivAssign, div, div_assign, ((x, y), s) => (x / s, y / s));
 
+#[derive(Serialize, Deserialize)]
 #[derive(Copy, Clone, Default, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Vector3<N: Num> {
-    pub x: N,
-    pub y: N,
-    pub z: N,
+    x: N,
+    y: N,
+    z: N,
 }
 
 impl<N: Num> Vector3<N> {
+
     #[inline]
-    fn fill(v: N) -> Self {
+    pub fn x(&self) -> N { self.x }
+
+    #[inline]
+    pub fn y(&self) -> N { self.y }
+
+    #[inline]
+    pub fn z(&self) -> N { self.z }
+
+    #[inline]
+    pub fn set(&mut self, x: N, y: N, z: N) {
+        self.x = x;
+        self.y = y;
+        self.z = z;
+    }
+
+    #[inline]
+    pub fn new(x: N, y: N, z: N) -> Self {
+        Vector3 { x, y, z }
+    }
+
+    #[inline]
+    pub fn fill(v: N) -> Self {
         Vector3 { x: v, y: v, z: v }
     }
 

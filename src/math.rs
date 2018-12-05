@@ -1,8 +1,10 @@
 #[macro_use]
 mod macros;
+mod point;
 mod vector;
 
 pub use self::vector::*;
+pub use self::point::*;
 
 pub trait Num:
     Copy
