@@ -1,4 +1,4 @@
-#[allow(unused)]
+#![allow(dead_code, unused_variables)]
 
 pub type Result<T> = std::result::Result<T, Error>;
 
