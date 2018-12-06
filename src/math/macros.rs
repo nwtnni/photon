@@ -164,14 +164,40 @@ macro_rules! impl_vs3 {
     };
 }
 
-macro_rules! impl_p2_add {
-    ($lhs:ty, $rhs:ty) => {
-        impl<N: Num> Add<$rhs> for $lhs {
-            type Output = Point2<N>;
-            fn add(self, rhs: $rhs) -> Self::Output {
-                Point2(Vector2::new(self.x() + rhs.x(), self.y() + rhs.y()))
+macro_rules! impl_p2 {
+    () => {
+        macro_rules! make_impl_trait {
+            ($trait:ident, $method:ident, $macro:ident, $output:ty, $pat:pat => $expr:expr) => {
+                macro_rules! $macro {
+                    ($lhs:ty, $rhs:ty) => {
+                        impl<N: Num> $trait<$rhs> for $lhs {
+                            type Output = $output;
+                            fn $method(self, rhs: $rhs) -> Self::Output {
+                                match ((self.x(), self.y()), (rhs.x(), rhs.y())) {
+                                | $pat => $expr
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
+
+        make_impl_trait!(Add, add, impl_add, Point2<N>, ((x1, y1), (x2, y2)) => {
+            Point2(Vector2::new(x1 + x2, y1 + y2))
+        });
+
+        make_impl_trait!(Sub, sub, impl_sub_p, Vector2<N>, ((x1, y1), (x2, y2)) => {
+            Vector2::new(x1 + x2, y1 + y2)
+        });
+
+        make_impl_trait!(Sub, sub, impl_sub_v, Point2<N>, ((x1, y1), (x2, y2)) => {
+            Point2(Vector2::new(x1 + x2, y1 + y2))
+        });
+
+        impl_all_pairs!(impl_add, Point2<N>, Vector2<N>);
+        impl_all_pairs!(impl_sub_p, Point2<N>, Point2<N>);
+        impl_all_pairs!(impl_sub_v, Point2<N>, Vector2<N>);
     }
 }
 
@@ -185,12 +211,11 @@ macro_rules! impl_p2_add_assign {
     }
 }
 
-macro_rules! impl_p2_sub {
+macro_rules! impl_p2_sub_assign_v {
     ($lhs:ty, $rhs:ty) => {
-        impl<N: Num> Sub<$rhs> for $lhs {
-            type Output = Vector2<N>;
-            fn sub(self, rhs: $rhs) -> Self::Output {
-                Vector2::new(self.x() - rhs.x(), self.y() - rhs.y())
+        impl<N: Num> SubAssign<$rhs> for $lhs {
+            fn sub_assign(&mut self, rhs: $rhs) {
+                self.set(self.x() - rhs.x(), self.y() - rhs.y())
             }
         }
     }

@@ -32,6 +32,11 @@ impl<N: Num> Point2<N> {
 
     #[inline]
     pub fn y(&self) -> N { self.0.y() }
+
+    #[inline]
+    pub fn set(&mut self, x: N, y: N) {
+        self.0.set(x, y);
+    }
 }
 
 impl<N: Num> From<Point3<N>> for Point2<N> {
@@ -40,9 +45,11 @@ impl<N: Num> From<Point3<N>> for Point2<N> {
     }
 }
 
-impl_all_pairs!(impl_p2_add, Point2<N>, Vector2<N>);
+impl_p2!();
+
 impl_pairs!(impl_p2_add_assign, Point2<N>, Vector2<N>);
-impl_all_pairs!(impl_p2_sub, Point2<N>, Point2<N>);
+impl_pairs!(impl_p2_sub_assign_v, Point2<N>, Vector2<N>);
+
 
 #[derive(Serialize, Deserialize)]
 #[derive(Copy, Clone, Default, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -62,4 +69,9 @@ impl<N: Num> Point3<N> {
 
     #[inline]
     pub fn z(&self) -> N { self.0.z() }
+
+    #[inline]
+    pub fn set(&mut self, x: N, y: N, z: N) {
+        self.0.set(x, y, z);
+    }
 }
