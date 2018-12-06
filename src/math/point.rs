@@ -40,17 +40,9 @@ impl<N: Num> From<Point3<N>> for Point2<N> {
     }
 }
 
-impl_point2_add!(Point2<N>, Vector2<N>);
-impl_point2_add!(Point2<N>, &Vector2<N>);
-impl_point2_add!(Point2<N>, &mut Vector2<N>);
-// impl_point2_add!(&Point2<N>, Vector2<N>);
-// impl_point2_add!(&Point2<N>, &Vector2<N>);
-// impl_point2_add!(&Point2<N>, &mut Vector2<N>);
-impl_point2_add!(&mut Point2<N>, Vector2<N>);
-impl_point2_add!(&mut Point2<N>, &Vector2<N>);
-impl_point2_add!(&mut Point2<N>, &mut Vector2<N>);
-
-impl_point2_sub!(&Point2<N>, Point2<N>);
+impl_all_pairs!(impl_p2_add, Point2<N>, Vector2<N>);
+impl_pairs!(impl_p2_add_assign, Point2<N>, Vector2<N>);
+impl_all_pairs!(impl_p2_sub, Point2<N>, Point2<N>);
 
 #[derive(Serialize, Deserialize)]
 #[derive(Copy, Clone, Default, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]

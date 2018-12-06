@@ -2,7 +2,6 @@ macro_rules! impl_pairs {
     ($macro:ident, $lhs:ty, $rhs:ty) => {
         $macro!($lhs, $rhs);
         $macro!($lhs, &$rhs);
-        $macro!($lhs, &mut $rhs);
     }
 }
 
@@ -10,10 +9,8 @@ macro_rules! impl_all_pairs {
     ($macro:ident, $lhs:ty, $rhs:ty) => {
         impl_pairs!($macro, $lhs, $rhs);
         impl_pairs!($macro, &$lhs, $rhs);
-        impl_pairs!($macro, &mut $lhs, $rhs);
     }
 }
-
 
 macro_rules! impl_vv2 {
     ($trait:ident, $trait_mut:ident, $method:ident, $method_mut:ident, $pat:pat => $fn:expr) => {
@@ -167,15 +164,19 @@ macro_rules! impl_vs3 {
     };
 }
 
-macro_rules! impl_point2_add {
+macro_rules! impl_p2_add {
     ($lhs:ty, $rhs:ty) => {
         impl<N: Num> Add<$rhs> for $lhs {
             type Output = Point2<N>;
             fn add(self, rhs: $rhs) -> Self::Output {
-                Point2(Vector2::new(self.x() - rhs.x(), self.y() - rhs.y()))
+                Point2(Vector2::new(self.x() + rhs.x(), self.y() + rhs.y()))
             }
         }
+    }
+}
 
+macro_rules! impl_p2_add_assign {
+    ($lhs:ty, $rhs:ty) => {
         impl<N: Num> AddAssign<$rhs> for $lhs {
             fn add_assign(&mut self, rhs: $rhs) {
                 self.0.set(rhs.x(), rhs.y());
@@ -184,7 +185,7 @@ macro_rules! impl_point2_add {
     }
 }
 
-macro_rules! impl_point2_sub {
+macro_rules! impl_p2_sub {
     ($lhs:ty, $rhs:ty) => {
         impl<N: Num> Sub<$rhs> for $lhs {
             type Output = Vector2<N>;
