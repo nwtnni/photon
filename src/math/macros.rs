@@ -38,7 +38,7 @@ macro_rules! impl_vv2 {
                         let (x, y) = match ((self.x(), self.y()), (rhs.x(), rhs.y())) {
                             $pat => $fn,
                         };
-                        *self = Vector2 { x, y }
+                        self.set(x, y);
                     }
                 }
             }
@@ -75,7 +75,7 @@ macro_rules! impl_vs2 {
                         let (x, y) = match ((self.x(), self.y()), rhs.clone()) {
                             $pat => $fn,
                         };
-                        *self = Vector2 { x, y }
+                        self.set(x, y);
                     }
                 }
             }
@@ -116,7 +116,7 @@ macro_rules! impl_vv3 {
                         let (x, y, z) = match (l, r) {
                             $pat => $fn,
                         };
-                        *self = Vector3 { x, y, z }
+                        self.set(x, y, z);
                     }
                 }
             }
@@ -153,7 +153,7 @@ macro_rules! impl_vs3 {
                         let (x, y, z) = match ((self.x(), self.y(), self.z()), rhs.clone()) {
                             $pat => $fn,
                         };
-                        *self = Vector3 { x, y, z }
+                        self.set(x, y, z);
                     }
                 }
             }
@@ -187,7 +187,7 @@ macro_rules! impl_p2 {
             ($lhs:ty, $rhs:ty) => {
                 impl<N: Num> AddAssign<$rhs> for $lhs {
                     fn add_assign(&mut self, rhs: $rhs) {
-                        self.0.set(self.x() + rhs.x(), self.y() + rhs.y());
+                        self.set(self.x() + rhs.x(), self.y() + rhs.y());
                     }
                 }
             }
@@ -246,7 +246,7 @@ macro_rules! impl_p3 {
             ($lhs:ty, $rhs:ty) => {
                 impl<N: Num> AddAssign<$rhs> for $lhs {
                     fn add_assign(&mut self, rhs: $rhs) {
-                        self.0.set(self.x() + rhs.x(), self.y() + rhs.y(), self.z() + rhs.z());
+                        self.set(self.x() + rhs.x(), self.y() + rhs.y(), self.z() + rhs.z());
                     }
                 }
             }
@@ -280,4 +280,82 @@ macro_rules! impl_p3 {
         impl_pairs!(impl_add_assign_p3, Point3<N>, Vector3<N>);
         impl_pairs!(impl_sub_assign_p3v, Point3<N>, Vector3<N>);
     }
+}
+
+macro_rules! impl_nn3 {
+    ($trait:ident, $trait_mut:ident, $method:ident, $method_mut:ident, $pat:pat => $fn:expr) => {
+
+        macro_rules! impl_trait {
+            ($lhs:ty, $rhs:ty) => {
+                impl<N: Num> $trait<$rhs> for $lhs {
+                    type Output = Normal3<N>;
+                    #[inline]
+                    fn $method(self, rhs: $rhs) -> Self::Output {
+                        let l = (self.x(), self.y(), self.z());
+                        let r = (rhs.x(), rhs.y(), rhs.z());
+                        let (x, y, z) = match (l, r) {
+                            $pat => $fn,
+                        };
+                        Normal3::new(x, y, z)
+                    }
+                }
+            }
+        }
+
+        macro_rules! impl_trait_mut {
+            ($lhs:ty, $rhs:ty) => {
+                impl<N: Num> $trait_mut<$rhs> for $lhs {
+                    #[inline]
+                    fn $method_mut(&mut self, rhs: $rhs) {
+                        let l = (self.x(), self.y(), self.z());
+                        let r = (rhs.x(), rhs.y(), rhs.z());
+                        let (x, y, z) = match (l, r) {
+                            $pat => $fn,
+                        };
+                        self.set(x, y, z);
+                    }
+                }
+            }
+        }
+
+        impl_all_pairs!(impl_trait, Normal3<N>, Normal3<N>);
+        impl_pairs!(impl_trait_mut, Normal3<N>, Normal3<N>);
+    };
+}
+
+macro_rules! impl_ns3 {
+    ($trait:ident, $trait_mut:ident, $method:ident, $method_mut:ident, $pat:pat => $fn:expr) => {
+
+        macro_rules! impl_trait {
+            ($lhs:ty, $rhs:ty) => {
+                impl<N: Num> $trait<$rhs> for $lhs {
+                    type Output = Normal3<N>;
+                    #[inline]
+                    fn $method(self, rhs: $rhs) -> Self::Output {
+                        let (x, y, z) = match ((self.x(), self.y(), self.z()), rhs.clone()) {
+                            $pat => $fn,
+                        };
+                        Normal3::new(x, y, z)
+                    }
+                }
+            }
+        }
+        
+        macro_rules! impl_trait_mut {
+            ($lhs:ty, $rhs:ty) => {
+                impl<N: Num> $trait_mut<$rhs> for $lhs {
+                    #[inline]
+                    fn $method_mut(&mut self, rhs: $rhs) {
+                        let (x, y, z) = match ((self.x(), self.y(), self.z()), rhs.clone()) {
+                            $pat => $fn,
+                        };
+                        self.set(x, y, z);
+                    }
+                }
+            }
+        }
+
+        impl_all_pairs!(impl_trait, Normal3<N>, N);
+        impl_pairs!(impl_trait_mut, Normal3<N>, N);
+    };
 }

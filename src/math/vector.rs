@@ -26,7 +26,7 @@ pub type Vector3f = Vector3<N32>;
 
 #[derive(Serialize, Deserialize)]
 #[derive(Copy, Clone, Default, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct Vector2<N: Num> {
+pub struct Vector2<N> {
     x: N,
     y: N,
 }
@@ -110,7 +110,7 @@ impl<N: Num> Vector2<N> {
     }
 }
 
-impl <N: Num + Signed> Vector2<N> {
+impl <N: Signed> Vector2<N> {
     #[inline]
     pub fn abs(&self) -> Self {
         Vector2 { x: self.x.abs(), y: self.y.abs() }
@@ -152,7 +152,7 @@ impl<N: Num + Real> Vector2<N> {
     }
 }
 
-impl<N: Num + Neg<Output = N>> Neg for Vector2<N> {
+impl<N: Neg<Output = N>> Neg for Vector2<N> {
     type Output = Vector2<N>;
 
     #[inline]
@@ -161,7 +161,7 @@ impl<N: Num + Neg<Output = N>> Neg for Vector2<N> {
     }
 }
 
-impl<N: Num> Index<usize> for Vector2<N> {
+impl<N> Index<usize> for Vector2<N> {
     type Output = N;
 
     #[inline]
@@ -174,7 +174,7 @@ impl<N: Num> Index<usize> for Vector2<N> {
     }
 }
 
-impl<N: Num> IndexMut<usize> for Vector2<N> {
+impl<N> IndexMut<usize> for Vector2<N> {
     #[inline]
     fn index_mut(&mut self, i: usize) -> &mut Self::Output {
         match i {
@@ -197,7 +197,7 @@ impl_vs2!(Div, DivAssign, div, div_assign, ((x, y), s) => (x / s, y / s));
 
 #[derive(Serialize, Deserialize)]
 #[derive(Copy, Clone, Default, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct Vector3<N: Num> {
+pub struct Vector3<N> {
     x: N,
     y: N,
     z: N,
@@ -298,7 +298,7 @@ impl<N: Num> Vector3<N> {
 }
 
 
-impl <N: Num + Signed> Vector3<N> {
+impl <N: Signed> Vector3<N> {
     #[inline]
     pub fn abs(&self) -> Self {
         Vector3 { x: self.x.abs(), y: self.y.abs(), z: self.z.abs() }
@@ -352,7 +352,7 @@ impl<N: Num + Real> Vector3<N> {
     }
 }
 
-impl<N: Num + Neg<Output = N>> Neg for Vector3<N> {
+impl<N: Neg<Output = N>> Neg for Vector3<N> {
     type Output = Vector3<N>;
 
     #[inline]
@@ -361,7 +361,7 @@ impl<N: Num + Neg<Output = N>> Neg for Vector3<N> {
     }
 }
 
-impl<N: Num> Index<usize> for Vector3<N> {
+impl<N> Index<usize> for Vector3<N> {
     type Output = N;
 
     #[inline]
@@ -375,7 +375,7 @@ impl<N: Num> Index<usize> for Vector3<N> {
     }
 }
 
-impl<N: Num> IndexMut<usize> for Vector3<N> {
+impl<N> IndexMut<usize> for Vector3<N> {
     #[inline]
     fn index_mut(&mut self, i: usize) -> &mut Self::Output {
         match i {
@@ -389,10 +389,5 @@ impl<N: Num> IndexMut<usize> for Vector3<N> {
 
 impl_vv3!(Add, AddAssign, add, add_assign, ((x1, y1, z1), (x2, y2, z2)) => (x1 + x2, y1 + y2, z1 + z2));
 impl_vv3!(Sub, SubAssign, sub, sub_assign, ((x1, y1, z1), (x2, y2, z2)) => (x1 - x2, y1 - y2, z1 + z2));
-impl_vv3!(Mul, MulAssign, mul, mul_assign, ((x1, y1, z1), (x2, y2, z2)) => (x1 * x2, y1 * y2, z1 * z2));
-impl_vv3!(Div, DivAssign, div, div_assign, ((x1, y1, z1), (x2, y2, z2)) => (x1 / x2, y1 / y2, z1 / z2));
-
-impl_vs3!(Add, AddAssign, add, add_assign, ((x, y, z), s) => (x + s, y + s, z + s));
-impl_vs3!(Sub, SubAssign, sub, sub_assign, ((x, y, z), s) => (x - s, y - s, z - s));
 impl_vs3!(Mul, MulAssign, mul, mul_assign, ((x, y, z), s) => (x * s, y * s, z * s));
 impl_vs3!(Div, DivAssign, div, div_assign, ((x, y, z), s) => (x / s, y / s, z / s));

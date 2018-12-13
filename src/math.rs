@@ -1,10 +1,12 @@
 #[macro_use]
 mod macros;
+mod normal;
 mod point;
 mod vector;
 
-pub use self::vector::*;
+pub use self::normal::*;
 pub use self::point::*;
+pub use self::vector::*;
 
 pub trait Num:
     Copy

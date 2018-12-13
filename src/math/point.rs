@@ -1,6 +1,7 @@
 use std::ops::{
     Add, AddAssign,
     Sub, SubAssign,
+    Index, IndexMut,
 };
 
 use num_traits::{
@@ -19,35 +20,35 @@ pub type Point3f = Vector3<N32>;
 
 #[derive(Serialize, Deserialize)]
 #[derive(Copy, Clone, Default, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct Point2<N: Num>(Vector2<N>);
+pub struct Point2<N>(Vector2<N>);
 
 impl_p2!();
 
 impl<N: Num> Point2<N> {
     #[inline]
     pub fn new(x: N, y: N) -> Self {
-        Point2(Vector2::new(x, y)) 
+        Point2(Vector2::new(x, y))
     }
 
     #[inline]
-    pub fn x(&self) -> N { self.0.x() }
+    pub fn x(&self) -> N { self.0.x() } 
 
     #[inline]
     pub fn y(&self) -> N { self.0.y() }
 
     #[inline]
     pub fn set(&mut self, x: N, y: N) {
-        self.0.set(x, y);
-    }
-
-    #[inline]
-    pub fn dist_sq(&self, rhs: &Self) -> N {
-        (rhs.0 - self.0).len_sq()
+        self.0.set(x, y)
     }
 
     #[inline]
     pub fn permute(&self, x: usize, y: usize) -> Self {
         Point2(self.0.permute(x, y))
+    }
+
+    #[inline]
+    pub fn dist_sq(&self, rhs: &Self) -> N {
+        (rhs.0 - self.0).len_sq()
     }
 }
 
@@ -73,7 +74,7 @@ impl <N: Num + Real> Point2<N> {
     }
 }
 
-impl <N: Num + Signed> Point2<N> {
+impl <N: Signed> Point2<N> {
     #[inline]
     pub fn abs(&self) -> Self {
         Point2(self.0.abs())
@@ -81,14 +82,31 @@ impl <N: Num + Signed> Point2<N> {
 }
 
 impl<N: Num> From<Point3<N>> for Point2<N> {
+    #[inline]
     fn from(p: Point3<N>) -> Point2<N> {
         Point2(Vector2::new(p.x(), p.y()))
     }
 }
 
+impl<N> Index<usize> for Point2<N> {
+    type Output = N;
+
+    #[inline]
+    fn index(&self, i: usize) -> &Self::Output {
+        self.0.index(i)
+    }
+}
+
+impl<N> IndexMut<usize> for Point2<N> {
+    #[inline]
+    fn index_mut(&mut self, i: usize) -> &mut Self::Output {
+        self.0.index_mut(i)
+    }
+}
+
 #[derive(Serialize, Deserialize)]
 #[derive(Copy, Clone, Default, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct Point3<N: Num>(Vector3<N>);
+pub struct Point3<N>(Vector3<N>);
 
 impl_p3!();
 
@@ -109,7 +127,7 @@ impl<N: Num> Point3<N> {
 
     #[inline]
     pub fn set(&mut self, x: N, y: N, z: N) {
-        self.0.set(x, y, z);
+        self.0.set(x, y, z)
     }
 
     #[inline]
@@ -155,9 +173,25 @@ impl <N: Num + Real> Point3<N> {
     }
 }
 
-impl <N: Num + Signed> Point3<N> {
+impl <N: Signed> Point3<N> {
     #[inline]
     pub fn abs(&self) -> Self {
         Point3(self.0.abs())
+    }
+}
+
+impl<N> Index<usize> for Point3<N> {
+    type Output = N;
+
+    #[inline]
+    fn index(&self, i: usize) -> &Self::Output {
+        self.0.index(i)
+    }
+}
+
+impl<N> IndexMut<usize> for Point3<N> {
+    #[inline]
+    fn index_mut(&mut self, i: usize) -> &mut Self::Output {
+        self.0.index_mut(i)
     }
 }
