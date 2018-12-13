@@ -17,7 +17,7 @@ use num_traits::{
     sign::Signed,
 };
 
-use crate::math::{Num, Normal3};
+use crate::geometry::{Num, Normal3};
 
 pub type Vector2i = Vector2<u32>;
 pub type Vector2f = Vector2<N32>;

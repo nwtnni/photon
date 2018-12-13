@@ -8,12 +8,12 @@ use std::ops::{
 };
 
 use serde_derive::{Serialize, Deserialize};
-use num_traits::{
-    real::Real,
-    sign::Signed,
-};
+use noisy_float::prelude::*;
+use num_traits::real::Real;
 
-use crate::math::{Num, Vector3};
+use crate::geometry::{Num, Vector3};
+
+pub type Normal3f = Normal3<N32>;
 
 #[derive(Serialize, Deserialize)]
 #[derive(Copy, Clone, Default, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
