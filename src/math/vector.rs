@@ -17,7 +17,7 @@ use num_traits::{
     sign::Signed,
 };
 
-use crate::math::Num;
+use crate::math::{Num, Normal3};
 
 pub type Vector2i = Vector2<u32>;
 pub type Vector2f = Vector2<N32>;
@@ -142,7 +142,7 @@ impl<N: Num + Real> Vector2<N> {
 
     #[inline]
     pub fn normalize(&self) -> Self {
-        *self / self.len()
+        self / self.len()
     }
 
     #[inline]
@@ -162,12 +162,21 @@ impl<N: Num + Real> Vector2<N> {
     }
 }
 
-impl<N: Neg<Output = N>> Neg for Vector2<N> {
+impl<N: Num + Neg<Output = N>> Neg for Vector2<N> {
     type Output = Vector2<N>;
 
     #[inline]
     fn neg(self) -> Self::Output {
-        Vector2 { x: -self.x, y: -self.y }
+        Vector2 { x: -self.x(), y: -self.y() }
+    }
+}
+
+impl<N: Num + Neg<Output = N>> Neg for &Vector2<N> {
+    type Output = Vector2<N>;
+
+    #[inline]
+    fn neg(self) -> Self::Output {
+        Vector2 { x: -self.x(), y: -self.y() }
     }
 }
 
@@ -254,13 +263,20 @@ impl<N: Num> Vector3<N> {
     }
 
     #[inline]
-    pub fn dot(&self, rhs: &Self) -> N {
-        self.x * rhs.x + self.y * rhs.y + self.z * rhs.z
+    pub fn dot_v(&self, v: &Self) -> N {
+        self.x() * v.x() +
+        self.y() * v.y() +
+        self.z() * v.z()
+    }
+
+    #[inline]
+    pub fn dot_n(&self, n: &Normal3<N>) -> N {
+        self.dot_v(&Vector3::from(*n))
     }
 
     #[inline]
     pub fn len_sq(&self) -> N {
-        self.dot(self)
+        self.dot_v(self)
     }
 
     #[inline]
@@ -347,12 +363,27 @@ impl<N: Num + Real> Vector3<N> {
     }
 
     #[inline]
-    pub fn cross(&self, rhs: &Self) -> Self {
+    pub fn face_v(&self, v: &Vector3<N>) -> Self {
+        if self.dot_v(v) < N::zero() { -self } else { *self }
+    }
+
+    #[inline]
+    pub fn face_n(&self, n: &Normal3<N>) -> Self {
+        if self.dot_n(n) < N::zero() { -self } else { *self }
+    }
+
+    #[inline]
+    pub fn cross_v(&self, v: &Vector3<N>) -> Self {
         Vector3 {
-            x: self.y * rhs.z - self.z * rhs.y, 
-            y: self.z * rhs.x - self.x * rhs.z,
-            z: self.x * rhs.y - self.y * rhs.x,
+            x: self.y() * v.z() - self.z() * v.y(), 
+            y: self.z() * v.x() - self.x() * v.z(),
+            z: self.x() * v.y() - self.y() * v.x(),
         }
+    }
+
+    #[inline]
+    pub fn cross_n(&self, n: &Normal3<N>) -> Self {
+        self.cross_v(&Vector3::from(*n))
     }
 
     #[inline]
@@ -374,12 +405,21 @@ impl<N: Num + Real> Vector3<N> {
     }
 }
 
-impl<N: Neg<Output = N>> Neg for Vector3<N> {
+impl<N: Num + Neg<Output = N>> Neg for Vector3<N> {
     type Output = Vector3<N>;
 
     #[inline]
     fn neg(self) -> Self::Output {
         Vector3 { x: -self.x, y: -self.y, z: -self.z }
+    }
+}
+
+impl<N: Num + Neg<Output = N>> Neg for &Vector3<N> {
+    type Output = Vector3<N>;
+
+    #[inline]
+    fn neg(self) -> Self::Output {
+        Vector3 { x: -self.x(), y: -self.y(), z: -self.z() }
     }
 }
 
