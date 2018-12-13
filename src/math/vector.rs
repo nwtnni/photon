@@ -72,9 +72,6 @@ impl<N: Num> Vector2<N> {
             y: self[y],
         }
     }
-}
-
-impl <N: Num + cmp::Ord> Vector2<N> {
 
     #[inline]
     pub fn max(&self, rhs: &Self) -> Self {
@@ -114,6 +111,7 @@ impl <N: Num + cmp::Ord> Vector2<N> {
 }
 
 impl <N: Num + Signed> Vector2<N> {
+    #[inline]
     pub fn abs(&self) -> Self {
         Vector2 { x: self.x.abs(), y: self.y.abs() }
     }
@@ -135,6 +133,22 @@ impl<N: Num + Real> Vector2<N> {
     #[inline]
     pub fn normalize(&self) -> Self {
         *self / self.len()
+    }
+
+    #[inline]
+    pub fn ceil(&self) -> Self {
+        Vector2 {
+            x: self.x.ceil(),
+            y: self.y.ceil(),
+        }
+    }
+
+    #[inline]
+    pub fn floor(&self) -> Self {
+        Vector2 {
+            x: self.x.floor(),
+            y: self.y.floor(),
+        }
     }
 }
 
@@ -235,9 +249,7 @@ impl<N: Num> Vector3<N> {
             z: self[z],
         }
     }
-}
 
-impl <N: Num + cmp::Ord> Vector3<N> {
     #[inline]
     pub fn max(&self, rhs: &Self) -> Self {
         Vector3 {
@@ -288,7 +300,7 @@ impl <N: Num + cmp::Ord> Vector3<N> {
 
 impl <N: Num + Signed> Vector3<N> {
     #[inline]
-    fn abs(&self) -> Self {
+    pub fn abs(&self) -> Self {
         Vector3 { x: self.x.abs(), y: self.y.abs(), z: self.z.abs() }
     }
 }
@@ -318,6 +330,24 @@ impl<N: Num + Real> Vector3<N> {
             x: self.y * rhs.z - self.z * rhs.y, 
             y: self.z * rhs.x - self.x * rhs.z,
             z: self.x * rhs.y - self.y * rhs.x,
+        }
+    }
+
+    #[inline]
+    pub fn ceil(&self) -> Self {
+        Vector3 {
+            x: self.x.ceil(),
+            y: self.y.ceil(),
+            z: self.z.ceil(),
+        }
+    }
+
+    #[inline]
+    pub fn floor(&self) -> Self {
+        Vector3 {
+            x: self.x.floor(),
+            y: self.y.floor(),
+            z: self.z.floor(),
         }
     }
 }

@@ -183,40 +183,101 @@ macro_rules! impl_p2 {
             }
         }
 
-        make_impl_trait!(Add, add, impl_add, Point2<N>, ((x1, y1), (x2, y2)) => {
+        macro_rules! impl_add_assign_p2 {
+            ($lhs:ty, $rhs:ty) => {
+                impl<N: Num> AddAssign<$rhs> for $lhs {
+                    fn add_assign(&mut self, rhs: $rhs) {
+                        self.0.set(self.x() + rhs.x(), self.y() + rhs.y());
+                    }
+                }
+            }
+        }
+
+        macro_rules! impl_sub_assign_p2v {
+            ($lhs:ty, $rhs:ty) => {
+                impl<N: Num> SubAssign<$rhs> for $lhs {
+                    fn sub_assign(&mut self, rhs: $rhs) {
+                        self.set(self.x() - rhs.x(), self.y() - rhs.y())
+                    }
+                }
+            }
+        }
+
+        make_impl_trait!(Add, add, impl_add_p2, Point2<N>, ((x1, y1), (x2, y2)) => {
             Point2(Vector2::new(x1 + x2, y1 + y2))
         });
 
-        make_impl_trait!(Sub, sub, impl_sub_p, Vector2<N>, ((x1, y1), (x2, y2)) => {
-            Vector2::new(x1 + x2, y1 + y2)
+        make_impl_trait!(Sub, sub, impl_sub_p2p, Vector2<N>, ((x1, y1), (x2, y2)) => {
+            Vector2::new(x1 - x2, y1 - y2)
         });
 
-        make_impl_trait!(Sub, sub, impl_sub_v, Point2<N>, ((x1, y1), (x2, y2)) => {
-            Point2(Vector2::new(x1 + x2, y1 + y2))
+        make_impl_trait!(Sub, sub, impl_sub_p2v, Point2<N>, ((x1, y1), (x2, y2)) => {
+            Point2(Vector2::new(x1 - x2, y1 - y2))
         });
 
-        impl_all_pairs!(impl_add, Point2<N>, Vector2<N>);
-        impl_all_pairs!(impl_sub_p, Point2<N>, Point2<N>);
-        impl_all_pairs!(impl_sub_v, Point2<N>, Vector2<N>);
+        impl_all_pairs!(impl_add_p2, Point2<N>, Vector2<N>);
+        impl_all_pairs!(impl_sub_p2p, Point2<N>, Point2<N>);
+        impl_all_pairs!(impl_sub_p2v, Point2<N>, Vector2<N>);
+        impl_pairs!(impl_add_assign_p2, Point2<N>, Vector2<N>);
+        impl_pairs!(impl_sub_assign_p2v, Point2<N>, Vector2<N>);
     }
 }
 
-macro_rules! impl_p2_add_assign {
-    ($lhs:ty, $rhs:ty) => {
-        impl<N: Num> AddAssign<$rhs> for $lhs {
-            fn add_assign(&mut self, rhs: $rhs) {
-                self.0.set(rhs.x(), rhs.y());
+macro_rules! impl_p3 {
+    () => {
+        macro_rules! make_impl_trait {
+            ($trait:ident, $method:ident, $macro:ident, $output:ty, $pat:pat => $expr:expr) => {
+                macro_rules! $macro {
+                    ($lhs:ty, $rhs:ty) => {
+                        impl<N: Num> $trait<$rhs> for $lhs {
+                            type Output = $output;
+                            fn $method(self, rhs: $rhs) -> Self::Output {
+                                match ((self.x(), self.y(), self.z()), (rhs.x(), rhs.y(), rhs.z())) {
+                                | $pat => $expr
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
-    }
-}
 
-macro_rules! impl_p2_sub_assign_v {
-    ($lhs:ty, $rhs:ty) => {
-        impl<N: Num> SubAssign<$rhs> for $lhs {
-            fn sub_assign(&mut self, rhs: $rhs) {
-                self.set(self.x() - rhs.x(), self.y() - rhs.y())
+        macro_rules! impl_add_assign_p3 {
+            ($lhs:ty, $rhs:ty) => {
+                impl<N: Num> AddAssign<$rhs> for $lhs {
+                    fn add_assign(&mut self, rhs: $rhs) {
+                        self.0.set(self.x() + rhs.x(), self.y() + rhs.y(), self.z() + rhs.z());
+                    }
+                }
             }
         }
+
+        macro_rules! impl_sub_assign_p3v {
+            ($lhs:ty, $rhs:ty) => {
+                impl<N: Num> SubAssign<$rhs> for $lhs {
+                    fn sub_assign(&mut self, rhs: $rhs) {
+                        self.set(self.x() - rhs.x(), self.y() - rhs.y(), self.z() - rhs.z())
+                    }
+                }
+            }
+        }
+
+        make_impl_trait!(Add, add, impl_add_p3, Point3<N>, ((x1, y1, z1), (x2, y2, z2)) => {
+            Point3(Vector3::new(x1 + x2, y1 + y2, z1 + z2))
+        });
+
+        make_impl_trait!(Sub, sub, impl_sub_p3p, Vector3<N>, ((x1, y1, z1), (x2, y2, z2)) => {
+            Vector3::new(x1 - x2, y1 - y2, z1 - z2)
+        });
+
+        make_impl_trait!(Sub, sub, impl_sub_p3v, Point3<N>, ((x1, y1, z1), (x2, y2, z2)) => {
+            Point3(Vector3::new(x1 - x2, y1 - y2, z1 - z2))
+        });
+
+        impl_all_pairs!(impl_add_p3, Point3<N>, Vector3<N>);
+        impl_all_pairs!(impl_sub_p3p, Point3<N>, Point3<N>);
+        impl_all_pairs!(impl_sub_p3v, Point3<N>, Vector3<N>);
+        impl_pairs!(impl_add_assign_p3, Point3<N>, Vector3<N>);
+        impl_pairs!(impl_sub_assign_p3v, Point3<N>, Vector3<N>);
     }
 }
