@@ -2,6 +2,7 @@
 mod macros;
 mod normal;
 mod point;
+mod ray;
 mod vector;
 
 pub use self::normal::*;
