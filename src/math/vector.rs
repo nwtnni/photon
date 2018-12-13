@@ -34,6 +34,16 @@ pub struct Vector2<N> {
 impl<N: Num> Vector2<N> {
 
     #[inline]
+    fn unpack((x, y): (N, N)) -> Self {
+        Self::new(x, y) 
+    }
+
+    #[inline]
+    fn pack(&mut self, (x, y): (N, N)) {
+        self.set(x, y)
+    }
+
+    #[inline]
     pub fn x(&self) -> N { self.x }
 
     #[inline]
@@ -185,15 +195,17 @@ impl<N> IndexMut<usize> for Vector2<N> {
     }
 }
 
-impl_vv2!(Add, AddAssign, add, add_assign, ((x1, y1), (x2, y2)) => (x1 + x2, y1 + y2));
-impl_vv2!(Sub, SubAssign, sub, sub_assign, ((x1, y1), (x2, y2)) => (x1 - x2, y1 - y2));
-impl_vv2!(Mul, MulAssign, mul, mul_assign, ((x1, y1), (x2, y2)) => (x1 * x2, y1 * y2));
-impl_vv2!(Div, DivAssign, div, div_assign, ((x1, y1), (x2, y2)) => (x1 / x2, y1 / y2));
+impl_all!(impl_add_v2v, Vector2<N>, Vector2<N>);
+impl_mut!(impl_add_assign_v2v, Vector2<N>, Vector2<N>);
 
-impl_vs2!(Add, AddAssign, add, add_assign, ((x, y), s) => (x + s, y + s));
-impl_vs2!(Sub, SubAssign, sub, sub_assign, ((x, y), s) => (x - s, y - s));
-impl_vs2!(Mul, MulAssign, mul, mul_assign, ((x, y), s) => (x * s, y * s));
-impl_vs2!(Div, DivAssign, div, div_assign, ((x, y), s) => (x / s, y / s));
+impl_all!(impl_sub_v2v, Vector2<N>, Vector2<N>);
+impl_mut!(impl_sub_assign_v2v, Vector2<N>, Vector2<N>);
+
+impl_all!(impl_mul_v2s, Vector2<N>, N);
+impl_mut!(impl_mul_assign_v2s, Vector2<N>, N);
+
+impl_all!(impl_div_v2s, Vector2<N>, N);
+impl_mut!(impl_div_assign_v2s, Vector2<N>, N);
 
 #[derive(Serialize, Deserialize)]
 #[derive(Copy, Clone, Default, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -204,6 +216,16 @@ pub struct Vector3<N> {
 }
 
 impl<N: Num> Vector3<N> {
+
+    #[inline]
+    pub fn unpack((x, y, z): (N, N, N)) -> Self {
+        Self::new(x, y, z)
+    }
+
+    #[inline]
+    pub fn pack(&mut self, (x, y, z): (N, N, N)) {
+        self.set(x, y, z)
+    }
 
     #[inline]
     pub fn x(&self) -> N { self.x }
@@ -321,7 +343,7 @@ impl<N: Num + Real> Vector3<N> {
 
     #[inline]
     pub fn normalize(&self) -> Self {
-        *self / self.len()
+        self / self.len()
     }
 
     #[inline]
@@ -387,7 +409,14 @@ impl<N> IndexMut<usize> for Vector3<N> {
     }
 }
 
-impl_vv3!(Add, AddAssign, add, add_assign, ((x1, y1, z1), (x2, y2, z2)) => (x1 + x2, y1 + y2, z1 + z2));
-impl_vv3!(Sub, SubAssign, sub, sub_assign, ((x1, y1, z1), (x2, y2, z2)) => (x1 - x2, y1 - y2, z1 + z2));
-impl_vs3!(Mul, MulAssign, mul, mul_assign, ((x, y, z), s) => (x * s, y * s, z * s));
-impl_vs3!(Div, DivAssign, div, div_assign, ((x, y, z), s) => (x / s, y / s, z / s));
+impl_all!(impl_add_v3v, Vector3<N>, Vector3<N>);
+impl_mut!(impl_add_assign_v3v, Vector3<N>, Vector3<N>);
+
+impl_all!(impl_sub_v3v, Vector3<N>, Vector3<N>);
+impl_mut!(impl_sub_assign_v3v, Vector3<N>, Vector3<N>);
+
+impl_all!(impl_mul_v3s, Vector3<N>, N);
+impl_mut!(impl_mul_assign_v3s, Vector3<N>, N);
+
+impl_all!(impl_div_v3s, Vector3<N>, N);
+impl_mut!(impl_div_assign_v3s, Vector3<N>, N);
