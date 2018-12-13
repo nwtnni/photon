@@ -22,9 +22,18 @@ pub type Point3f = Vector3<N32>;
 #[derive(Copy, Clone, Default, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Point2<N>(Vector2<N>);
 
-impl_p2!();
-
 impl<N: Num> Point2<N> {
+
+    #[inline]
+    pub fn unpack((x, y): (N, N)) -> Self {
+        Self::new(x, y)
+    }
+
+    #[inline]
+    pub fn pack(&mut self, (x, y): (N, N)) {
+        self.set(x, y)
+    }
+
     #[inline]
     pub fn new(x: N, y: N) -> Self {
         Point2(Vector2::new(x, y))
@@ -104,13 +113,28 @@ impl<N> IndexMut<usize> for Point2<N> {
     }
 }
 
+impl_all!(impl_add_v2v, Point2<N>, Vector2<N>);
+impl_mut!(impl_add_assign_v2v, Point2<N>, Vector2<N>);
+impl_all!(impl_sub_v2v, Vector2<N>, Point2<N>, Point2<N>);
+impl_all!(impl_sub_v2v, Point2<N>, Vector2<N>);
+impl_mut!(impl_sub_assign_v2v, Point2<N>, Vector2<N>);
+
 #[derive(Serialize, Deserialize)]
 #[derive(Copy, Clone, Default, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Point3<N>(Vector3<N>);
 
-impl_p3!();
-
 impl<N: Num> Point3<N> {
+
+    #[inline]
+    pub fn unpack((x, y, z): (N, N, N)) -> Self {
+        Self::new(x, y, z)
+    }
+
+    #[inline]
+    pub fn pack(&mut self, (x, y, z): (N, N, N)) {
+        self.set(x, y, z)
+    }
+
     #[inline]
     pub fn new(x: N, y: N, z: N) -> Self {
         Point3(Vector3::new(x, y, z)) 
@@ -195,3 +219,9 @@ impl<N> IndexMut<usize> for Point3<N> {
         self.0.index_mut(i)
     }
 }
+
+impl_all!(impl_add_v3v, Point3<N>, Vector3<N>);
+impl_mut!(impl_add_assign_v3v, Point3<N>, Vector3<N>);
+impl_all!(impl_sub_v3v, Vector3<N>, Point3<N>, Point3<N>);
+impl_all!(impl_sub_v3v, Point3<N>, Vector3<N>);
+impl_mut!(impl_sub_assign_v3v, Point3<N>, Vector3<N>);

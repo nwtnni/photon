@@ -6,12 +6,18 @@ macro_rules! impl_mut {
 }
 
 macro_rules! impl_all {
+    ($macro:ident, $output:ty, $lhs:ty, $rhs:ty) => {
+        $macro!($output, $lhs, $rhs);
+        $macro!($output, $lhs, &$rhs);
+        $macro!($output, &$lhs, $rhs);
+        $macro!($output, &$lhs, &$rhs);
+    };
     ($macro:ident, $lhs:ty, $rhs:ty) => {
         $macro!($lhs, $lhs, $rhs);
         $macro!($lhs, $lhs, &$rhs);
         $macro!($lhs, &$lhs, $rhs);
         $macro!($lhs, &$lhs, &$rhs);
-    }
+    };
 }
 
 macro_rules! make_impl_trait {

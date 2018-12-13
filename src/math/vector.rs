@@ -34,12 +34,12 @@ pub struct Vector2<N> {
 impl<N: Num> Vector2<N> {
 
     #[inline]
-    fn unpack((x, y): (N, N)) -> Self {
+    pub fn unpack((x, y): (N, N)) -> Self {
         Self::new(x, y) 
     }
 
     #[inline]
-    fn pack(&mut self, (x, y): (N, N)) {
+    pub fn pack(&mut self, (x, y): (N, N)) {
         self.set(x, y)
     }
 
