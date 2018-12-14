@@ -1,6 +1,8 @@
 use std::ops::{
     Add, AddAssign,
     Sub, SubAssign,
+    Mul, MulAssign,
+    Div, DivAssign,
     Index, IndexMut,
 };
 
@@ -13,9 +15,9 @@ use serde_derive::{Serialize, Deserialize};
 
 use crate::geometry::{Num, Vector2, Vector3};
 
-pub type Point2i = Vector2<u32>;
+pub type Point2i = Vector2<i32>;
 pub type Point2f = Vector2<N32>;
-pub type Point3i = Vector3<u32>;
+pub type Point3i = Vector3<i32>;
 pub type Point3f = Vector3<N32>;
 
 #[derive(Serialize, Deserialize)]
@@ -40,6 +42,11 @@ impl<N: Num> Point2<N> {
     }
 
     #[inline]
+    pub fn fill(v: N) -> Self {
+        Point2(Vector2::fill(v))
+    }
+
+    #[inline]
     pub fn x(&self) -> N { self.0.x() } 
 
     #[inline]
@@ -48,6 +55,16 @@ impl<N: Num> Point2<N> {
     #[inline]
     pub fn set(&mut self, x: N, y: N) {
         self.0.set(x, y)
+    }
+
+    #[inline]
+    pub fn min(&self, rhs: &Self) -> Self {
+        Point2(self.0.min(rhs.0))
+    }
+
+    #[inline]
+    pub fn max(&self, rhs: &Self) -> Self {
+        Point2(self.0.max(rhs.0))
     }
 
     #[inline]
@@ -69,7 +86,7 @@ impl <N: Num + Real> Point2<N> {
 
     #[inline]
     pub fn lerp(&self, rhs: &Self, t: N) -> Self {
-        Point2(self.0 * (N::one() - t) + (rhs.0 * t))
+        self * (N::one() - t) + (rhs * t)
     }
 
     #[inline]
@@ -113,11 +130,18 @@ impl<N> IndexMut<usize> for Point2<N> {
     }
 }
 
+impl_all!(impl_add_v2v, Point2<N>, Point2<N>);
+impl_mut!(impl_add_assign_v2v, Point2<N>, Point2<N>);
 impl_all!(impl_add_v2v, Point2<N>, Vector2<N>);
 impl_mut!(impl_add_assign_v2v, Point2<N>, Vector2<N>);
 impl_all!(impl_sub_v2v, Vector2<N>, Point2<N>, Point2<N>);
 impl_all!(impl_sub_v2v, Point2<N>, Vector2<N>);
 impl_mut!(impl_sub_assign_v2v, Point2<N>, Vector2<N>);
+
+impl_all!(impl_mul_v2s, Point2<N>, N);
+impl_mut!(impl_mul_assign_v2s, Point2<N>, N);
+impl_all!(impl_div_v2s, Point2<N>, N);
+impl_mut!(impl_div_assign_v2s, Point2<N>, N);
 
 #[derive(Serialize, Deserialize)]
 #[derive(Copy, Clone, Default, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -138,6 +162,11 @@ impl<N: Num> Point3<N> {
     #[inline]
     pub fn new(x: N, y: N, z: N) -> Self {
         Point3(Vector3::new(x, y, z)) 
+    }
+
+    #[inline]
+    pub fn fill(v: N) -> Self {
+        Point3(Vector3::fill(v)) 
     }
 
     #[inline]
@@ -183,7 +212,7 @@ impl <N: Num + Real> Point3<N> {
 
     #[inline]
     pub fn lerp(&self, rhs: &Self, t: N) -> Self {
-        Point3(self.0 * (N::one() - t) + (rhs.0 * t))
+        self * (N::one() - t) + (rhs * t)
     }
 
     #[inline]
@@ -220,8 +249,15 @@ impl<N> IndexMut<usize> for Point3<N> {
     }
 }
 
+impl_all!(impl_add_v3v, Point3<N>, Point3<N>);
+impl_mut!(impl_add_assign_v3v, Point3<N>, Point3<N>);
 impl_all!(impl_add_v3v, Point3<N>, Vector3<N>);
 impl_mut!(impl_add_assign_v3v, Point3<N>, Vector3<N>);
 impl_all!(impl_sub_v3v, Vector3<N>, Point3<N>, Point3<N>);
 impl_all!(impl_sub_v3v, Point3<N>, Vector3<N>);
 impl_mut!(impl_sub_assign_v3v, Point3<N>, Vector3<N>);
+
+impl_all!(impl_mul_v3s, Point3<N>, N);
+impl_mut!(impl_mul_assign_v3s, Point3<N>, N);
+impl_all!(impl_div_v3s, Point3<N>, N);
+impl_mut!(impl_div_assign_v3s, Point3<N>, N);

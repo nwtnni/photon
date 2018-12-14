@@ -1,5 +1,6 @@
 #[macro_use]
 mod macros;
+mod bounds;
 mod normal;
 mod point;
 mod ray;
@@ -23,7 +24,9 @@ pub trait Num:
     + num_traits::Num
     + num_traits::NumOps
     + num_traits::NumAssign
+    + num_traits::Bounded
 {
+    fn two() -> Self { Self::one() + Self::one() }
 }
 
 impl<T> Num for T where
@@ -40,5 +43,6 @@ impl<T> Num for T where
         + num_traits::Num
         + num_traits::NumOps
         + num_traits::NumAssign
+        + num_traits::Bounded
 {
 }

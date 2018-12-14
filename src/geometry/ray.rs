@@ -2,7 +2,7 @@ use noisy_float::prelude::*;
 
 use crate::geometry::{Point3f, Vector3f};
 
-#[derive(Copy, Clone, Default)]
+#[derive(Copy, Clone, Default, Debug)]
 pub struct Ray {
     o: Point3f,
     d: Vector3f,
