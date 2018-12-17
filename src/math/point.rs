@@ -26,26 +26,22 @@ pub type Point3d = Point3<N64>;
 #[derive(Copy, Clone, Default, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Point2<N>(Vec2<N>);
 
-impl<N: Num> Point2<N> {
-
-    #[inline]
-    pub fn unpack((x, y): (N, N)) -> Self {
-        Self::new(x, y)
-    }
-
-    #[inline]
-    pub fn pack(&mut self, (x, y): (N, N)) {
-        self.set(x, y)
-    }
-
+impl<N> Point2<N> {
     #[inline]
     pub fn new(x: N, y: N) -> Self {
         Point2(Vec2::new(x, y))
     }
 
     #[inline]
-    pub fn fill(v: N) -> Self {
-        Point2(Vec2::fill(v))
+    pub fn set<V: Into<Self>>(&mut self, v: V) {
+        *self = v.into();
+    }
+}
+
+impl<N: Num> Point2<N> {
+    #[inline]
+    pub fn broadcast(v: N) -> Self {
+        Point2(Vec2::broadcast(v))
     }
 
     #[inline]
@@ -53,11 +49,6 @@ impl<N: Num> Point2<N> {
 
     #[inline]
     pub fn y(&self) -> N { self.0.y() }
-
-    #[inline]
-    pub fn set(&mut self, x: N, y: N) {
-        self.0.set(x, y)
-    }
 
     #[inline]
     pub fn min(&self, rhs: &Self) -> Self {
@@ -132,6 +123,23 @@ impl<N> IndexMut<usize> for Point2<N> {
     }
 }
 
+impl<N: Num> From<[N; 2]> for Point2<N> {
+    #[inline]
+    fn from(v: [N; 2]) -> Point2<N> {
+        Point2(Vec2::new(v[0], v[1]))
+    }
+}
+
+impl<N, X, Y> From<(X, Y)> for Point2<N>
+    where X: Into<N>,
+          Y: Into<N>,
+{
+    #[inline]
+    fn from((x, y): (X, Y)) -> Point2<N> {
+        Point2(Vec2::new(x.into(), y.into()))        
+    }
+}
+
 impl_all!(impl_add_v2v, Point2<N>, Point2<N>);
 impl_mut!(impl_add_assign_v2v, Point2<N>, Point2<N>);
 impl_all!(impl_add_v2v, Point2<N>, Vec2<N>);
@@ -149,26 +157,22 @@ impl_mut!(impl_div_assign_v2s, Point2<N>, N);
 #[derive(Copy, Clone, Default, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Point3<N>(Vec3<N>);
 
-impl<N: Num> Point3<N> {
-
-    #[inline]
-    pub fn unpack((x, y, z): (N, N, N)) -> Self {
-        Self::new(x, y, z)
-    }
-
-    #[inline]
-    pub fn pack(&mut self, (x, y, z): (N, N, N)) {
-        self.set(x, y, z)
-    }
-
+impl<N> Point3<N> {
     #[inline]
     pub fn new(x: N, y: N, z: N) -> Self {
         Point3(Vec3::new(x, y, z)) 
     }
 
     #[inline]
-    pub fn fill(v: N) -> Self {
-        Point3(Vec3::fill(v)) 
+    pub fn set<P: Into<Self>>(&mut self, p: P) {
+        *self = p.into();
+    }
+}
+
+impl<N: Num> Point3<N> {
+    #[inline]
+    pub fn broadcast(v: N) -> Self {
+        Point3(Vec3::broadcast(v)) 
     }
 
     #[inline]
@@ -179,11 +183,6 @@ impl<N: Num> Point3<N> {
 
     #[inline]
     pub fn z(&self) -> N { self.0.z() }
-
-    #[inline]
-    pub fn set(&mut self, x: N, y: N, z: N) {
-        self.0.set(x, y, z)
-    }
 
     #[inline]
     pub fn dist_sq(&self, rhs: &Self) -> N {
@@ -248,6 +247,24 @@ impl<N> IndexMut<usize> for Point3<N> {
     #[inline]
     fn index_mut(&mut self, i: usize) -> &mut Self::Output {
         self.0.index_mut(i)
+    }
+}
+
+impl<N: Num> From<[N; 3]> for Point3<N> {
+    #[inline]
+    fn from(v: [N; 3]) -> Point3<N> {
+        Point3(Vec3::new(v[0], v[1], v[2]))
+    }
+}
+
+impl<N, X, Y, Z> From<(X, Y, Z)> for Point3<N>
+    where X: Into<N>,
+          Y: Into<N>,
+          Z: Into<N>,
+{
+    #[inline]
+    fn from((x, y, z): (X, Y, Z)) -> Point3<N> {
+        Point3(Vec3::new(x.into(), y.into(), z.into()))        
     }
 }
 

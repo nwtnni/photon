@@ -72,7 +72,7 @@ impl<N: Num> Bounds2<N> {
     }
 
     pub fn expand(&self, d: N) -> Self {
-        let delta = Vec2::fill(d);
+        let delta = Vec2::broadcast(d);
         Bounds2 {
             min: self.min - delta,
             max: self.max + delta,
@@ -148,8 +148,8 @@ pub struct Bounds3<N> {
 impl<N: Num> Default for Bounds3<N> {
     #[inline]
     fn default() -> Self {
-        let min = Point3::fill(N::max_value());
-        let max = Point3::fill(N::min_value());
+        let min = Point3::broadcast(N::max_value());
+        let max = Point3::broadcast(N::min_value());
         Bounds3 { min, max }
     }
 }
@@ -221,7 +221,7 @@ impl<N: Num> Bounds3<N> {
     }
 
     pub fn expand(&self, d: N) -> Self {
-        let delta = Vec3::fill(d);
+        let delta = Vec3::broadcast(d);
         Bounds3 {
             min: self.min - delta,
             max: self.max + delta,

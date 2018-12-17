@@ -19,22 +19,19 @@ pub type Normal3f = Normal3<N32>;
 #[derive(Copy, Clone, Default, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Normal3<N>(Vec3<N>);
 
-impl<N: Num> Normal3<N> {
-
-    #[inline]
-    pub fn unpack((x, y, z): (N, N, N)) -> Self {
-        Self::new(x, y, z)
-    }
-
-    #[inline]
-    pub fn pack(&mut self, (x, y, z): (N, N, N)) {
-        self.set(x, y, z);
-    }
-
+impl<N> Normal3<N> {
     #[inline]
     pub fn new(x: N, y: N, z: N) -> Self {
         Normal3(Vec3::new(x, y, z))
     }
+
+    #[inline]
+    pub fn set<V: Into<Self>>(&mut self, n: V) {
+        *self = n.into();
+    }
+}
+
+impl<N: Num> Normal3<N> {
 
     #[inline]
     pub fn x(&self) -> N { self.0.x() }
@@ -44,11 +41,6 @@ impl<N: Num> Normal3<N> {
 
     #[inline]
     pub fn z(&self) -> N { self.0.z() }
-
-    #[inline]
-    pub fn set(&mut self, x: N, y: N, z: N) {
-        self.0.set(x, y, z)
-    }
 
     #[inline]
     pub fn len_sq(&self) -> N {
@@ -136,6 +128,24 @@ impl<N: Num + Neg<Output = N>> Neg for &Normal3<N> {
     #[inline]
     fn neg(self) -> Self::Output {
         Normal3::new(-self.x(), -self.y(), -self.z())
+    }
+}
+
+impl<N: Num> From<[N; 3]> for Normal3<N> {
+    #[inline]
+    fn from(v: [N; 3]) -> Normal3<N> {
+        Normal3(Vec3::new(v[0], v[1], v[2]))
+    }
+}
+
+impl<N, X, Y, Z> From<(X, Y, Z)> for Normal3<N>
+    where X: Into<N>,
+          Y: Into<N>,
+          Z: Into<N>,
+{
+    #[inline]
+    fn from((x, y, z): (X, Y, Z)) -> Normal3<N> {
+        Normal3(Vec3::new(x.into(), y.into(), z.into()))        
     }
 }
 

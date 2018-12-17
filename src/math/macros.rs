@@ -36,7 +36,7 @@ macro_rules! make_impl_trait {
                     type Output = $output;
                     #[inline]
                     fn $method(self, rhs: $rhs) -> Self::Output {
-                        Self::Output::unpack(match (self, rhs) { $pat => $fn, })
+                        Self::Output::from(match (self, rhs) { $pat => $fn, })
                     }
                 }
             }
@@ -48,7 +48,7 @@ macro_rules! make_impl_trait {
                     #[inline]
                     fn $method_mut(&mut self, rhs: $rhs) {
                         let v = match (*self, rhs) { $pat => $fn, };
-                        self.pack(v)
+                        self.set(v)
                     }
                 }
             }

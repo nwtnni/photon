@@ -33,16 +33,23 @@ pub struct Vec2<N> {
     y: N,
 }
 
+impl<N> Vec2<N> {
+    #[inline]
+    pub fn new(x: N, y: N) -> Self {
+        Vec2 { x, y }
+    }
+
+    #[inline]
+    pub fn set<V: Into<Self>>(&mut self, v: V) {
+        *self = v.into();
+    }
+}
+
 impl<N: Num> Vec2<N> {
 
     #[inline]
     pub fn unpack((x, y): (N, N)) -> Self {
         Self::new(x, y) 
-    }
-
-    #[inline]
-    pub fn pack(&mut self, (x, y): (N, N)) {
-        self.set(x, y)
     }
 
     #[inline]
@@ -52,18 +59,7 @@ impl<N: Num> Vec2<N> {
     pub fn y(&self) -> N { self.y }
 
     #[inline]
-    pub fn set(&mut self, x: N, y: N) {
-        self.x = x;
-        self.y = y;
-    }
-
-    #[inline]
-    pub fn new(x: N, y: N) -> Self {
-        Vec2 { x, y }
-    }
-
-    #[inline]
-    pub fn fill(v: N) -> Self {
+    pub fn broadcast(v: N) -> Self {
         Vec2 { x: v, y: v }
     }
 
@@ -206,6 +202,23 @@ impl<N> IndexMut<usize> for Vec2<N> {
     }
 }
 
+impl<N: Num> From<[N; 2]> for Vec2<N> {
+    #[inline]
+    fn from(v: [N; 2]) -> Vec2<N> {
+        Vec2::new(v[0], v[1])
+    }
+}
+
+impl<N, X, Y> From<(X, Y)> for Vec2<N>
+    where X: Into<N>,
+          Y: Into<N>,
+{
+    #[inline]
+    fn from((x, y): (X, Y)) -> Vec2<N> {
+        Vec2::new(x.into(), y.into())
+    }
+}
+
 impl_all!(impl_add_v2v, Vec2<N>, Vec2<N>);
 impl_mut!(impl_add_assign_v2v, Vec2<N>, Vec2<N>);
 
@@ -226,18 +239,19 @@ pub struct Vec3<N> {
     z: N,
 }
 
+impl<N> Vec3<N> {
+    #[inline]
+    pub fn new(x: N, y: N, z: N) -> Self {
+        Vec3 { x, y, z }
+    }
+
+    #[inline]
+    pub fn set<V: Into<Self>>(&mut self, v: V) {
+        *self = v.into();
+    }
+}
+
 impl<N: Num> Vec3<N> {
-
-    #[inline]
-    pub fn unpack((x, y, z): (N, N, N)) -> Self {
-        Self::new(x, y, z)
-    }
-
-    #[inline]
-    pub fn pack(&mut self, (x, y, z): (N, N, N)) {
-        self.set(x, y, z)
-    }
-
     #[inline]
     pub fn x(&self) -> N { self.x }
 
@@ -248,19 +262,7 @@ impl<N: Num> Vec3<N> {
     pub fn z(&self) -> N { self.z }
 
     #[inline]
-    pub fn set(&mut self, x: N, y: N, z: N) {
-        self.x = x;
-        self.y = y;
-        self.z = z;
-    }
-
-    #[inline]
-    pub fn new(x: N, y: N, z: N) -> Self {
-        Vec3 { x, y, z }
-    }
-
-    #[inline]
-    pub fn fill(v: N) -> Self {
+    pub fn broadcast(v: N) -> Self {
         Vec3 { x: v, y: v, z: v }
     }
 
@@ -448,6 +450,24 @@ impl<N> IndexMut<usize> for Vec3<N> {
         | 2 => &mut self.z,
         | n => panic!("[INTERNAL ERROR]: invalid index {}", n),
         }
+    }
+}
+
+impl<N: Num> From<[N; 3]> for Vec3<N> {
+    #[inline]
+    fn from(v: [N; 3]) -> Vec3<N> {
+        Vec3::new(v[0], v[1], v[2])
+    }
+}
+
+impl<N, X, Y, Z> From<(X, Y, Z)> for Vec3<N>
+    where X: Into<N>,
+          Y: Into<N>,
+          Z: Into<N>,
+{
+    #[inline]
+    fn from((x, y, z): (X, Y, Z)) -> Vec3<N> {
+        Vec3::new(x.into(), y.into(), z.into())
     }
 }
 
