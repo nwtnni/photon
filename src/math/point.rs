@@ -123,10 +123,12 @@ impl<N> IndexMut<usize> for Point2<N> {
     }
 }
 
-impl<N: Num> From<[N; 2]> for Point2<N> {
+impl<N, M> From<[M; 2]> for Point2<N>
+    where M: Clone + Into<N>
+{
     #[inline]
-    fn from(v: [N; 2]) -> Point2<N> {
-        Point2(Vec2::new(v[0], v[1]))
+    fn from(v: [M; 2]) -> Point2<N> {
+        Point2(Vec2::from(v))
     }
 }
 
@@ -135,8 +137,8 @@ impl<N, X, Y> From<(X, Y)> for Point2<N>
           Y: Into<N>,
 {
     #[inline]
-    fn from((x, y): (X, Y)) -> Point2<N> {
-        Point2(Vec2::new(x.into(), y.into()))        
+    fn from(p: (X, Y)) -> Point2<N> {
+        Point2(Vec2::from(p))        
     }
 }
 
@@ -250,10 +252,12 @@ impl<N> IndexMut<usize> for Point3<N> {
     }
 }
 
-impl<N: Num> From<[N; 3]> for Point3<N> {
+impl<N, M> From<[M; 3]> for Point3<N>
+    where M: Clone + Into<N>
+{
     #[inline]
-    fn from(v: [N; 3]) -> Point3<N> {
-        Point3(Vec3::new(v[0], v[1], v[2]))
+    fn from(v: [M; 3]) -> Point3<N> {
+        Point3(Vec3::from(v))
     }
 }
 
@@ -263,8 +267,8 @@ impl<N, X, Y, Z> From<(X, Y, Z)> for Point3<N>
           Z: Into<N>,
 {
     #[inline]
-    fn from((x, y, z): (X, Y, Z)) -> Point3<N> {
-        Point3(Vec3::new(x.into(), y.into(), z.into()))        
+    fn from(p: (X, Y, Z)) -> Point3<N> {
+        Point3(Vec3::from(p))        
     }
 }
 

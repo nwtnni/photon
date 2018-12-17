@@ -46,12 +46,6 @@ impl<N> Vec2<N> {
 }
 
 impl<N: Num> Vec2<N> {
-
-    #[inline]
-    pub fn unpack((x, y): (N, N)) -> Self {
-        Self::new(x, y) 
-    }
-
     #[inline]
     pub fn x(&self) -> N { self.x }
 
@@ -202,10 +196,15 @@ impl<N> IndexMut<usize> for Vec2<N> {
     }
 }
 
-impl<N: Num> From<[N; 2]> for Vec2<N> {
+impl<N, M> From<[M; 2]> for Vec2<N>
+    where M: Clone + Into<N>
+{
     #[inline]
-    fn from(v: [N; 2]) -> Vec2<N> {
-        Vec2::new(v[0], v[1])
+    fn from(v: [M; 2]) -> Vec2<N> {
+        Vec2::new(
+            v[0].clone().into(),
+            v[1].clone().into(),
+        )
     }
 }
 
@@ -453,10 +452,16 @@ impl<N> IndexMut<usize> for Vec3<N> {
     }
 }
 
-impl<N: Num> From<[N; 3]> for Vec3<N> {
+impl<N, M> From<[M; 3]> for Vec3<N>
+    where M: Clone + Into<N>
+{
     #[inline]
-    fn from(v: [N; 3]) -> Vec3<N> {
-        Vec3::new(v[0], v[1], v[2])
+    fn from(v: [M; 3]) -> Vec3<N> {
+        Vec3::new(
+            v[0].clone().into(),
+            v[1].clone().into(),
+            v[2].clone().into()
+        )
     }
 }
 

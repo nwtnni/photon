@@ -131,10 +131,12 @@ impl<N: Num + Neg<Output = N>> Neg for &Normal3<N> {
     }
 }
 
-impl<N: Num> From<[N; 3]> for Normal3<N> {
+impl<N, M> From<[M; 3]> for Normal3<N>
+    where M: Clone + Into<N>
+{
     #[inline]
-    fn from(v: [N; 3]) -> Normal3<N> {
-        Normal3(Vec3::new(v[0], v[1], v[2]))
+    fn from(v: [M; 3]) -> Normal3<N> {
+        Normal3(Vec3::from(v))
     }
 }
 
@@ -144,8 +146,8 @@ impl<N, X, Y, Z> From<(X, Y, Z)> for Normal3<N>
           Z: Into<N>,
 {
     #[inline]
-    fn from((x, y, z): (X, Y, Z)) -> Normal3<N> {
-        Normal3(Vec3::new(x.into(), y.into(), z.into()))        
+    fn from(n: (X, Y, Z)) -> Normal3<N> {
+        Normal3(Vec3::from(n))        
     }
 }
 
