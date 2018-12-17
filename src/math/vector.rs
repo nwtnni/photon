@@ -28,15 +28,12 @@ pub type Vec3d = Vec3<N64>;
 
 #[derive(Serialize, Deserialize)]
 #[derive(Copy, Clone, Default, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct Vec2<N> {
-    x: N,
-    y: N,
-}
+pub struct Vec2<N>([N; 2]);
 
 impl<N> Vec2<N> {
     #[inline]
     pub fn new(x: N, y: N) -> Self {
-        Vec2 { x, y }
+        Vec2([x, y])
     }
 
     #[inline]
@@ -47,19 +44,19 @@ impl<N> Vec2<N> {
 
 impl<N: Num> Vec2<N> {
     #[inline]
-    pub fn x(&self) -> N { self.x }
+    pub fn x(&self) -> N { self.0[0] }
 
     #[inline]
-    pub fn y(&self) -> N { self.y }
+    pub fn y(&self) -> N { self.0[1] }
 
     #[inline]
     pub fn broadcast(v: N) -> Self {
-        Vec2 { x: v, y: v }
+        Vec2([v, v])
     }
 
     #[inline]
     pub fn dot(&self, rhs: &Self) -> N {
-        self.x * rhs.x + self.y * rhs.y
+        self.x() * rhs.x() + self.y() * rhs.y()
     }
 
     #[inline]
@@ -69,61 +66,58 @@ impl<N: Num> Vec2<N> {
 
     #[inline]
     pub fn permute(&self, x: usize, y: usize) -> Self {
-        Vec2 {
-            x: self[x],
-            y: self[y],
-        }
+        Vec2([self[x], self[y]])
     }
 
     #[inline]
     pub fn max(&self, rhs: &Self) -> Self {
-        Vec2 {
-            x: cmp::max(self.x, rhs.x),
-            y: cmp::max(self.y, rhs.y),
-        }
+        Vec2([
+            cmp::max(self.x(), rhs.x()),
+            cmp::max(self.y(), rhs.y()),
+        ])
     }
 
     #[inline]
     pub fn min(&self, rhs: &Self) -> Self {
-        Vec2 {
-            x: cmp::min(self.x, rhs.x),
-            y: cmp::min(self.y, rhs.y),
-        }
+        Vec2([
+            cmp::min(self.x(), rhs.x()),
+            cmp::min(self.y(), rhs.y()),
+        ])
     }
 
     #[inline]
     pub fn max_val(&self) -> N {
-        cmp::max(self.x, self.y)
+        cmp::max(self.x(), self.y())
     }
 
     #[inline]
     pub fn min_val(&self) -> N {
-        cmp::min(self.x, self.y)
+        cmp::min(self.x(), self.y())
     }
 
     #[inline]
     pub fn max_dim(&self) -> usize {
-        if self.x >= self.y { 0 } else { 1 }
+        if self.x() >= self.y() { 0 } else { 1 }
     }
 
     #[inline]
     pub fn min_dim(&self) -> usize {
-        if self.x <= self.y { 0 } else { 1 }
+        if self.x() <= self.y() { 0 } else { 1 }
     }
 }
 
-impl <N: Signed> Vec2<N> {
+impl <N: Num + Signed> Vec2<N> {
     #[inline]
     pub fn abs(&self) -> Self {
-        Vec2 { x: self.x.abs(), y: self.y.abs() }
+        Vec2([self.x().abs(), self.y().abs()])
     }
 }
 
 impl<N: Num + Real> Vec2<N> {
     #[inline]
     pub fn distance(&self, rhs: &Self) -> N {
-        let dx = rhs.x - self.x;
-        let dy = rhs.y - self.y;
+        let dx = rhs.x() - self.x();
+        let dy = rhs.y() - self.y();
         (dx * dx + dy * dy).sqrt()
     }
 
@@ -139,18 +133,18 @@ impl<N: Num + Real> Vec2<N> {
 
     #[inline]
     pub fn ceil(&self) -> Self {
-        Vec2 {
-            x: self.x.ceil(),
-            y: self.y.ceil(),
-        }
+        Vec2([
+            self.x().ceil(),
+            self.y().ceil(),
+        ])
     }
 
     #[inline]
     pub fn floor(&self) -> Self {
-        Vec2 {
-            x: self.x.floor(),
-            y: self.y.floor(),
-        }
+        Vec2([
+            self.x().floor(),
+            self.y().floor(),
+        ])
     }
 }
 
@@ -159,7 +153,7 @@ impl<N: Num + Neg<Output = N>> Neg for Vec2<N> {
 
     #[inline]
     fn neg(self) -> Self::Output {
-        Vec2 { x: -self.x(), y: -self.y() }
+        Vec2([-self.x(), -self.y()])
     }
 }
 
@@ -168,7 +162,7 @@ impl<N: Num + Neg<Output = N>> Neg for &Vec2<N> {
 
     #[inline]
     fn neg(self) -> Self::Output {
-        Vec2 { x: -self.x(), y: -self.y() }
+        Vec2([-self.x(), -self.y()])
     }
 }
 
@@ -177,22 +171,14 @@ impl<N> Index<usize> for Vec2<N> {
 
     #[inline]
     fn index(&self, i: usize) -> &Self::Output {
-        match i {
-        | 0 => &self.x,
-        | 1 => &self.y,
-        | n => panic!("[INTERNAL ERROR]: invalid index {}", n),
-        }
+        &self.0[i]
     }
 }
 
 impl<N> IndexMut<usize> for Vec2<N> {
     #[inline]
     fn index_mut(&mut self, i: usize) -> &mut Self::Output {
-        match i {
-        | 0 => &mut self.x,
-        | 1 => &mut self.y,
-        | n => panic!("[INTERNAL ERROR]: invalid index {}", n),
-        }
+        &mut self.0[i]
     }
 }
 
@@ -232,16 +218,12 @@ impl_mut!(impl_div_assign_v2s, Vec2<N>, N);
 
 #[derive(Serialize, Deserialize)]
 #[derive(Copy, Clone, Default, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct Vec3<N> {
-    x: N,
-    y: N,
-    z: N,
-}
+pub struct Vec3<N>([N; 3]);
 
 impl<N> Vec3<N> {
     #[inline]
     pub fn new(x: N, y: N, z: N) -> Self {
-        Vec3 { x, y, z }
+        Vec3([x, y, z])
     }
 
     #[inline]
@@ -252,17 +234,17 @@ impl<N> Vec3<N> {
 
 impl<N: Num> Vec3<N> {
     #[inline]
-    pub fn x(&self) -> N { self.x }
+    pub fn x(&self) -> N { self.0[0] }
 
     #[inline]
-    pub fn y(&self) -> N { self.y }
+    pub fn y(&self) -> N { self.0[1] }
 
     #[inline]
-    pub fn z(&self) -> N { self.z }
+    pub fn z(&self) -> N { self.0[2] }
 
     #[inline]
     pub fn broadcast(v: N) -> Self {
-        Vec3 { x: v, y: v, z: v }
+        Vec3([v, v, v])
     }
 
     #[inline]
@@ -284,74 +266,70 @@ impl<N: Num> Vec3<N> {
 
     #[inline]
     pub fn permute(&self, x: usize, y: usize, z: usize) -> Self {
-        Vec3 {
-            x: self[x],
-            y: self[y],
-            z: self[z],
-        }
+        Vec3([self[x], self[y], self[z]])
     }
 
     #[inline]
     pub fn max(&self, rhs: &Self) -> Self {
-        Vec3 {
-            x: cmp::max(self.x, rhs.x),
-            y: cmp::max(self.y, rhs.y),
-            z: cmp::max(self.z, rhs.z),
-        }
+        Vec3([
+            cmp::max(self.x(), rhs.x()),
+            cmp::max(self.y(), rhs.y()),
+            cmp::max(self.z(), rhs.z()),
+        ])
     }
 
     #[inline]
     pub fn min(&self, rhs: &Self) -> Self {
-        Vec3 {
-            x: cmp::min(self.x, rhs.x),
-            y: cmp::min(self.y, rhs.y),
-            z: cmp::min(self.z, rhs.z),
-        }
+        Vec3([
+            cmp::min(self.x(), rhs.x()),
+            cmp::min(self.y(), rhs.y()),
+            cmp::min(self.z(), rhs.z()),
+        ])
     }
 
     #[inline]
     pub fn max_val(&self) -> N {
-        cmp::max(self.x, cmp::max(self.y, self.z))
+        cmp::max(self.x(), cmp::max(self.y(), self.z()))
     }
 
     #[inline]
     pub fn min_val(&self) -> N {
-        cmp::min(self.x, cmp::min(self.y, self.z))
+        cmp::min(self.x(), cmp::min(self.y(), self.z()))
     }
 
     #[inline]
     pub fn max_dim(&self) -> usize {
-        if self.x >= self.y {
-            if self.x >= self.z { 0 } else { 2 }
+        if self.x() >= self.y() {
+            if self.x() >= self.z() { 0 } else { 2 }
         } else {
-            if self.y >= self.z { 1 } else { 2 } 
+            if self.y() >= self.z() { 1 } else { 2 } 
         }
     }
 
     #[inline]
     pub fn min_dim(&self) -> usize {
-        if self.x <= self.y {
-            if self.x <= self.z { 0 } else { 2 }
+        if self.x() <= self.y() {
+            if self.x() <= self.z() { 0 } else { 2 }
         } else {
-            if self.y <= self.z { 1 } else { 2 } 
+            if self.y() <= self.z() { 1 } else { 2 } 
         }
     }
 }
 
 
-impl <N: Signed> Vec3<N> {
+impl <N: Num + Signed> Vec3<N> {
     #[inline]
     pub fn abs(&self) -> Self {
-        Vec3 { x: self.x.abs(), y: self.y.abs(), z: self.z.abs() }
+        Vec3([self.x().abs(), self.y().abs(), self.z().abs()])
     }
 }
 
 impl<N: Num + Real> Vec3<N> {
     #[inline]
     pub fn distance(&self, rhs: &Self) -> N {
-        let dx = rhs.x - self.x;
-        let dy = rhs.y - self.y;
-        let dz = rhs.z - self.z;
+        let dx = rhs.x() - self.x();
+        let dy = rhs.y() - self.y();
+        let dz = rhs.z() - self.z();
         (dx * dx + dy * dy + dz * dz).sqrt()
     }
 
@@ -377,11 +355,11 @@ impl<N: Num + Real> Vec3<N> {
 
     #[inline]
     pub fn cross_v(&self, v: &Vec3<N>) -> Self {
-        Vec3 {
-            x: self.y() * v.z() - self.z() * v.y(), 
-            y: self.z() * v.x() - self.x() * v.z(),
-            z: self.x() * v.y() - self.y() * v.x(),
-        }
+        Vec3([
+            self.y() * v.z() - self.z() * v.y(), 
+            self.z() * v.x() - self.x() * v.z(),
+            self.x() * v.y() - self.y() * v.x(),
+        ])
     }
 
     #[inline]
@@ -391,20 +369,20 @@ impl<N: Num + Real> Vec3<N> {
 
     #[inline]
     pub fn ceil(&self) -> Self {
-        Vec3 {
-            x: self.x.ceil(),
-            y: self.y.ceil(),
-            z: self.z.ceil(),
-        }
+        Vec3([
+            self.x().ceil(),
+            self.y().ceil(),
+            self.z().ceil(),
+        ])
     }
 
     #[inline]
     pub fn floor(&self) -> Self {
-        Vec3 {
-            x: self.x.floor(),
-            y: self.y.floor(),
-            z: self.z.floor(),
-        }
+        Vec3([
+            self.x().floor(),
+            self.y().floor(),
+            self.z().floor(),
+        ])
     }
 }
 
@@ -413,7 +391,7 @@ impl<N: Num + Neg<Output = N>> Neg for Vec3<N> {
 
     #[inline]
     fn neg(self) -> Self::Output {
-        Vec3 { x: -self.x, y: -self.y, z: -self.z }
+        Vec3([-self.x(), -self.y(), -self.z()])
     }
 }
 
@@ -422,7 +400,7 @@ impl<N: Num + Neg<Output = N>> Neg for &Vec3<N> {
 
     #[inline]
     fn neg(self) -> Self::Output {
-        Vec3 { x: -self.x(), y: -self.y(), z: -self.z() }
+        Vec3([-self.x(), -self.y(), -self.z()])
     }
 }
 
@@ -431,24 +409,14 @@ impl<N> Index<usize> for Vec3<N> {
 
     #[inline]
     fn index(&self, i: usize) -> &Self::Output {
-        match i {
-        | 0 => &self.x,
-        | 1 => &self.y,
-        | 2 => &self.z,
-        | n => panic!("[INTERNAL ERROR]: invalid index {}", n),
-        }
+        &self.0[i]
     }
 }
 
 impl<N> IndexMut<usize> for Vec3<N> {
     #[inline]
     fn index_mut(&mut self, i: usize) -> &mut Self::Output {
-        match i {
-        | 0 => &mut self.x,
-        | 1 => &mut self.y,
-        | 2 => &mut self.z,
-        | n => panic!("[INTERNAL ERROR]: invalid index {}", n),
-        }
+        &mut self.0[i]
     }
 }
 

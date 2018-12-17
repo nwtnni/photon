@@ -93,7 +93,7 @@ impl <N: Num + Real> Point2<N> {
     }
 }
 
-impl <N: Signed> Point2<N> {
+impl <N: Num + Signed> Point2<N> {
     #[inline]
     pub fn abs(&self) -> Self {
         Point2(self.0.abs())
@@ -229,7 +229,7 @@ impl <N: Num + Real> Point3<N> {
     }
 }
 
-impl <N: Signed> Point3<N> {
+impl <N: Num + Signed> Point3<N> {
     #[inline]
     pub fn abs(&self) -> Self {
         Point3(self.0.abs())
