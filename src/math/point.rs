@@ -17,10 +17,8 @@ use crate::math::{Num, Vec2, Vec3};
 
 pub type Point2i = Point2<i32>;
 pub type Point2f = Point2<N32>;
-pub type Point2d = Point2<N64>;
 pub type Point3i = Point3<i32>;
 pub type Point3f = Point3<N32>;
-pub type Point3d = Point3<N64>;
 
 #[derive(Serialize, Deserialize)]
 #[derive(Copy, Clone, Default, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]

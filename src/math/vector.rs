@@ -21,10 +21,8 @@ use crate::math::{Num, Normal3};
 
 pub type Vec2i = Vec2<u32>;
 pub type Vec2f = Vec2<N32>;
-pub type Vec2d = Vec2<N64>;
 pub type Vec3i = Vec3<u32>;
 pub type Vec3f = Vec3<N32>;
-pub type Vec3d = Vec3<N64>;
 
 #[derive(Serialize, Deserialize)]
 #[derive(Copy, Clone, Default, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]

@@ -138,20 +138,21 @@ make_impl_trait!(
 
 macro_rules! impl_mp {
     ($output:ty, $lhs:ty, $rhs:ty) => {
-        impl<N: Num> Mul<$rhs> for $lhs {
+        impl Mul<$rhs> for $lhs {
             type Output = $output;
             fn mul(self, rhs: $rhs) -> Self::Output {
-                let x = rhs.x();
-                let y = rhs.y();
-                let z = rhs.z();
-                let xp = self[0] * x + self[1] * y + self[2] * z + self[3];
-                let yp = self[4] * x + self[5] * y + self[6] * z + self[7];
-                let zp = self[8] * x + self[9] * y + self[10] * z + self[11];
-                let wp = self[12] * x + self[13] * y + self[14] * z + self[15];
-                return if wp == N::one() {
-                    Point3::new(xp, yp, zp)
-                } else {
-                    Point3::new(xp, yp, zp) / wp
+                unsafe {
+                    let mut output: [N32; 4] = std::mem::uninitialized(); 
+                    let rhs = [rhs[0], rhs[1], rhs[2], n32(1.0)];
+                    let a = self.0.as_ptr() as *const f32;
+                    let b = rhs.as_ptr() as *const f32;
+                    let c = output.as_mut_ptr() as *mut f32;
+                    matrixmultiply::sgemm(4, 4, 1, 1.0f32, a, 4, 1, b, 1, 4, 0.0, c, 1, 4);
+                    return if output[3] == 1.0 {
+                        Point3f::new(output[0], output[1], output[2])
+                    } else {
+                        Point3f::new(output[0], output[1], output[2]) / output[3]
+                    }
                 }
             }
         }
@@ -160,16 +161,36 @@ macro_rules! impl_mp {
 
 macro_rules! impl_mv {
     ($output:ty, $lhs:ty, $rhs:ty) => {
-        impl<N: Num> Mul<$rhs> for $lhs {
+        impl Mul<$rhs> for $lhs {
             type Output = $output;
             fn mul(self, rhs: $rhs) -> Self::Output {
-                let x = rhs.x();
-                let y = rhs.y();
-                let z = rhs.z();
-                let xp = self[0] * x + self[1] * y + self[2] * z;
-                let yp = self[4] * x + self[5] * y + self[6] * z;
-                let zp = self[8] * x + self[9] * y + self[10] * z;
-                Vec3::new(xp, yp, zp)
+                unsafe {
+                    let mut output: [N32; 4] = std::mem::uninitialized(); 
+                    let rhs = [rhs[0], rhs[1], rhs[2], n32(0.0)];
+                    let a = self.0.as_ptr() as *const f32;
+                    let b = rhs.as_ptr() as *const f32;
+                    let c = output.as_mut_ptr() as *mut f32;
+                    matrixmultiply::sgemm(4, 4, 1, 1.0f32, a, 4, 1, b, 1, 4, 0.0, c, 1, 4);
+                    Vec3f::new(output[0], output[1], output[2])
+                }
+            }
+        }
+    }
+}
+
+macro_rules! impl_mm {
+    ($output:ty, $lhs:ty, $rhs:ty) => {
+        impl Mul<$rhs> for $lhs {
+            type Output = $output;
+            fn mul(self, rhs: $rhs) -> Self::Output {
+                unsafe {
+                    let mut output: [N32; 16] = std::mem::uninitialized(); 
+                    let a = self.0.as_ptr() as *const f32;
+                    let b = rhs.0.as_ptr() as *const f32;
+                    let c = output.as_mut_ptr() as *mut f32;
+                    matrixmultiply::sgemm(4, 4, 4, 1.0f32, a, 4, 1, b, 4, 1, 0.0, c, 4, 1);
+                    Mat4::new(output)
+                }
             }
         }
     }

@@ -3,7 +3,7 @@ use std::ops::{Mul, Index, IndexMut};
 use noisy_float::prelude::*;
 use num_traits::real::Real;
 
-use crate::math::{Num, Point3, Vec3};
+use crate::math::{Num, Point3, Point3f, Vec3, Vec3f};
 
 pub type Mat4f = Mat4<N32>;
 
@@ -24,6 +24,11 @@ impl<N: Num> Default for Mat4<N> {
 }
 
 impl<N: Num> Mat4<N> {
+    #[inline]
+    pub fn new(v: [N; 16]) -> Self {
+        Mat4(v)
+    }
+
     #[inline]
     pub fn get(&self, i: usize, j: usize) -> N {
         self.0[i * 4 + j]            
@@ -157,5 +162,6 @@ impl<N> IndexMut<usize> for Mat4<N> {
     }
 }
 
-impl_all!(impl_mp, Point3<N>, Mat4<N>, Point3<N>);
-impl_all!(impl_mv, Vec3<N>, Mat4<N>, Vec3<N>);
+impl_all!(impl_mp, Point3f, Mat4f, Point3f);
+impl_all!(impl_mv, Vec3f, Mat4f, Vec3f);
+impl_all!(impl_mm, Mat4f, Mat4f, Mat4f);
