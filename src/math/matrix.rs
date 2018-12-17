@@ -1,3 +1,5 @@
+use std::ops::{Mul, Index, IndexMut};
+
 use noisy_float::prelude::*;
 use num_traits::real::Real;
 
@@ -141,3 +143,19 @@ impl<N: Num + Real> Mat4<N> {
         ])
     }
 }
+
+impl<N> Index<usize> for Mat4<N> {
+    type Output = N;
+    fn index(&self, i: usize) -> &Self::Output {
+        &self.0[i]
+    }
+}
+
+impl<N> IndexMut<usize> for Mat4<N> {
+    fn index_mut(&mut self, i: usize) -> &mut Self::Output {
+        &mut self.0[i]
+    }
+}
+
+impl_all!(impl_mp, Point3<N>, Mat4<N>, Point3<N>);
+impl_all!(impl_mv, Vec3<N>, Mat4<N>, Vec3<N>);
