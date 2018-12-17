@@ -13,7 +13,7 @@ use num_traits::{
 use noisy_float::prelude::*;
 use serde_derive::{Serialize, Deserialize};
 
-use crate::geometry::{Num, Vector2, Vector3};
+use crate::math::{Num, Vector2, Vector3};
 
 pub type Point2i = Vector2<i32>;
 pub type Point2f = Vector2<N32>;

@@ -11,7 +11,7 @@ use serde_derive::{Serialize, Deserialize};
 use noisy_float::prelude::*;
 use num_traits::real::Real;
 
-use crate::geometry::{Num, Vector3};
+use crate::math::{Num, Vector3};
 
 pub type Normal3f = Normal3<N32>;
 

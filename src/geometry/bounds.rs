@@ -3,7 +3,7 @@ use std::ops::Index;
 use noisy_float::prelude::*;
 use num_traits::real::Real;
 
-use crate::geometry::{Num, Point2i,Point2, Point3, Vector2, Vector3};
+use crate::math::{Num, Point2i,Point2, Point3, Vector2, Vector3};
 
 pub type Bounds2i = Bounds2<i32>;
 pub type Bounds2f = Bounds2<N32>;

@@ -1,6 +1,6 @@
 use noisy_float::prelude::*;
 
-use crate::geometry::{Point3f, Vector3f};
+use crate::math::{Point3f, Vector3f};
 
 #[derive(Copy, Clone, Default, Debug)]
 pub struct Ray {
