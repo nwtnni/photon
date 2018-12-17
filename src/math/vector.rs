@@ -19,19 +19,21 @@ use num_traits::{
 
 use crate::math::{Num, Normal3};
 
-pub type Vector2i = Vector2<u32>;
-pub type Vector2f = Vector2<N32>;
-pub type Vector3i = Vector3<u32>;
-pub type Vector3f = Vector3<N32>;
+pub type Vec2i = Vec2<u32>;
+pub type Vec2f = Vec2<N32>;
+pub type Vec2d = Vec2<N64>;
+pub type Vec3i = Vec3<u32>;
+pub type Vec3f = Vec3<N32>;
+pub type Vec3d = Vec3<N64>;
 
 #[derive(Serialize, Deserialize)]
 #[derive(Copy, Clone, Default, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct Vector2<N> {
+pub struct Vec2<N> {
     x: N,
     y: N,
 }
 
-impl<N: Num> Vector2<N> {
+impl<N: Num> Vec2<N> {
 
     #[inline]
     pub fn unpack((x, y): (N, N)) -> Self {
@@ -57,12 +59,12 @@ impl<N: Num> Vector2<N> {
 
     #[inline]
     pub fn new(x: N, y: N) -> Self {
-        Vector2 { x, y }
+        Vec2 { x, y }
     }
 
     #[inline]
     pub fn fill(v: N) -> Self {
-        Vector2 { x: v, y: v }
+        Vec2 { x: v, y: v }
     }
 
     #[inline]
@@ -77,7 +79,7 @@ impl<N: Num> Vector2<N> {
 
     #[inline]
     pub fn permute(&self, x: usize, y: usize) -> Self {
-        Vector2 {
+        Vec2 {
             x: self[x],
             y: self[y],
         }
@@ -85,7 +87,7 @@ impl<N: Num> Vector2<N> {
 
     #[inline]
     pub fn max(&self, rhs: &Self) -> Self {
-        Vector2 {
+        Vec2 {
             x: cmp::max(self.x, rhs.x),
             y: cmp::max(self.y, rhs.y),
         }
@@ -93,7 +95,7 @@ impl<N: Num> Vector2<N> {
 
     #[inline]
     pub fn min(&self, rhs: &Self) -> Self {
-        Vector2 {
+        Vec2 {
             x: cmp::min(self.x, rhs.x),
             y: cmp::min(self.y, rhs.y),
         }
@@ -120,14 +122,14 @@ impl<N: Num> Vector2<N> {
     }
 }
 
-impl <N: Signed> Vector2<N> {
+impl <N: Signed> Vec2<N> {
     #[inline]
     pub fn abs(&self) -> Self {
-        Vector2 { x: self.x.abs(), y: self.y.abs() }
+        Vec2 { x: self.x.abs(), y: self.y.abs() }
     }
 }
 
-impl<N: Num + Real> Vector2<N> {
+impl<N: Num + Real> Vec2<N> {
     #[inline]
     pub fn distance(&self, rhs: &Self) -> N {
         let dx = rhs.x - self.x;
@@ -147,7 +149,7 @@ impl<N: Num + Real> Vector2<N> {
 
     #[inline]
     pub fn ceil(&self) -> Self {
-        Vector2 {
+        Vec2 {
             x: self.x.ceil(),
             y: self.y.ceil(),
         }
@@ -155,32 +157,32 @@ impl<N: Num + Real> Vector2<N> {
 
     #[inline]
     pub fn floor(&self) -> Self {
-        Vector2 {
+        Vec2 {
             x: self.x.floor(),
             y: self.y.floor(),
         }
     }
 }
 
-impl<N: Num + Neg<Output = N>> Neg for Vector2<N> {
-    type Output = Vector2<N>;
+impl<N: Num + Neg<Output = N>> Neg for Vec2<N> {
+    type Output = Vec2<N>;
 
     #[inline]
     fn neg(self) -> Self::Output {
-        Vector2 { x: -self.x(), y: -self.y() }
+        Vec2 { x: -self.x(), y: -self.y() }
     }
 }
 
-impl<N: Num + Neg<Output = N>> Neg for &Vector2<N> {
-    type Output = Vector2<N>;
+impl<N: Num + Neg<Output = N>> Neg for &Vec2<N> {
+    type Output = Vec2<N>;
 
     #[inline]
     fn neg(self) -> Self::Output {
-        Vector2 { x: -self.x(), y: -self.y() }
+        Vec2 { x: -self.x(), y: -self.y() }
     }
 }
 
-impl<N> Index<usize> for Vector2<N> {
+impl<N> Index<usize> for Vec2<N> {
     type Output = N;
 
     #[inline]
@@ -193,7 +195,7 @@ impl<N> Index<usize> for Vector2<N> {
     }
 }
 
-impl<N> IndexMut<usize> for Vector2<N> {
+impl<N> IndexMut<usize> for Vec2<N> {
     #[inline]
     fn index_mut(&mut self, i: usize) -> &mut Self::Output {
         match i {
@@ -204,27 +206,27 @@ impl<N> IndexMut<usize> for Vector2<N> {
     }
 }
 
-impl_all!(impl_add_v2v, Vector2<N>, Vector2<N>);
-impl_mut!(impl_add_assign_v2v, Vector2<N>, Vector2<N>);
+impl_all!(impl_add_v2v, Vec2<N>, Vec2<N>);
+impl_mut!(impl_add_assign_v2v, Vec2<N>, Vec2<N>);
 
-impl_all!(impl_sub_v2v, Vector2<N>, Vector2<N>);
-impl_mut!(impl_sub_assign_v2v, Vector2<N>, Vector2<N>);
+impl_all!(impl_sub_v2v, Vec2<N>, Vec2<N>);
+impl_mut!(impl_sub_assign_v2v, Vec2<N>, Vec2<N>);
 
-impl_all!(impl_mul_v2s, Vector2<N>, N);
-impl_mut!(impl_mul_assign_v2s, Vector2<N>, N);
+impl_all!(impl_mul_v2s, Vec2<N>, N);
+impl_mut!(impl_mul_assign_v2s, Vec2<N>, N);
 
-impl_all!(impl_div_v2s, Vector2<N>, N);
-impl_mut!(impl_div_assign_v2s, Vector2<N>, N);
+impl_all!(impl_div_v2s, Vec2<N>, N);
+impl_mut!(impl_div_assign_v2s, Vec2<N>, N);
 
 #[derive(Serialize, Deserialize)]
 #[derive(Copy, Clone, Default, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct Vector3<N> {
+pub struct Vec3<N> {
     x: N,
     y: N,
     z: N,
 }
 
-impl<N: Num> Vector3<N> {
+impl<N: Num> Vec3<N> {
 
     #[inline]
     pub fn unpack((x, y, z): (N, N, N)) -> Self {
@@ -254,12 +256,12 @@ impl<N: Num> Vector3<N> {
 
     #[inline]
     pub fn new(x: N, y: N, z: N) -> Self {
-        Vector3 { x, y, z }
+        Vec3 { x, y, z }
     }
 
     #[inline]
     pub fn fill(v: N) -> Self {
-        Vector3 { x: v, y: v, z: v }
+        Vec3 { x: v, y: v, z: v }
     }
 
     #[inline]
@@ -271,7 +273,7 @@ impl<N: Num> Vector3<N> {
 
     #[inline]
     pub fn dot_n(&self, n: &Normal3<N>) -> N {
-        self.dot_v(&Vector3::from(*n))
+        self.dot_v(&Vec3::from(*n))
     }
 
     #[inline]
@@ -281,7 +283,7 @@ impl<N: Num> Vector3<N> {
 
     #[inline]
     pub fn permute(&self, x: usize, y: usize, z: usize) -> Self {
-        Vector3 {
+        Vec3 {
             x: self[x],
             y: self[y],
             z: self[z],
@@ -290,7 +292,7 @@ impl<N: Num> Vector3<N> {
 
     #[inline]
     pub fn max(&self, rhs: &Self) -> Self {
-        Vector3 {
+        Vec3 {
             x: cmp::max(self.x, rhs.x),
             y: cmp::max(self.y, rhs.y),
             z: cmp::max(self.z, rhs.z),
@@ -299,7 +301,7 @@ impl<N: Num> Vector3<N> {
 
     #[inline]
     pub fn min(&self, rhs: &Self) -> Self {
-        Vector3 {
+        Vec3 {
             x: cmp::min(self.x, rhs.x),
             y: cmp::min(self.y, rhs.y),
             z: cmp::min(self.z, rhs.z),
@@ -336,14 +338,14 @@ impl<N: Num> Vector3<N> {
 }
 
 
-impl <N: Signed> Vector3<N> {
+impl <N: Signed> Vec3<N> {
     #[inline]
     pub fn abs(&self) -> Self {
-        Vector3 { x: self.x.abs(), y: self.y.abs(), z: self.z.abs() }
+        Vec3 { x: self.x.abs(), y: self.y.abs(), z: self.z.abs() }
     }
 }
 
-impl<N: Num + Real> Vector3<N> {
+impl<N: Num + Real> Vec3<N> {
     #[inline]
     pub fn distance(&self, rhs: &Self) -> N {
         let dx = rhs.x - self.x;
@@ -363,7 +365,7 @@ impl<N: Num + Real> Vector3<N> {
     }
 
     #[inline]
-    pub fn face_v(&self, v: &Vector3<N>) -> Self {
+    pub fn face_v(&self, v: &Vec3<N>) -> Self {
         if self.dot_v(v) < N::zero() { -self } else { *self }
     }
 
@@ -373,8 +375,8 @@ impl<N: Num + Real> Vector3<N> {
     }
 
     #[inline]
-    pub fn cross_v(&self, v: &Vector3<N>) -> Self {
-        Vector3 {
+    pub fn cross_v(&self, v: &Vec3<N>) -> Self {
+        Vec3 {
             x: self.y() * v.z() - self.z() * v.y(), 
             y: self.z() * v.x() - self.x() * v.z(),
             z: self.x() * v.y() - self.y() * v.x(),
@@ -383,12 +385,12 @@ impl<N: Num + Real> Vector3<N> {
 
     #[inline]
     pub fn cross_n(&self, n: &Normal3<N>) -> Self {
-        self.cross_v(&Vector3::from(*n))
+        self.cross_v(&Vec3::from(*n))
     }
 
     #[inline]
     pub fn ceil(&self) -> Self {
-        Vector3 {
+        Vec3 {
             x: self.x.ceil(),
             y: self.y.ceil(),
             z: self.z.ceil(),
@@ -397,7 +399,7 @@ impl<N: Num + Real> Vector3<N> {
 
     #[inline]
     pub fn floor(&self) -> Self {
-        Vector3 {
+        Vec3 {
             x: self.x.floor(),
             y: self.y.floor(),
             z: self.z.floor(),
@@ -405,25 +407,25 @@ impl<N: Num + Real> Vector3<N> {
     }
 }
 
-impl<N: Num + Neg<Output = N>> Neg for Vector3<N> {
-    type Output = Vector3<N>;
+impl<N: Num + Neg<Output = N>> Neg for Vec3<N> {
+    type Output = Vec3<N>;
 
     #[inline]
     fn neg(self) -> Self::Output {
-        Vector3 { x: -self.x, y: -self.y, z: -self.z }
+        Vec3 { x: -self.x, y: -self.y, z: -self.z }
     }
 }
 
-impl<N: Num + Neg<Output = N>> Neg for &Vector3<N> {
-    type Output = Vector3<N>;
+impl<N: Num + Neg<Output = N>> Neg for &Vec3<N> {
+    type Output = Vec3<N>;
 
     #[inline]
     fn neg(self) -> Self::Output {
-        Vector3 { x: -self.x(), y: -self.y(), z: -self.z() }
+        Vec3 { x: -self.x(), y: -self.y(), z: -self.z() }
     }
 }
 
-impl<N> Index<usize> for Vector3<N> {
+impl<N> Index<usize> for Vec3<N> {
     type Output = N;
 
     #[inline]
@@ -437,7 +439,7 @@ impl<N> Index<usize> for Vector3<N> {
     }
 }
 
-impl<N> IndexMut<usize> for Vector3<N> {
+impl<N> IndexMut<usize> for Vec3<N> {
     #[inline]
     fn index_mut(&mut self, i: usize) -> &mut Self::Output {
         match i {
@@ -449,14 +451,14 @@ impl<N> IndexMut<usize> for Vector3<N> {
     }
 }
 
-impl_all!(impl_add_v3v, Vector3<N>, Vector3<N>);
-impl_mut!(impl_add_assign_v3v, Vector3<N>, Vector3<N>);
+impl_all!(impl_add_v3v, Vec3<N>, Vec3<N>);
+impl_mut!(impl_add_assign_v3v, Vec3<N>, Vec3<N>);
 
-impl_all!(impl_sub_v3v, Vector3<N>, Vector3<N>);
-impl_mut!(impl_sub_assign_v3v, Vector3<N>, Vector3<N>);
+impl_all!(impl_sub_v3v, Vec3<N>, Vec3<N>);
+impl_mut!(impl_sub_assign_v3v, Vec3<N>, Vec3<N>);
 
-impl_all!(impl_mul_v3s, Vector3<N>, N);
-impl_mut!(impl_mul_assign_v3s, Vector3<N>, N);
+impl_all!(impl_mul_v3s, Vec3<N>, N);
+impl_mut!(impl_mul_assign_v3s, Vec3<N>, N);
 
-impl_all!(impl_div_v3s, Vector3<N>, N);
-impl_mut!(impl_div_assign_v3s, Vector3<N>, N);
+impl_all!(impl_div_v3s, Vec3<N>, N);
+impl_mut!(impl_div_assign_v3s, Vec3<N>, N);

@@ -1,11 +1,11 @@
 use noisy_float::prelude::*;
 
-use crate::math::{Point3f, Vector3f};
+use crate::math::{Point3f, Vec3f};
 
 #[derive(Copy, Clone, Default, Debug)]
 pub struct Ray {
     o: Point3f,
-    d: Vector3f,
+    d: Vec3f,
 }
 
 impl Ray {
@@ -13,10 +13,10 @@ impl Ray {
     pub fn o(&self) -> Point3f { self.o }
 
     #[inline]
-    pub fn d(&self) -> Vector3f { self.d }
+    pub fn d(&self) -> Vec3f { self.d }
 
     #[inline]
-    pub fn new(o: Point3f, d: Vector3f) -> Self {
+    pub fn new(o: Point3f, d: Vec3f) -> Self {
         Ray { o, d }
     }
 }

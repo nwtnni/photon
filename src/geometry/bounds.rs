@@ -3,7 +3,7 @@ use std::ops::Index;
 use noisy_float::prelude::*;
 use num_traits::real::Real;
 
-use crate::math::{Num, Point2i,Point2, Point3, Vector2, Vector3};
+use crate::math::{Num, Point2i,Point2, Point3, Vec2, Vec3};
 
 pub type Bounds2i = Bounds2<i32>;
 pub type Bounds2f = Bounds2<N32>;
@@ -72,14 +72,14 @@ impl<N: Num> Bounds2<N> {
     }
 
     pub fn expand(&self, d: N) -> Self {
-        let delta = Vector2::fill(d);
+        let delta = Vec2::fill(d);
         Bounds2 {
             min: self.min - delta,
             max: self.max + delta,
         }
     }
 
-    pub fn diagonal(&self) -> Vector2<N> {
+    pub fn diagonal(&self) -> Vec2<N> {
         self.max - self.min
     }
 
@@ -98,7 +98,7 @@ impl<N: Num + Real> Bounds2<N> {
         self.min.lerp(&self.max, t)
     }
 
-    pub fn offset(&self, p: &Point2<N>) -> Vector2<N> {
+    pub fn offset(&self, p: &Point2<N>) -> Vec2<N> {
         let d = self.diagonal();
         let mut o = p - self.min;
         o[0] /= d.x();
@@ -221,14 +221,14 @@ impl<N: Num> Bounds3<N> {
     }
 
     pub fn expand(&self, d: N) -> Self {
-        let delta = Vector3::fill(d);
+        let delta = Vec3::fill(d);
         Bounds3 {
             min: self.min - delta,
             max: self.max + delta,
         }
     }
 
-    pub fn diagonal(&self) -> Vector3<N> {
+    pub fn diagonal(&self) -> Vec3<N> {
         self.max - self.min
     }
 
@@ -253,7 +253,7 @@ impl<N: Num + Real> Bounds3<N> {
         self.min.lerp(&self.max, t)
     }
 
-    pub fn offset(&self, p: &Point3<N>) -> Vector3<N> {
+    pub fn offset(&self, p: &Point3<N>) -> Vec3<N> {
         let d = self.diagonal();
         let mut o = p - self.min;
         o[0] /= d.x();

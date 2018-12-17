@@ -13,16 +13,18 @@ use num_traits::{
 use noisy_float::prelude::*;
 use serde_derive::{Serialize, Deserialize};
 
-use crate::math::{Num, Vector2, Vector3};
+use crate::math::{Num, Vec2, Vec3};
 
-pub type Point2i = Vector2<i32>;
-pub type Point2f = Vector2<N32>;
-pub type Point3i = Vector3<i32>;
-pub type Point3f = Vector3<N32>;
+pub type Point2i = Point2<i32>;
+pub type Point2f = Point2<N32>;
+pub type Point2d = Point2<N64>;
+pub type Point3i = Point3<i32>;
+pub type Point3f = Point3<N32>;
+pub type Point3d = Point3<N64>;
 
 #[derive(Serialize, Deserialize)]
 #[derive(Copy, Clone, Default, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct Point2<N>(Vector2<N>);
+pub struct Point2<N>(Vec2<N>);
 
 impl<N: Num> Point2<N> {
 
@@ -38,12 +40,12 @@ impl<N: Num> Point2<N> {
 
     #[inline]
     pub fn new(x: N, y: N) -> Self {
-        Point2(Vector2::new(x, y))
+        Point2(Vec2::new(x, y))
     }
 
     #[inline]
     pub fn fill(v: N) -> Self {
-        Point2(Vector2::fill(v))
+        Point2(Vec2::fill(v))
     }
 
     #[inline]
@@ -110,7 +112,7 @@ impl <N: Signed> Point2<N> {
 impl<N: Num> From<Point3<N>> for Point2<N> {
     #[inline]
     fn from(p: Point3<N>) -> Point2<N> {
-        Point2(Vector2::new(p.x(), p.y()))
+        Point2(Vec2::new(p.x(), p.y()))
     }
 }
 
@@ -132,11 +134,11 @@ impl<N> IndexMut<usize> for Point2<N> {
 
 impl_all!(impl_add_v2v, Point2<N>, Point2<N>);
 impl_mut!(impl_add_assign_v2v, Point2<N>, Point2<N>);
-impl_all!(impl_add_v2v, Point2<N>, Vector2<N>);
-impl_mut!(impl_add_assign_v2v, Point2<N>, Vector2<N>);
-impl_all!(impl_sub_v2v, Vector2<N>, Point2<N>, Point2<N>);
-impl_all!(impl_sub_v2v, Point2<N>, Vector2<N>);
-impl_mut!(impl_sub_assign_v2v, Point2<N>, Vector2<N>);
+impl_all!(impl_add_v2v, Point2<N>, Vec2<N>);
+impl_mut!(impl_add_assign_v2v, Point2<N>, Vec2<N>);
+impl_all!(impl_sub_v2v, Vec2<N>, Point2<N>, Point2<N>);
+impl_all!(impl_sub_v2v, Point2<N>, Vec2<N>);
+impl_mut!(impl_sub_assign_v2v, Point2<N>, Vec2<N>);
 
 impl_all!(impl_mul_v2s, Point2<N>, N);
 impl_mut!(impl_mul_assign_v2s, Point2<N>, N);
@@ -145,7 +147,7 @@ impl_mut!(impl_div_assign_v2s, Point2<N>, N);
 
 #[derive(Serialize, Deserialize)]
 #[derive(Copy, Clone, Default, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct Point3<N>(Vector3<N>);
+pub struct Point3<N>(Vec3<N>);
 
 impl<N: Num> Point3<N> {
 
@@ -161,12 +163,12 @@ impl<N: Num> Point3<N> {
 
     #[inline]
     pub fn new(x: N, y: N, z: N) -> Self {
-        Point3(Vector3::new(x, y, z)) 
+        Point3(Vec3::new(x, y, z)) 
     }
 
     #[inline]
     pub fn fill(v: N) -> Self {
-        Point3(Vector3::fill(v)) 
+        Point3(Vec3::fill(v)) 
     }
 
     #[inline]
@@ -251,11 +253,11 @@ impl<N> IndexMut<usize> for Point3<N> {
 
 impl_all!(impl_add_v3v, Point3<N>, Point3<N>);
 impl_mut!(impl_add_assign_v3v, Point3<N>, Point3<N>);
-impl_all!(impl_add_v3v, Point3<N>, Vector3<N>);
-impl_mut!(impl_add_assign_v3v, Point3<N>, Vector3<N>);
-impl_all!(impl_sub_v3v, Vector3<N>, Point3<N>, Point3<N>);
-impl_all!(impl_sub_v3v, Point3<N>, Vector3<N>);
-impl_mut!(impl_sub_assign_v3v, Point3<N>, Vector3<N>);
+impl_all!(impl_add_v3v, Point3<N>, Vec3<N>);
+impl_mut!(impl_add_assign_v3v, Point3<N>, Vec3<N>);
+impl_all!(impl_sub_v3v, Vec3<N>, Point3<N>, Point3<N>);
+impl_all!(impl_sub_v3v, Point3<N>, Vec3<N>);
+impl_mut!(impl_sub_assign_v3v, Point3<N>, Vec3<N>);
 
 impl_all!(impl_mul_v3s, Point3<N>, N);
 impl_mut!(impl_mul_assign_v3s, Point3<N>, N);

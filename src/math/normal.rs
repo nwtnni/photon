@@ -11,13 +11,13 @@ use serde_derive::{Serialize, Deserialize};
 use noisy_float::prelude::*;
 use num_traits::real::Real;
 
-use crate::math::{Num, Vector3};
+use crate::math::{Num, Vec3};
 
 pub type Normal3f = Normal3<N32>;
 
 #[derive(Serialize, Deserialize)]
 #[derive(Copy, Clone, Default, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct Normal3<N>(Vector3<N>);
+pub struct Normal3<N>(Vec3<N>);
 
 impl<N: Num> Normal3<N> {
 
@@ -33,7 +33,7 @@ impl<N: Num> Normal3<N> {
 
     #[inline]
     pub fn new(x: N, y: N, z: N) -> Self {
-        Normal3(Vector3::new(x, y, z))
+        Normal3(Vec3::new(x, y, z))
     }
 
     #[inline]
@@ -63,7 +63,7 @@ impl<N: Num> Normal3<N> {
     }
 
     #[inline]
-    pub fn dot_v(&self, v: &Vector3<N>) -> N {
+    pub fn dot_v(&self, v: &Vec3<N>) -> N {
         self.dot_n(&Normal3::from(*v))
     }
 }
@@ -85,22 +85,22 @@ impl<N: Num + Real> Normal3<N> {
     }
 
     #[inline]
-    pub fn face_v(&self, v: &Vector3<N>) -> Self {
+    pub fn face_v(&self, v: &Vec3<N>) -> Self {
         if self.dot_v(v) < N::zero() { -self } else { *self }
     }
 
     #[inline]
-    pub fn cross_v(&self, v: &Vector3<N>) -> Vector3<N> {
+    pub fn cross_v(&self, v: &Vec3<N>) -> Vec3<N> {
         self.0.cross_v(v)
     }
 }
 
-impl<N> From<Vector3<N>> for Normal3<N> {
+impl<N> From<Vec3<N>> for Normal3<N> {
     #[inline]
-    fn from(v: Vector3<N>) -> Self { Normal3(v) }
+    fn from(v: Vec3<N>) -> Self { Normal3(v) }
 }
 
-impl<N> From<Normal3<N>> for Vector3<N> {
+impl<N> From<Normal3<N>> for Vec3<N> {
     #[inline]
     fn from(n: Normal3<N>) -> Self { n.0 }
 }
