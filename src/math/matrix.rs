@@ -22,6 +22,11 @@ impl<N: Num> Default for Mat4<N> {
 }
 
 impl<N: Num> Mat4<N> {
+    #[inline]
+    pub fn get(&self, i: usize, j: usize) -> N {
+        self.0[i * 4 + j]            
+    }
+
     pub fn identity() -> Self {
         Self::default()
     }
@@ -47,6 +52,15 @@ impl<N: Num> Mat4<N> {
             z, v.y(), z, z,
             z, z, v.z(), z,
             z, z, z, o,
+        ])
+    }
+
+    pub fn transpose(&self) -> Self {
+        Mat4([
+             self.0[0], self.0[4], self.0[8], self.0[12],
+             self.0[1], self.0[5], self.0[9], self.0[13],
+             self.0[2], self.0[6], self.0[10], self.0[14],
+             self.0[3], self.0[7], self.0[11], self.0[15],
         ])
     }
 }
@@ -81,6 +95,34 @@ impl<N: Num + Real> Mat4<N> {
             theta.cos(), -theta.sin(), z, z,
             theta.sin(), theta.cos(), z, z,
             z, z, o, z,
+            z, z, z, o,
+        ])
+    }
+
+    // See https://github.com/mmp/pbrt-v3/blob/af4b70601bb770caa720c569f1641c4ddff333b7/src/core/transform.cpp#L179-L201
+    pub fn rotate<V: Into<Vec3<N>>>(theta: N, axis: V) -> Self {
+        let o = N::one();
+        let z = N::zero();
+        let a = axis.into().normalize();
+        let sin = theta.sin();
+        let cos = theta.cos();
+        Mat4([
+             // Rotate around first basis vector
+            a.x() * a.x() + cos * (o - a.x() * a.x()),
+            (o - cos) * a.x() * a.y() - sin * a.z(),
+            (o - cos) * a.x() * a.z() + sin * a.y(),
+            z,
+
+            (o - cos) * a.x() * a.y() + sin * a.z(),
+            a.y() * a.y() + cos * (o - a.y() * a.y()),
+            (o - cos) * a.y() * a.z() - sin * a.x(),
+            z,
+
+            (o - cos) * a.x() * a.z() - sin * a.y(),
+            (o - cos) * a.y() * a.z() + sin * a.x(),
+            a.z() * a.z() + cos * (o - a.z() * a.z()),
+            z,
+
             z, z, z, o,
         ])
     }
