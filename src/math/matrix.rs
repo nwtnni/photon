@@ -1,7 +1,7 @@
 use std::ops::{Mul, Index, IndexMut};
 
 use noisy_float::prelude::*;
-use num_traits::real::Real;
+use num_traits::Float;
 
 use crate::math::{Num, Point3, Point3f, Vec3, Vec3f};
 
@@ -72,7 +72,7 @@ impl<N: Num> Mat4<N> {
     }
 }
 
-impl<N: Num + Real> Mat4<N> {
+impl<N: Num + Float> Mat4<N> {
     pub fn rotate_x(theta: N) -> Self {
         let o = N::one(); 
         let z = N::zero();
@@ -147,16 +147,58 @@ impl<N: Num + Real> Mat4<N> {
             z, z, z, o,
         ])
     }
+
+    fn det(&self) -> N {
+        let d11 = self[00] * (
+            self[05] * self[10] * self[15]
+          - self[05] * self[11] * self[14]
+          + self[06] * self[11] * self[13]
+          - self[06] * self[09] * self[15]
+          + self[07] * self[09] * self[14]
+          - self[07] * self[10] * self[13]
+        );
+
+        let d21 = self[4] * (
+            self[01] * self[10] * self[15]
+          - self[01] * self[11] * self[14]
+          + self[02] * self[11] * self[13]
+          - self[02] * self[09] * self[15]
+          + self[03] * self[09] * self[14]
+          - self[03] * self[10] * self[13]
+        );
+
+        let d31 = self[8] * (
+            self[01] * self[06] * self[15]
+          - self[01] * self[07] * self[14]
+          + self[02] * self[07] * self[13]
+          - self[02] * self[05] * self[15]
+          + self[03] * self[05] * self[14]
+          - self[03] * self[06] * self[13]
+        );
+
+        let d41 = self[12] * (
+            self[01] * self[06] * self[11]
+          - self[01] * self[07] * self[10]
+          + self[02] * self[07] * self[09]
+          - self[02] * self[05] * self[11]
+          + self[03] * self[05] * self[10]
+          - self[03] * self[06] * self[09]
+        );
+
+        d11 - d21 + d31 - d41
+    }
 }
 
 impl<N> Index<usize> for Mat4<N> {
     type Output = N;
+    #[inline]
     fn index(&self, i: usize) -> &Self::Output {
         &self.0[i]
     }
 }
 
 impl<N> IndexMut<usize> for Mat4<N> {
+    #[inline]
     fn index_mut(&mut self, i: usize) -> &mut Self::Output {
         &mut self.0[i]
     }
@@ -165,3 +207,53 @@ impl<N> IndexMut<usize> for Mat4<N> {
 impl_all!(impl_mp, Point3f, Mat4f, Point3f);
 impl_all!(impl_mv, Vec3f, Mat4f, Vec3f);
 impl_all!(impl_mm, Mat4f, Mat4f, Mat4f);
+
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+
+    const EPSILON: f32 = 1e-5;
+
+    #[test]
+    fn test_det_zero() {
+        let m = Mat4f::new([
+            n32(01.0), n32(02.0), n32(03.0), n32(04.0),
+            n32(05.0), n32(06.0), n32(07.0), n32(08.0),
+            n32(09.0), n32(10.0), n32(11.0), n32(12.0),
+            n32(13.0), n32(14.0), n32(15.0), n32(16.0),
+        ]);
+        assert!((m.det() - n32(0.0)).abs() < n32(EPSILON));
+    }
+
+    #[test]
+    fn test_det_ident() {
+        let m = Mat4f::default();
+        assert!((m.det() - n32(1.0)).abs() < n32(EPSILON));
+    }
+
+    #[test]
+    fn test_det_scale() {
+        let m = Mat4f::scale(Vec3f::broadcast(n32(5.0)));
+        assert!((m.det() - n32(125.0)).abs() < n32(EPSILON));
+    }
+
+    #[test]
+    fn test_det_translate() {
+        let m = Mat4f::translate(Vec3f::broadcast(n32(5.0)));
+        assert!((m.det() - n32(1.0)).abs() < n32(EPSILON));
+    }
+
+    #[test]
+    fn test_det_rotate_x() {
+        let m = Mat4f::rotate_x(n32(1.0));
+        assert!((m.det() - n32(1.0)).abs() < n32(EPSILON));
+    }
+
+    #[test]
+    fn test_det_rotate() {
+        let axis = Vec3f::new(n32(1.0), n32(3.0), n32(-5.0)).normalize();
+        let m = Mat4f::rotate(n32(1.0), axis);
+        assert!((m.det() - n32(1.0)).abs() < n32(EPSILON));
+    }
+}

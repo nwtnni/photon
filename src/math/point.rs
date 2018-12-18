@@ -7,7 +7,7 @@ use std::ops::{
 };
 
 use num_traits::{
-    real::Real,
+    Float,
     sign::Signed,
 };
 use noisy_float::prelude::*;
@@ -69,7 +69,7 @@ impl<N: Num> Point2<N> {
     }
 }
 
-impl <N: Num + Real> Point2<N> {
+impl <N: Num + Float> Point2<N> {
     #[inline]
     pub fn dist(&self, p: &Self) -> N {
         (p.0 - self.0).len()
@@ -205,7 +205,7 @@ impl<N: Num> Point3<N> {
     }
 }
 
-impl <N: Num + Real> Point3<N> {
+impl <N: Num + Float> Point3<N> {
     #[inline]
     pub fn dist(&self, p: &Self) -> N {
         (p.0 - self.0).len()

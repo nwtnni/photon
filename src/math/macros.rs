@@ -93,7 +93,7 @@ make_impl_trait!(
     impl_div_assign_v2s,
     DivAssign,
     div_assign,
-    (v, s) => (v.x() * s.clone(), v.y() * s.clone())
+    (v, s) => (v.x() / s.clone(), v.y() / s.clone())
 );
 
 make_impl_trait!(
@@ -133,7 +133,7 @@ make_impl_trait!(
     impl_div_assign_v3s,
     DivAssign,
     div_assign,
-    (v, s) => (v.x() * s.clone(), v.y() * s.clone(), v.z() * s.clone())
+    (v, s) => (v.x() / s.clone(), v.y() / s.clone(), v.z() / s.clone())
 );
 
 macro_rules! impl_mp {

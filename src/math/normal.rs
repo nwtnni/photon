@@ -9,7 +9,7 @@ use std::ops::{
 
 use serde_derive::{Serialize, Deserialize};
 use noisy_float::prelude::*;
-use num_traits::real::Real;
+use num_traits::Float;
 
 use crate::math::{Num, Vec3};
 
@@ -60,7 +60,7 @@ impl<N: Num> Normal3<N> {
     }
 }
 
-impl<N: Num + Real> Normal3<N> {
+impl<N: Num + Float> Normal3<N> {
     #[inline]
     pub fn normalize(&self) -> Self {
         self / self.len()

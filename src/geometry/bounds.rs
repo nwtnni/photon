@@ -1,7 +1,7 @@
 use std::ops::Index;
 
 use noisy_float::prelude::*;
-use num_traits::real::Real;
+use num_traits::Float;
 
 use crate::math::{Num, Point2i,Point2, Point3, Vec2, Vec3};
 
@@ -93,7 +93,7 @@ impl<N: Num> Bounds2<N> {
     }
 }
 
-impl<N: Num + Real> Bounds2<N> {
+impl<N: Num + Float> Bounds2<N> {
     pub fn lerp(&self, t: N) -> Point2<N> {
         self.min.lerp(&self.max, t)
     }
@@ -248,7 +248,7 @@ impl<N: Num> Bounds3<N> {
     }
 }
 
-impl<N: Num + Real> Bounds3<N> {
+impl<N: Num + Float> Bounds3<N> {
     pub fn lerp(&self, t: N) -> Point3<N> {
         self.min.lerp(&self.max, t)
     }

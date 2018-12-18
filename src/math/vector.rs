@@ -13,7 +13,7 @@ use std::ops::{
 use serde_derive::{Serialize, Deserialize};
 use noisy_float::prelude::*;
 use num_traits::{
-    real::Real,        
+    Float,
     sign::Signed,
 };
 
@@ -111,7 +111,7 @@ impl <N: Num + Signed> Vec2<N> {
     }
 }
 
-impl<N: Num + Real> Vec2<N> {
+impl<N: Num + Float> Vec2<N> {
     #[inline]
     pub fn distance(&self, rhs: &Self) -> N {
         let dx = rhs.x() - self.x();
@@ -322,7 +322,7 @@ impl <N: Num + Signed> Vec3<N> {
     }
 }
 
-impl<N: Num + Real> Vec3<N> {
+impl<N: Num + Float> Vec3<N> {
     #[inline]
     pub fn distance(&self, rhs: &Self) -> N {
         let dx = rhs.x() - self.x();

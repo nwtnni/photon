@@ -7,6 +7,7 @@ mod transform;
 mod matrix;
 mod vector;
 
+pub use self::matrix::*;
 pub use self::normal::*;
 pub use self::point::*;
 pub use self::vector::*;
