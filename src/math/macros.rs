@@ -284,7 +284,7 @@ macro_rules! impl_mul_tv {
         impl Mul<$rhs> for $lhs {
             type Output = $output;
             #[inline]
-            fn mul(self, rhs: $rhs) -> Self::Output { self.m * rhs }
+            fn mul(self, rhs: $rhs) -> Self::Output { self.mat * rhs }
         }
     }
 }
@@ -295,7 +295,7 @@ macro_rules! impl_mul_tn {
             type Output = $output;
             #[inline]
             fn mul(self, rhs: $rhs) -> Self::Output {
-                Normal3f::from(self.m_inv.transpose() * Vec3f::from(rhs))
+                Normal3f::from(self.inv.transpose() * Vec3f::from(rhs))
             }
         }
     }
@@ -308,8 +308,8 @@ macro_rules! impl_mul_tt {
             #[inline]
             fn mul(self, rhs: $rhs) -> Self::Output {
                 Transform {
-                    m: self.m * rhs.m,
-                    m_inv: rhs.m_inv * self.m_inv,
+                    mat: self.mat * rhs.mat,
+                    inv: rhs.inv * self.inv,
                 }
             }
         }
@@ -321,8 +321,8 @@ macro_rules! impl_mul_assign_tt {
         impl MulAssign<$rhs> for $lhs {
             #[inline]
             fn mul_assign(&mut self, rhs: $rhs) {
-                self.m = self.m * rhs.m;
-                self.m_inv = rhs.m_inv * self.m_inv;
+                self.mat = self.mat * rhs.mat;
+                self.inv = rhs.inv * self.inv;
             }
         }
     }
