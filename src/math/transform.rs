@@ -85,6 +85,10 @@ impl Transform {
             m_inv: look.inverse(),
         }
     }
+
+    pub fn swaps_handedness(&self) -> bool {
+        self.m.swaps_handedness()
+    }
 }
 
 impl_all!(impl_mul_tv, Point3f, Transform, Point3f);

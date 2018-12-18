@@ -154,6 +154,25 @@ impl<N: Num + Float> Mat4<N> {
         ])
     }
 
+    pub fn swaps_handedness(&self) -> bool {
+        let d00 = self[0] * (
+            self[05] * self[10]
+          - self[06] * self[09]
+        );
+
+        let d01 = self[1] * (
+            self[04] * self[10]
+          - self[06] * self[08]
+        );
+
+        let d02 = self[2] * (
+            self[04] * self[09]
+          - self[05] * self[08]
+        );
+
+        d00 - d01 + d02 < N::zero()
+    }
+
     pub fn det(&self) -> N {
         let d11 = self[00] * (
             self[05] * self[10] * self[15]
