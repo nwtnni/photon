@@ -366,9 +366,9 @@ impl<N> IndexMut<usize> for Mat4<N> {
     }
 }
 
-impl_all!(impl_mp, Point3f, Mat4f, Point3f);
-impl_all!(impl_mv, Vec3f, Mat4f, Vec3f);
-impl_all!(impl_mm, Mat4f, Mat4f, Mat4f);
+impl_all!(impl_mul_mp, Point3f, Mat4f, Point3f);
+impl_all!(impl_mul_mv, Vec3f, Mat4f, Vec3f);
+impl_all!(impl_mul_mm, Mat4f, Mat4f, Mat4f);
 
 impl_all!(impl_add_mm, Mat4<N>, Mat4<N>, Mat4<N>);
 impl_mut!(impl_add_assign_mm, Mat4<N>, Mat4<N>);

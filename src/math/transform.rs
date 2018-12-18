@@ -1,6 +1,9 @@
+use std::ops::{
+    Mul,
+};
 use noisy_float::prelude::*;
 
-use crate::math::{Mat4f, Vec3f};
+use crate::math::{Mat4f, Normal3f, Point3f, Vec3f};
 
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
 pub struct Transform {
@@ -75,4 +78,16 @@ impl Transform {
             m_inv: rotation.transpose(),
         }
     }
+
+    pub fn look_at(pos: Point3f, look: Point3f, up: Vec3f) -> Self {
+        let look = Mat4f::look_at(pos, look, up);
+        Transform {
+            m: look,
+            m_inv: look.inverse(),
+        }
+    }
 }
+
+impl_all!(impl_mul_tv, Point3f, Transform, Point3f);
+impl_all!(impl_mul_tv, Vec3f, Transform, Vec3f);
+impl_all!(impl_mul_tn, Normal3f, Transform, Normal3f);

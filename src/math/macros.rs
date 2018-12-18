@@ -136,7 +136,7 @@ make_impl_vector_trait!(
     (v, s) => (v.x() / s.clone(), v.y() / s.clone(), v.z() / s.clone())
 );
 
-macro_rules! impl_mp {
+macro_rules! impl_mul_mp {
     ($output:ty, $lhs:ty, $rhs:ty) => {
         impl Mul<$rhs> for $lhs {
             type Output = $output;
@@ -159,7 +159,7 @@ macro_rules! impl_mp {
     }
 }
 
-macro_rules! impl_mv {
+macro_rules! impl_mul_mv {
     ($output:ty, $lhs:ty, $rhs:ty) => {
         impl Mul<$rhs> for $lhs {
             type Output = $output;
@@ -178,7 +178,7 @@ macro_rules! impl_mv {
     }
 }
 
-macro_rules! impl_mm {
+macro_rules! impl_mul_mm {
     ($output:ty, $lhs:ty, $rhs:ty) => {
         impl Mul<$rhs> for $lhs {
             type Output = $output;
@@ -278,3 +278,25 @@ make_impl_matrix_trait!(
     div_assign,
     (_, l, s) => l / s.clone()
 );
+
+macro_rules! impl_mul_tv {
+    ($output:ty, $lhs:ty, $rhs:ty) => {
+        impl Mul<$rhs> for $lhs {
+            type Output = $output;
+            #[inline]
+            fn mul(self, rhs: $rhs) -> Self::Output { self.m * rhs }
+        }
+    }
+}
+
+macro_rules! impl_mul_tn {
+    ($output:ty, $lhs:ty, $rhs:ty) => {
+        impl Mul<$rhs> for $lhs {
+            type Output = $output;
+            #[inline]
+            fn mul(self, rhs: $rhs) -> Self::Output {
+                Normal3f::from(self.m_inv.transpose() * Vec3f::from(rhs))
+            }
+        }
+    }
+}

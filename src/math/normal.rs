@@ -92,9 +92,19 @@ impl<N> From<Vec3<N>> for Normal3<N> {
     fn from(v: Vec3<N>) -> Self { Normal3(v) }
 }
 
+impl<N: Clone> From<&Vec3<N>> for Normal3<N> {
+    #[inline]
+    fn from(v: &Vec3<N>) -> Self { Normal3(v.clone()) }
+}
+
 impl<N> From<Normal3<N>> for Vec3<N> {
     #[inline]
     fn from(n: Normal3<N>) -> Self { n.0 }
+}
+
+impl<N: Clone> From<&Normal3<N>> for Vec3<N> {
+    #[inline]
+    fn from(n: &Normal3<N>) -> Self { n.0.clone() }
 }
 
 impl<N> Index<usize> for Normal3<N> {
