@@ -3,7 +3,7 @@ use std::ops::Index;
 use noisy_float::prelude::*;
 use num_traits::Float;
 
-use crate::math::{Num, Point2i,Point2, Point3, Vec2, Vec3};
+use crate::math::{Num, Point2i,Point2, Point3, Vec2, Vec3, Vec3f, Ray};
 
 pub type Bounds2i = Bounds2<i32>;
 pub type Bounds2f = Bounds2<N32>;
@@ -161,7 +161,7 @@ impl<N> Index<usize> for Bounds2<N> {
 }
 
 impl Bounds2i {
-    fn iter(&self) -> impl Iterator<Item = Point2i> {
+    pub fn iter(&self) -> impl Iterator<Item = Point2i> {
         let min_x = self.min.x();
         let min_y = self.min.y();
         let max_x = self.max.x();
@@ -349,5 +349,33 @@ impl<N> Index<usize> for Bounds3<N> {
         | 1 => &self.max,
         | n => panic!("[INTERNAL ERROR]: invalid index {}", n),
         }
+    }
+}
+
+impl Bounds3f {
+    #[inline]
+    pub fn intersects(&self, ray: &Ray, inv_dir: &Vec3f, neg_dir: &[usize; 3]) -> bool {
+
+        // X-plane intersection
+        let mut t_min = (self[neg_dir[0]].x() - ray.o().x()) * inv_dir.x();
+        let mut t_max = (self[1 - neg_dir[0]].x() - ray.o().x()) * inv_dir.x();
+
+        // Y-plane intersection
+        let ty_min = (self[neg_dir[1]].y() - ray.o().y()) * inv_dir.y();
+        let ty_max = (self[1 - neg_dir[1]].y() - ray.o().y()) * inv_dir.y();
+
+        if t_min > ty_max || ty_min > t_max { return false; }
+        if ty_min > t_min { t_min = ty_min; }
+        if ty_max < t_max { t_max = ty_max; }
+        
+        // Z-plane intersection
+        let tz_min = (self[neg_dir[2]].z() - ray.o().z()) * inv_dir.z();
+        let tz_max = (self[1 - neg_dir[2]].z() - ray.o().z()) * inv_dir.z();
+
+        if t_min > tz_max || tz_min > t_max { return false; }
+        if tz_min > t_min { t_min = tz_min; }
+        if tz_max < t_max { t_max = tz_max; }
+
+        t_min < ray.t_max() && t_max > ray.t_min()
     }
 }
