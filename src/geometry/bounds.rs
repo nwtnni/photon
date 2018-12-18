@@ -376,6 +376,6 @@ impl Bounds3f {
         if tz_min > t_min { t_min = tz_min; }
         if tz_max < t_max { t_max = tz_max; }
 
-        t_min < ray.t_max() && t_max > ray.t_min()
+        t_min < ray.max() && t_max > ray.min()
     }
 }

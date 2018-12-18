@@ -6,8 +6,8 @@ use crate::math::{Point3f, Vec3f};
 pub struct Ray {
     o: Point3f,
     d: Vec3f,
-    t_min: N32,
-    t_max: N32,
+    min: N32,
+    max: N32,
 }
 
 impl Ray {
@@ -18,18 +18,18 @@ impl Ray {
     pub fn d(&self) -> Vec3f { self.d }
 
     #[inline]
-    pub fn t_min(&self) -> N32 { self.t_min }
+    pub fn min(&self) -> N32 { self.min }
 
     #[inline]
-    pub fn t_max(&self) -> N32 { self.t_max }
+    pub fn max(&self) -> N32 { self.max }
 
     #[inline]
     pub fn new(o: Point3f, d: Vec3f) -> Self {
         Ray {
             o,
             d,
-            t_min: n32(0.0),
-            t_max: n32(std::f32::INFINITY),
+            min: n32(0.0),
+            max: n32(std::f32::INFINITY),
         }
     }
 }
