@@ -10,6 +10,8 @@ mod vector;
 pub use self::matrix::*;
 pub use self::normal::*;
 pub use self::point::*;
+pub use self::ray::*;
+pub use self::transform::*;
 pub use self::vector::*;
 
 pub trait Num:
