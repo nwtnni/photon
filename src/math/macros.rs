@@ -300,3 +300,44 @@ macro_rules! impl_mul_tn {
         }
     }
 }
+
+macro_rules! impl_mul_tt {
+    ($output:ty, $lhs:ty, $rhs:ty) => {
+        impl Mul<$rhs> for $lhs {
+            type Output = $output;
+            #[inline]
+            fn mul(self, rhs: $rhs) -> Self::Output {
+                Transform {
+                    m: self.m * rhs.m,
+                    m_inv: rhs.m_inv * self.m_inv,
+                }
+            }
+        }
+    }
+}
+
+macro_rules! impl_mul_assign_tt {
+    ($lhs:ty, $rhs:ty) => {
+        impl MulAssign<$rhs> for $lhs {
+            #[inline]
+            fn mul_assign(&mut self, rhs: $rhs) {
+                self.m = self.m * rhs.m;
+                self.m_inv = rhs.m_inv * self.m_inv;
+            }
+        }
+    }
+}
+
+macro_rules! impl_mul_tb {
+    ($output:ty, $lhs:ty, $rhs:ty) => {
+        impl Mul<$rhs> for $lhs {
+            type Output = $output;
+            #[inline]
+            fn mul(self, rhs: $rhs) -> Self::Output {
+                let mut bounds = Bounds3f::from(self * rhs.corner(0));
+                for i in 1..8 { bounds.union_p_mut(&(self * rhs.corner(i))); }
+                bounds
+            }
+        }
+    }
+}

@@ -26,12 +26,24 @@ impl<N: Num> Bounds2<N> {
         }
     }
 
+    #[inline]
+    pub fn min(&self) -> &Point2<N> {
+        &self.min
+    }
+
+    #[inline]
+    pub fn max(&self) -> &Point2<N> {
+        &self.min
+    }
+
+    #[inline]
     pub fn corner(&self, i: usize) -> Point2<N> {
         let x = if i & 1 == 0 { self.min.x() } else { self.max.x() };
         let y = if i & 2 == 0 { self.min.y() } else { self.max.y() };
         Point2::new(x, y)
     }
 
+    #[inline]
     pub fn union_p(&self, p: &Point2<N>) -> Self {
         Bounds2 {
             min: self.min.min(*p),
@@ -39,6 +51,7 @@ impl<N: Num> Bounds2<N> {
         }
     }
 
+    #[inline]
     pub fn union_b(&self, b: &Self) -> Self {
         Bounds2 {
             min: self.min.min(b.min),
@@ -46,11 +59,30 @@ impl<N: Num> Bounds2<N> {
         }
     }
 
+    #[inline]
     pub fn intersect(&self, b: &Self) -> Self {
         Bounds2 {
             min: self.min.max(b.min),
             max: self.max.min(b.max),
         }
+    }
+
+    #[inline]
+    pub fn union_p_mut(&mut self, p: &Point2<N>) {
+        self.min = self.min.min(*p);
+        self.max = self.max.max(*p);
+    }
+
+    #[inline]
+    pub fn union_b_mut(&mut self, b: &Self) {
+        self.min = self.min.min(b.min);
+        self.max = self.max.max(b.max);
+    }
+
+    #[inline]
+    pub fn intersect_mut(&mut self, b: &Self) {
+        self.min = self.min.max(b.min);
+        self.max = self.max.min(b.max);
     }
 
     pub fn overlaps(&self, b: &Self) -> bool {
@@ -79,15 +111,18 @@ impl<N: Num> Bounds2<N> {
         }
     }
 
+    #[inline]
     pub fn diagonal(&self) -> Vec2<N> {
         self.max - self.min
     }
 
+    #[inline]
     pub fn area(&self) -> N {
         let d = self.diagonal();
         d.x() * d.y()
     }
 
+    #[inline]
     pub fn max_extent(&self) -> usize {
         self.diagonal().max_dim()
     }
@@ -171,6 +206,17 @@ impl<N: Num> Bounds3<N> {
         }
     }
 
+    #[inline]
+    pub fn min(&self) -> &Point3<N> {
+        &self.min
+    }
+
+    #[inline]
+    pub fn max(&self) -> &Point3<N> {
+        &self.min
+    }
+
+    #[inline]
     pub fn corner(&self, i: usize) -> Point3<N> {
         let x = if i & 1 == 0 { self.min.x() } else { self.max.x() };
         let y = if i & 2 == 0 { self.min.y() } else { self.max.y() };
@@ -178,6 +224,7 @@ impl<N: Num> Bounds3<N> {
         Point3::new(x, y, z)
     }
 
+    #[inline]
     pub fn union_p(&self, p: &Point3<N>) -> Self {
         Bounds3 {
             min: self.min.min(*p),
@@ -185,6 +232,7 @@ impl<N: Num> Bounds3<N> {
         }
     }
 
+    #[inline]
     pub fn union_b(&self, b: &Self) -> Self {
         Bounds3 {
             min: self.min.min(b.min),
@@ -192,11 +240,30 @@ impl<N: Num> Bounds3<N> {
         }
     }
 
+    #[inline]
     pub fn intersect(&self, b: &Self) -> Self {
         Bounds3 {
             min: self.min.max(b.min),
             max: self.max.min(b.max),
         }
+    }
+
+    #[inline]
+    pub fn union_p_mut(&mut self, p: &Point3<N>) {
+        self.min = self.min.min(*p);
+        self.max = self.max.max(*p);
+    }
+
+    #[inline]
+    pub fn union_b_mut(&mut self, b: &Self) {
+        self.min = self.min.min(b.min);
+        self.max = self.max.max(b.max);
+    }
+
+    #[inline]
+    pub fn intersect_mut(&mut self, b: &Self) {
+        self.min = self.min.max(b.min);
+        self.max = self.max.min(b.max);
     }
 
     pub fn overlaps(&self, b: &Self) -> bool {
@@ -228,21 +295,25 @@ impl<N: Num> Bounds3<N> {
         }
     }
 
+    #[inline]
     pub fn diagonal(&self) -> Vec3<N> {
         self.max - self.min
     }
 
+    #[inline]
     pub fn area(&self) -> N {
         let d = self.diagonal();
         (N::one() + N::one()) *
         (d.x() * d.y() + d.x() * d.z() + d.y() * d.z())
     }
 
+    #[inline]
     pub fn volume(&self) -> N {
         let d = self.diagonal();
         d.x() * d.y() * d.z()
     }
 
+    #[inline]
     pub fn max_extent(&self) -> usize {
         self.diagonal().max_dim()
     }

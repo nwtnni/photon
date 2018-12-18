@@ -1,8 +1,7 @@
-use std::ops::{
-    Mul,
-};
+use std::ops::{Mul, MulAssign};
 use noisy_float::prelude::*;
 
+use crate::geometry::{Bounds3f};
 use crate::math::{Mat4f, Normal3f, Point3f, Vec3f};
 
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
@@ -91,3 +90,7 @@ impl Transform {
 impl_all!(impl_mul_tv, Point3f, Transform, Point3f);
 impl_all!(impl_mul_tv, Vec3f, Transform, Vec3f);
 impl_all!(impl_mul_tn, Normal3f, Transform, Normal3f);
+impl_all!(impl_mul_tb, Bounds3f, Transform, Bounds3f);
+
+impl_all!(impl_mul_tt, Transform, Transform);
+impl_mut!(impl_mul_assign_tt, Transform, Transform);
