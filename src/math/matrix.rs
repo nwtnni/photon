@@ -1,4 +1,10 @@
-use std::ops::{Mul, Index, IndexMut};
+use std::ops::{
+    Add, AddAssign,
+    Sub, SubAssign,
+    Mul, MulAssign,
+    Div, DivAssign,
+    Index, IndexMut
+};
 
 use noisy_float::prelude::*;
 use num_traits::Float;
@@ -148,7 +154,7 @@ impl<N: Num + Float> Mat4<N> {
         ])
     }
 
-    fn det(&self) -> N {
+    pub fn det(&self) -> N {
         let d11 = self[00] * (
             self[05] * self[10] * self[15]
           - self[05] * self[11] * self[14]
@@ -187,6 +193,162 @@ impl<N: Num + Float> Mat4<N> {
 
         d11 - d21 + d31 - d41
     }
+
+    pub fn inverse(&self) -> Self {
+
+        let inv_det = N::one() / self.det();
+
+        let m00 = inv_det * (
+              self[05] * self[10] * self[15]
+            + self[06] * self[11] * self[13]
+            + self[07] * self[09] * self[14]
+            - self[07] * self[10] * self[13]
+            - self[06] * self[09] * self[15]
+            - self[05] * self[11] * self[14]
+        );
+
+        let m01 = inv_det * (
+              self[04] * self[10] * self[15]
+            + self[06] * self[11] * self[12]
+            + self[07] * self[08] * self[14]
+            - self[07] * self[10] * self[12]
+            - self[06] * self[08] * self[15]
+            - self[04] * self[11] * self[14]
+        );
+
+        let m02 = inv_det * (
+              self[04] * self[09] * self[15]
+            + self[05] * self[11] * self[12]
+            + self[07] * self[08] * self[13]
+            - self[07] * self[09] * self[12]
+            - self[05] * self[08] * self[15]
+            - self[04] * self[11] * self[13]
+        );
+        
+        let m03 = inv_det * (
+              self[04] * self[09] * self[14]
+            + self[05] * self[10] * self[12]
+            + self[06] * self[08] * self[13]
+            - self[06] * self[09] * self[12]
+            - self[05] * self[08] * self[14]
+            - self[04] * self[10] * self[13]
+        );
+
+        let m10 = inv_det * (
+              self[01] * self[10] * self[15]
+            + self[02] * self[11] * self[13]
+            + self[03] * self[09] * self[14]
+            - self[03] * self[10] * self[13]
+            - self[02] * self[09] * self[15]
+            - self[01] * self[11] * self[14]
+        );
+
+        let m11 = inv_det * (
+              self[00] * self[10] * self[15]
+            + self[02] * self[11] * self[12]
+            + self[03] * self[08] * self[14]
+            - self[03] * self[10] * self[12]
+            - self[02] * self[08] * self[15]
+            - self[00] * self[11] * self[14]
+        );
+
+        let m12 = inv_det * (
+              self[00] * self[09] * self[15]
+            + self[01] * self[11] * self[12]
+            + self[03] * self[08] * self[13]
+            - self[03] * self[09] * self[12]
+            - self[01] * self[08] * self[15]
+            - self[00] * self[11] * self[13]
+        );
+
+        let m13 = inv_det * (
+              self[00] * self[09] * self[14]
+            + self[01] * self[10] * self[12]
+            + self[02] * self[08] * self[13]
+            - self[02] * self[09] * self[12]
+            - self[01] * self[08] * self[14]
+            - self[00] * self[10] * self[13]
+        );
+        
+        let m20 = inv_det * (
+              self[01] * self[06] * self[15]
+            + self[02] * self[07] * self[13]
+            + self[03] * self[05] * self[14]
+            - self[03] * self[06] * self[13]
+            - self[02] * self[05] * self[15]
+            - self[01] * self[07] * self[14]
+        );
+
+        let m21 = inv_det * (
+              self[00] * self[06] * self[15]
+            + self[02] * self[07] * self[12]
+            + self[03] * self[04] * self[14]
+            - self[03] * self[06] * self[12]
+            - self[02] * self[04] * self[15]
+            - self[00] * self[07] * self[14]
+        );
+        
+        let m22 = inv_det * (
+              self[00] * self[05] * self[15]
+            + self[01] * self[07] * self[12]
+            + self[03] * self[04] * self[13]
+            - self[03] * self[05] * self[12]
+            - self[01] * self[04] * self[15]
+            - self[00] * self[07] * self[13]
+        );
+
+        let m23 = inv_det * (
+              self[00] * self[05] * self[14]
+            + self[01] * self[06] * self[12]
+            + self[02] * self[04] * self[13]
+            - self[02] * self[05] * self[12]
+            - self[01] * self[04] * self[14]
+            - self[00] * self[06] * self[13]
+        );
+
+        let m30 = inv_det * (
+              self[01] * self[06] * self[11]
+            + self[02] * self[07] * self[09]
+            + self[03] * self[05] * self[10]
+            - self[03] * self[06] * self[09]
+            - self[02] * self[05] * self[11]
+            - self[01] * self[07] * self[10]
+        );
+
+        let m31 = inv_det * (
+              self[00] * self[06] * self[11]
+            + self[02] * self[07] * self[08]
+            + self[03] * self[04] * self[10]
+            - self[03] * self[06] * self[08]
+            - self[02] * self[04] * self[11]
+            - self[00] * self[07] * self[10]
+        );
+
+        let m32 = inv_det * (
+              self[00] * self[05] * self[11]
+            + self[01] * self[07] * self[08]
+            + self[03] * self[04] * self[09]
+            - self[03] * self[05] * self[08]
+            - self[01] * self[04] * self[11]
+            - self[00] * self[07] * self[09]
+        );
+
+        let m33 = inv_det * (
+              self[00] * self[05] * self[10]
+            + self[01] * self[06] * self[08]
+            + self[02] * self[04] * self[09]
+            - self[02] * self[05] * self[08]
+            - self[01] * self[04] * self[10]
+            - self[00] * self[06] * self[09]
+        );
+
+        Mat4([
+             m00, -m01,  m02, -m03,
+            -m10,  m11, -m12,  m13,
+             m20, -m21,  m22, -m23,
+            -m30,  m31, -m32,  m33,
+        ])
+    }
 }
 
 impl<N> Index<usize> for Mat4<N> {
@@ -207,6 +369,18 @@ impl<N> IndexMut<usize> for Mat4<N> {
 impl_all!(impl_mp, Point3f, Mat4f, Point3f);
 impl_all!(impl_mv, Vec3f, Mat4f, Vec3f);
 impl_all!(impl_mm, Mat4f, Mat4f, Mat4f);
+
+impl_all!(impl_add_mm, Mat4<N>, Mat4<N>, Mat4<N>);
+impl_mut!(impl_add_assign_mm, Mat4<N>, Mat4<N>);
+
+impl_all!(impl_sub_mm, Mat4<N>, Mat4<N>, Mat4<N>);
+impl_mut!(impl_sub_assign_mm, Mat4<N>, Mat4<N>);
+
+impl_all!(impl_mul_ms, Mat4<N>, Mat4<N>, N);
+impl_mut!(impl_mul_assign_ms, Mat4<N>, N);
+
+impl_all!(impl_div_ms, Mat4<N>, Mat4<N>, N);
+impl_mut!(impl_div_assign_ms, Mat4<N>, N);
 
 #[cfg(test)]
 mod tests {
@@ -255,5 +429,48 @@ mod tests {
         let axis = Vec3f::new(n32(1.0), n32(3.0), n32(-5.0)).normalize();
         let m = Mat4f::rotate(n32(1.0), axis);
         assert!((m.det() - n32(1.0)).abs() < n32(EPSILON));
+    }
+
+    #[test]
+    fn test_inv_rotate() {
+        let axis = Vec3f::new(n32(1.0), n32(3.0), n32(-5.0)).normalize();
+        let m = Mat4f::rotate(n32(1.0), axis);
+        let m_inv = m.inverse();
+        assert!(((m - m_inv).det() - n32(0.0)).abs() < n32(EPSILON));
+    }
+
+    #[test]
+    fn test_det() {
+        let m = Mat4f::new([
+            n32(01.0), n32(01.0), n32(01.0), n32(-1.0),
+            n32(01.0), n32(01.0), n32(-1.0), n32(01.0),
+            n32(01.0), n32(-1.0), n32(01.0), n32(01.0),
+            n32(-1.0), n32(01.0), n32(01.0), n32(01.0),
+        ]);
+        assert!((m.det() + 16.0).abs() < n32(EPSILON));
+    }
+
+    #[test]
+    fn test_inv_det() {
+        let m = Mat4f::new([
+            n32(01.0), n32(01.0), n32(01.0), n32(-1.0),
+            n32(01.0), n32(01.0), n32(-1.0), n32(01.0),
+            n32(01.0), n32(-1.0), n32(01.0), n32(01.0),
+            n32(-1.0), n32(01.0), n32(01.0), n32(01.0),
+        ]);
+        let m_inv = m.inverse();
+        assert!((m_inv.det() + (1.0 / 16.0)).abs() < n32(EPSILON));
+    }
+
+    #[test]
+    fn test_inv_mul() {
+        let m = Mat4f::new([
+            n32(01.0), n32(01.0), n32(01.0), n32(-1.0),
+            n32(01.0), n32(01.0), n32(-1.0), n32(01.0),
+            n32(01.0), n32(-1.0), n32(01.0), n32(01.0),
+            n32(-1.0), n32(01.0), n32(01.0), n32(01.0),
+        ]);
+        let m_inv = m.inverse();
+        assert!(((m * m_inv).det() - 1.0).abs() < n32(EPSILON));
     }
 }

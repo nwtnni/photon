@@ -20,7 +20,7 @@ macro_rules! impl_all {
     };
 }
 
-macro_rules! make_impl_trait {
+macro_rules! make_impl_vector_trait {
     (
         $impl_trait:ident,
         $trait:ident,
@@ -56,7 +56,7 @@ macro_rules! make_impl_trait {
     }
 }
 
-make_impl_trait!(
+make_impl_vector_trait!(
     impl_add_v2v,
     Add,
     add,
@@ -66,7 +66,7 @@ make_impl_trait!(
     (l, r) => (l.x() + r.x(), l.y() + r.y())
 );
 
-make_impl_trait!(
+make_impl_vector_trait!(
     impl_sub_v2v,
     Sub,
     sub,
@@ -76,7 +76,7 @@ make_impl_trait!(
     (l, r) => (l.x() - r.x(), l.y() - r.y())
 );
 
-make_impl_trait!(
+make_impl_vector_trait!(
     impl_mul_v2s,
     Mul,
     mul,
@@ -86,7 +86,7 @@ make_impl_trait!(
     (v, s) => (v.x() * s.clone(), v.y() * s.clone())
 );
 
-make_impl_trait!(
+make_impl_vector_trait!(
     impl_div_v2s,
     Div,
     div,
@@ -96,7 +96,7 @@ make_impl_trait!(
     (v, s) => (v.x() / s.clone(), v.y() / s.clone())
 );
 
-make_impl_trait!(
+make_impl_vector_trait!(
     impl_add_v3v,
     Add,
     add,
@@ -106,7 +106,7 @@ make_impl_trait!(
     (l, r) => (l.x() + r.x(), l.y() + r.y(), l.z() + r.z())
 );
 
-make_impl_trait!(
+make_impl_vector_trait!(
     impl_sub_v3v,
     Sub,
     sub,
@@ -116,7 +116,7 @@ make_impl_trait!(
     (l, r) => (l.x() - r.x(), l.y() - r.y(), l.z() - r.z())
 );
 
-make_impl_trait!(
+make_impl_vector_trait!(
     impl_mul_v3s,
     Mul,
     mul,
@@ -126,7 +126,7 @@ make_impl_trait!(
     (v, s) => (v.x() * s.clone(), v.y() * s.clone(), v.z() * s.clone())
 );
 
-make_impl_trait!(
+make_impl_vector_trait!(
     impl_div_v3s,
     Div,
     div,
@@ -195,3 +195,86 @@ macro_rules! impl_mm {
         }
     }
 }
+
+macro_rules! make_impl_matrix_trait {
+    (
+        $impl_trait:ident,
+        $trait:ident,
+        $method:ident,
+        $impl_trait_mut:ident,
+        $trait_mut:ident,
+        $method_mut:ident,
+        $pat:pat => $fn:expr
+    ) => {
+        macro_rules! $impl_trait {
+            ($output:ty, $lhs:ty, $rhs:ty) => {
+                impl<N: Num> $trait<$rhs> for $lhs {
+                    type Output = $output;
+                    #[inline]
+                    fn $method(self, rhs: $rhs) -> Self::Output {
+                        unsafe {
+                            let mut output: [N; 16] = std::mem::uninitialized();
+                            for i in 0..16 {
+                                output[i] = match (i, self[i], rhs) { $pat => $fn };
+                            }
+                            Mat4::new(output)
+                        }
+                    }
+                }
+            }
+        }
+
+        macro_rules! $impl_trait_mut {
+            ($lhs:ty, $rhs:ty) => {
+                impl<N: Num> $trait_mut<$rhs> for $lhs {
+                    #[inline]
+                    fn $method_mut(&mut self, rhs: $rhs) {
+                        for i in 0..16 {
+                            self[i] = match (i, self[i], rhs) { $pat => $fn };
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+make_impl_matrix_trait!(
+    impl_add_mm,
+    Add,
+    add,
+    impl_add_assign_mm,
+    AddAssign,
+    add_assign,
+    (i, l, r) => l + r[i]
+);
+
+make_impl_matrix_trait!(
+    impl_sub_mm,
+    Sub,
+    sub,
+    impl_sub_assign_mm,
+    SubAssign,
+    sub_assign,
+    (i, l, r) => l - r[i]
+);
+
+make_impl_matrix_trait!(
+    impl_mul_ms,
+    Mul,
+    mul,
+    impl_mul_assign_ms,
+    MulAssign,
+    mul_assign,
+    (_, l, s) => l * s.clone()
+);
+
+make_impl_matrix_trait!(
+    impl_div_ms,
+    Div,
+    div,
+    impl_div_assign_ms,
+    DivAssign,
+    div_assign,
+    (_, l, s) => l / s.clone()
+);
