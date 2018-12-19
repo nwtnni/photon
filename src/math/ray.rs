@@ -18,6 +18,11 @@ impl Ray {
     pub fn d(&self) -> Vec3f { self.d }
 
     #[inline]
+    pub fn get(&self, t: N32) -> Point3f {
+        self.o + self.d * t
+    }
+
+    #[inline]
     pub fn min(&self) -> N32 { self.min }
 
     #[inline]
