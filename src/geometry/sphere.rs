@@ -3,8 +3,16 @@ use noisy_float::prelude::*;
 use crate::math::{Normal3f, Point2f, Point3f, Ray, Vec3, clamp, solve_quadratic};
 use crate::geometry::*;
 
+#[derive(Copy, Clone, PartialEq, Eq, Hash)]
 pub struct Sphere {
     radius: N32,
+}
+
+impl Sphere {
+    #[inline]
+    fn new(radius: N32) -> Self {
+        Sphere { radius }
+    }
 }
 
 impl Shape for Sphere {
