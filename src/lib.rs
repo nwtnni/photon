@@ -1,3 +1,4 @@
+mod camera;
 mod error;
 mod math;
 mod geometry;
