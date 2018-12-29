@@ -154,6 +154,17 @@ impl<N: Num + Float> Mat4<N> {
         ])
     }
 
+    pub fn perspective(near: N, far: N) -> Self {
+        let o = N::one();
+        let z = N::zero();
+        Mat4([
+            o, z, z, z, 
+            z, o, z, z,
+            z, z, (far / (far - near)), -((far * near) / (far - near)),
+            z, z, o, z,
+        ])
+    }
+
     pub fn swaps_handedness(&self) -> bool {
         let d00 = self[0] * (
             self[05] * self[10]
