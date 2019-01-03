@@ -1,16 +1,18 @@
 #[macro_use]
 mod macros;
+mod matrix;
 mod normal;
 mod point;
 mod ray;
+mod spectrum;
 mod transform;
-mod matrix;
 mod vector;
 
-pub use self::matrix::*;
 pub use self::normal::*;
+pub use self::matrix::*;
 pub use self::point::*;
 pub use self::ray::*;
+pub use self::spectrum::*;
 pub use self::transform::*;
 pub use self::vector::*;
 
@@ -72,6 +74,6 @@ pub fn solve_quadratic(a: N32, b: N32, c: N32) -> Option<(N32, N32)> {
     }
 }
 
-pub fn clamp(v: N32, min: N32, max: N32) -> N32 {
-    N32::max(N32::min(v, max), min)
+pub fn clamp<N: Num + num_traits::Float>(v: N, min: N, max: N) -> N {
+    std::cmp::max(std::cmp::min(v, max), min)
 }

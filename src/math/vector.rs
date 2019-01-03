@@ -246,6 +246,15 @@ impl<N: Num> Vec3<N> {
     }
 
     #[inline]
+    pub fn map<F, M>(&self, f: F) -> Vec3<M> where F: Fn(N) -> M {
+        Vec3([
+            f(self.x()),
+            f(self.y()),
+            f(self.z()),
+        ])
+    }
+
+    #[inline]
     pub fn dot_v(&self, v: &Self) -> N {
         self.x() * v.x() +
         self.y() * v.y() +

@@ -117,6 +117,26 @@ make_impl_vector_trait!(
 );
 
 make_impl_vector_trait!(
+    impl_mul_v3v,
+    Mul,
+    mul,
+    impl_mul_assign_v3v,
+    MulAssign,
+    mul_assign,
+    (l, r) => (l.x() * r.x(), l.y() * r.y(), l.z() * r.z())
+);
+
+make_impl_vector_trait!(
+    impl_div_v3v,
+    Div,
+    div,
+    impl_div_assign_v3v,
+    DivAssign,
+    div_assign,
+    (l, r) => (l.x() / r.x(), l.y() / r.y(), l.z() / r.z())
+);
+
+make_impl_vector_trait!(
     impl_mul_v3s,
     Mul,
     mul,
