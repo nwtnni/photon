@@ -284,6 +284,12 @@ impl<N: Num> From<Point3<N>> for Vec3<N> {
     }
 }
 
+impl<N: Num> From<Vec3<N>> for Point3<N> {
+    fn from(v: Vec3<N>) -> Self {
+        Point3(v)
+    }
+}
+
 impl_all!(impl_add_v3v, Point3<N>, Point3<N>);
 impl_mut!(impl_add_assign_v3v, Point3<N>, Point3<N>);
 impl_all!(impl_add_v3v, Point3<N>, Vec3<N>);
