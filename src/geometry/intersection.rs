@@ -1,24 +1,19 @@
-use std::sync::Arc;
-
-use noisy_float::prelude::*;
-
 use crate::math::{Point2f, Point3f, Normal3f, Vec3f};
-use crate::geometry::Shape;
 
 #[derive(Clone)]
 pub struct Intersection {
     /// Hit point
-    p: Point3f,
+    pub p: Point3f,
 
-    /// Surface normal at hit point
-    n: Normal3f,
+    /// Surface normal
+    pub n: Normal3f,
 
-    /// Texture coordinates of hit point
-    uv: Point2f,
-}
+    /// Texture coordinates
+    pub uv: Point2f,
 
-impl Intersection {
-    pub fn new(p: Point3f, n: Normal3f, uv: Point2f) -> Self {
-        Intersection { p, n, uv }
-    }
+    /// Derivative of point w.r.t. u texture coordinate
+    pub dp_du: Vec3f,
+
+    /// Derivative of point w.r.t. v texture coordinate
+    pub dp_dv: Vec3f,
 }

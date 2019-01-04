@@ -1,6 +1,6 @@
 use noisy_float::prelude::*;
 
-use crate::math::{Normal3f, Point2f, Point3f, Ray, Vec3, clamp, solve_quadratic};
+use crate::math::{Normal3f, Point2f, Point3f, Ray, Vec3f, clamp, solve_quadratic};
 use crate::geometry::*;
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash)]
@@ -24,7 +24,7 @@ impl Shape for Sphere {
     }
 
     fn intersects(&self, ray: &Ray) -> Option<Intersection> {
-        let o = Vec3::from(ray.o());
+        let o = Vec3f::from(ray.o());
         let a = ray.d().len_sq();
         let b = ray.d().dot_v(&o) * n32(2.0);
         let c = o.len_sq() - self.radius;
@@ -43,12 +43,36 @@ impl Shape for Sphere {
 
         let p = ray.get(t_hit);
         let n = Normal3f::new(p.x(), p.y(), p.z());
-        let v = clamp(p.z() / self.radius, n32(-1.0), n32(1.0));
-        let u = match N32::atan2(p.y(), p.x()) / n32(2.0 * std::f32::consts::PI) {
-        | u if u < 0.0 => u + 1.0,
-        | u => u,
-        };
 
-        Some(Intersection::new(p, n, Point2f::new(u, v)))
+        let phi = p.y().atan2(p.x());
+        let phi = if phi < n32(0.0) { phi + n32(2.0 * std::f32::consts::PI) } else { phi };
+        let theta = clamp(p.z() / self.radius, n32(-1.0), n32(1.0)).acos();
+
+        let uv = Point2f::new(
+            phi / n32(2.0 * std::f32::consts::PI),
+            theta / n32(std::f32::consts::PI),
+        );
+
+        let inv_z = n32(1.0) / (p.x() * p.x() + p.y() * p.y());
+        let cos_phi = p.x() * inv_z;
+        let sin_phi = p.y() * inv_z;
+        let dp_du = Vec3f::new(
+            n32(-2.0 * std::f32::consts::PI) * p.y(),
+            n32(2.0 * std::f32::consts::PI) * p.x(),
+            n32(0.0),
+        );
+        let dp_dv = Vec3f::new(
+            p.z() * cos_phi,
+            p.z() * sin_phi,
+            -self.radius * theta.sin(),
+        ) * n32(std::f32::consts::PI);
+
+        Some(Intersection {
+            p,
+            n,
+            uv,
+            dp_du,
+            dp_dv,
+        })
     }
 }
