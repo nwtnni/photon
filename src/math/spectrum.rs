@@ -8,8 +8,11 @@ use std::ops::{
 };
 
 use num_traits::Float;
+use noisy_float::prelude::*;
 
 use crate::math::{clamp, Num, Vec3};
+
+pub type Spectrum3f = Spectrum3<N32>;
 
 #[derive(Copy, Clone, Debug)]
 pub struct Spectrum3<N>(Vec3<N>);
