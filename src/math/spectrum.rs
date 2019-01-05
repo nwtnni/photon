@@ -14,7 +14,7 @@ use crate::math::{clamp, Num, Vec3};
 
 pub type Spectrum3f = Spectrum3<N32>;
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Default)]
 pub struct Spectrum3<N>(Vec3<N>);
 
 impl<N: Num> Spectrum3<N> {
