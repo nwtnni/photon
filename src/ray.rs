@@ -7,6 +7,11 @@ pub struct Ray {
 
 impl Ray {
     #[inline(always)]
+    pub fn new(o: Vec3, d: Vec3) -> Self {
+        Ray { o, d }
+    }
+
+    #[inline(always)]
     pub fn o(&self) -> Vec3 { self.o }
 
     #[inline(always)]

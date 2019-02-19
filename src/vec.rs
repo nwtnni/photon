@@ -7,7 +7,7 @@ use std::ops::{
     Neg
 };
 
-#[derive(Copy, Clone, Debug, PartialEq, PartialOrd)]
+#[derive(Copy, Clone, Debug, Default, PartialEq, PartialOrd)]
 pub struct Vec3([f32; 3]);
 
 impl Vec3 {
