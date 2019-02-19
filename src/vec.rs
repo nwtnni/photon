@@ -17,6 +17,11 @@ impl Vec3 {
     }
 
     #[inline(always)]
+    pub fn set<V: Into<Vec3>>(&mut self, v: V) {
+        *self = v.into()
+    }
+
+    #[inline(always)]
     pub fn x(&self) -> f32 { self.0[0] }
 
     #[inline(always)]
@@ -34,19 +39,36 @@ impl Vec3 {
     #[inline(always)]
     pub fn b(&self) -> f32 { self.0[2] }
 
+    #[inline(always)]
     pub fn len(&self) -> f32 {
         self.len_sq().sqrt()
     }
 
-    pub fn len_sq(&self) -> f32 {
-        self.x() * self.x() +
-        self.y() * self.y() +
-        self.z() * self.z()
+    #[inline(always)]
+    pub fn len_sq(&self) -> f32 { self.dot(self) }
+
+    pub fn dot(&self, rhs: &Self) -> f32 {
+        self.x() * rhs.x() +
+        self.y() * rhs.y() +
+        self.z() * rhs.z()
+    }
+
+    pub fn cross(&self, rhs: &Self) -> Self {
+        Vec3([
+            self.y() * rhs.z() - self.z() * rhs.y(),
+            self.z() * rhs.x() - self.x() * rhs.z(),
+            self.x() * rhs.y() - self.y() - rhs.z(),
+        ])
+    }
+
+    #[inline(always)]
+    pub fn normalize(&self) -> Self {
+        self / self.len()
     }
 }
 
 macro_rules! impl_op {
-    ($op:ident, $fn:ident, $op_mut:ident, $fn_mut:ident, $lhs:ty, $rhs:ty, $input:pat => $output:expr) => {
+    ($op:ident, $fn:ident, $op_mut:ident, $fn_mut:ident, $ty:ty, $lhs:ty, $rhs:ty, $input:pat => $output:expr) => {
         impl $op<$rhs> for $lhs {
             type Output = Vec3;
             fn $fn(self, rhs: $rhs) -> Self::Output {
@@ -54,9 +76,9 @@ macro_rules! impl_op {
             }
         }
 
-        impl $op_mut<$rhs> for $lhs {
+        impl $op_mut<$rhs> for $ty {
             fn $fn_mut(&mut self, rhs: $rhs) {
-                *self = Vec3::from(match (self.0, rhs) { $input => $output });
+                self.set(Vec3::from(match (self.0, rhs) { $input => $output }))
             }
         }
     }
@@ -64,8 +86,10 @@ macro_rules! impl_op {
 
 macro_rules! impl_all {
     ($op:ident, $fn:ident, $op_mut:ident, $fn_mut:ident, $lhs:ty, $rhs:ty, $input:pat => $output:expr) => {
-        impl_op!($op, $fn, $op_mut, $fn_mut, $lhs, $rhs, $input => $output);
-        impl_op!($op, $fn, $op_mut, $fn_mut, $lhs, &$rhs, $input => $output);
+        impl_op!($op, $fn, $op_mut, $fn_mut, $lhs, $lhs, $rhs, $input => $output);
+        impl_op!($op, $fn, $op_mut, $fn_mut, $lhs, $lhs, &$rhs, $input => $output);
+        impl_op!($op, $fn, $op_mut, $fn_mut, &mut $lhs, &$lhs, $rhs, $input => $output);
+        impl_op!($op, $fn, $op_mut, $fn_mut, &mut $lhs, &$lhs, &$rhs, $input => $output);
     }
 }
 
