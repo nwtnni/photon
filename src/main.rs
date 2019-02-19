@@ -1,6 +1,8 @@
 use photon::*;
 
 fn color(ray: &Ray) -> Vec3 {
+    let sphere = Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5);
+    if sphere.intersects(ray) { return Vec3::new(1.0, 0.0, 0.0) }
     let dir = ray.d().normalize();
     let t = 0.5 * (dir.y() + 1.0);
     Vec3::new(1.0, 1.0, 1.0) * (1.0 - t) + Vec3::new(0.5, 0.7, 1.0) * t
