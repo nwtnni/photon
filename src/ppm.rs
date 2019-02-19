@@ -13,7 +13,7 @@ impl PPM {
     }
 
     fn index(&self, x: usize, y: usize) -> usize {
-        self.ny * y + 3 * x
+        3 * (self.nx * y + x)
     }
 
     pub fn set(&mut self, x: usize, y: usize, rgb: (f32, f32, f32)) {
@@ -28,9 +28,14 @@ impl PPM {
         for y in 0..self.ny {
             for x in 0..self.nx {
                 let i = self.index(x, y);
-                write!(out, "{} {} {} ", self.buffer[i], self.buffer[i + 1], self.buffer[i + 2])?;
+                write!(
+                    out,
+                    "{} {} {}\n",
+                    self.buffer[i + 0],
+                    self.buffer[i + 1],
+                    self.buffer[i + 2],
+                )?;
             }
-            write!(out, "\n")?;
         }
         Ok(())
     }
