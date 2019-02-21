@@ -17,7 +17,7 @@ impl PPM {
     }
 
     pub fn set(&mut self, x: usize, y: usize, rgb: (f32, f32, f32)) {
-        let i = self.index(x, y);
+        let i = self.index(x, self.ny - y - 1);
         self.buffer[i + 0] = (rgb.0 * 255.99) as u8;
         self.buffer[i + 1] = (rgb.1 * 255.99) as u8;
         self.buffer[i + 2] = (rgb.2 * 255.99) as u8;

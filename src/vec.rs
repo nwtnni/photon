@@ -65,6 +65,11 @@ impl Vec3 {
     pub fn normalize(&self) -> Self {
         self / self.len()
     }
+
+    #[inline(always)]
+    pub fn lerp(&self, to: &Self, t: f32) -> Self {
+        self * (1.0 - t) + to * t
+    }
 }
 
 macro_rules! impl_op {

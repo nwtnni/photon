@@ -32,9 +32,9 @@ impl Surface for Sphere {
 
         let (t_a, t_b) = ((-b - d.sqrt()) / a, (-b + d.sqrt()) / a);
 
-        let t = if t_a > t_min && t_a > t_max {
+        let t = if t_a > t_min && t_a < t_max {
             t_a
-        } else if t_b > t_min && t_a > t_max {
+        } else if t_b > t_min && t_a < t_max {
             t_b
         } else {
             return false;
