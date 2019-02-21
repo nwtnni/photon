@@ -1,5 +1,5 @@
 use crate::{Ray, Vec3};
-use crate::geometry::{Surface, Sphere, Hit};
+use crate::geometry::{Surface, Hit};
 
 #[derive(Copy, Clone, Debug)]
 pub struct Sphere {
@@ -21,16 +21,28 @@ impl Sphere {
 }
 
 impl Surface for Sphere {
-    fn hit(ray: &Ray, t_min: f32, t_max: f32, hit: &mut Hit) -> bool {
-        let oc = ray.o() - self.c;
+    fn hit(&self, ray: &Ray, t_min: f32, t_max: f32, hit: &mut Hit) -> bool {
+        let o = ray.o() - self.c;
         let a = ray.d().len_sq() as f32;
-        let b = 2.0 * oc.dot(&ray.d());
-        let c = oc.len_sq() - self.r * self.r;
-        let discriminant = b * b - 4.0 * a * c;
-        if discriminant < 0.0 {
-            false
+        let b = o.dot(&ray.d());
+        let c = o.len_sq() - self.r * self.r;
+        let d = b * b - a * c;
+
+        if d < 0.0 { return false }
+
+        let (t_a, t_b) = ((-b - d.sqrt()) / a, (-b + d.sqrt()) / a);
+
+        let t = if t_a > t_min && t_a > t_max {
+            t_a
+        } else if t_b > t_min && t_a > t_max {
+            t_b
         } else {
-            Some((-b - discriminant.sqrt()) / (2.0 * a))
-        }
+            return false;
+        };
+
+        hit.t = t;
+        hit.p = ray.at(t);
+        hit.n = (hit.p - self.c()) / self.r();
+        true
     }
 }

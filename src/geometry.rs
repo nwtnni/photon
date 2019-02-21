@@ -4,13 +4,13 @@ mod sphere;
 
 pub use sphere::Sphere;
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Default)]
 pub struct Hit {
-    t: f32,
-    p: Vec3,
-    n: Vec3,
+    pub t: f32,
+    pub p: Vec3,
+    pub n: Vec3,
 }
 
 pub trait Surface {
-    fn hit(ray: &Ray, t_min: f32, t_max: f32, record: &mut Hit) -> bool;
+    fn hit(&self, ray: &Ray, t_min: f32, t_max: f32, record: &mut Hit) -> bool;
 }
