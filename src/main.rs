@@ -21,13 +21,16 @@ fn color(ray: &Ray, scene: &Surface) -> Vec3 {
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let nx = 200;
     let ny = 100;
+    let ns = 100;
     let mut ppm = photon::PPM::new(nx, ny);
     let mut outfile = std::fs::File::create("test.ppm")?;
 
-    let ll = Vec3::new(-2.0, -1.0, -1.0);
-    let horizontal = Vec3::new(4.0, 0.0, 0.0);
-    let vertical = Vec3::new(0.0, 2.0, 0.0);
-    let origin = Vec3::default();
+    let camera = Camera::new(
+        Vec3::new(-2.0, -1.0, -1.0),
+        Vec3::new(4.0, 0.0, 0.0),
+        Vec3::new(0.0, 2.0, 0.0),
+        Vec3::default(),
+    );
 
     let small = Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5);
     let large = Sphere::new(Vec3::new(0.0, -100.5, -1.0), 100.0);
@@ -37,10 +40,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     for y in 0..ny {
         for x in 0..nx {
-            let u = x as f32 / nx as f32;
-            let v = y as f32 / ny as f32;
-            let r = Ray::new(origin, ll + horizontal * u + vertical * v);
-            let c = color(&r, &scene);
+            let mut c = Vec3::default();
+            for _ in 0..ns {
+                let u = (x as f32 + rand::random::<f32>()) / nx as f32;
+                let v = (y as f32 + rand::random::<f32>()) / ny as f32;
+                let r = camera.get(u, v);
+                c += color(&r, &scene);
+            }
+            c /= ns as f32;
             ppm.set(x, y, (c[0], c[1], c[2]));
         }
     }
