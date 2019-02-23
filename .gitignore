@@ -12,3 +12,4 @@ Cargo.lock
 /target
 **/*.rs.bk
 *.tags
+*.ppm

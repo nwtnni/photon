@@ -1,14 +1,22 @@
 use photon::*;
 
+fn uniform_sphere() -> Vec3 {
+    let ones = Vec3::new(1.0, 1.0, 1.0);
+    loop {
+        let p = Vec3::new(
+            rand::random(), 
+            rand::random(), 
+            rand::random(),
+        ) * 2.0 - ones;
+        if p.len_sq() < 1.0 { break p }
+    }
+}
+
 fn color(ray: &Ray, scene: &Surface) -> Vec3 {
     let mut hit = Hit::default();
     if scene.hit(ray, 0.0, std::f32::MAX, &mut hit) {
-        let normal = Vec3::new(
-            hit.n.x() + 1.0,
-            hit.n.y() + 1.0,
-            hit.n.z() + 1.0,
-        );
-        normal * 0.5
+        let bounce = hit.p + hit.n + uniform_sphere();
+        color(&Ray::new(hit.p, bounce - hit.p), scene) * 0.5
     } else {
         let dir = ray.d().normalize();
         let t = 0.5 * (dir.y() + 1.0);
@@ -48,7 +56,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 c += color(&r, &scene);
             }
             c /= ns as f32;
-            ppm.set(x, y, (c[0], c[1], c[2]));
+            ppm.set(x, y, (c[0].sqrt(), c[1].sqrt(), c[2].sqrt()));
         }
     }
 
