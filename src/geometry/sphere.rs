@@ -1,16 +1,18 @@
 use crate::{Ray, Vec3};
 use crate::geometry::{Surface, Hit};
+use crate::material::Material;
 
 #[derive(Copy, Clone, Debug)]
-pub struct Sphere {
+pub struct Sphere<'scene> {
     c: Vec3,
     r: f32,
+    m: &'scene Material,
 }
 
-impl Sphere {
+impl<'scene> Sphere<'scene> {
     #[inline(always)]
-    pub fn new(c: Vec3, r: f32) -> Self {
-        Sphere { c, r }
+    pub fn new(c: Vec3, r: f32, m: &'scene Material) -> Self {
+        Sphere { c, r, m }
     }
 
     #[inline(always)]
@@ -20,8 +22,8 @@ impl Sphere {
     pub fn r(&self) -> f32 { self.r }
 }
 
-impl Surface for Sphere {
-    fn hit(&self, ray: &Ray, t_min: f32, t_max: f32, hit: &mut Hit) -> bool {
+impl<'scene> Surface<'scene> for Sphere<'scene> {
+    fn hit(&self, ray: &Ray, t_min: f32, t_max: f32, hit: &mut Hit<'scene>) -> bool {
         let o = ray.o() - self.c;
         let a = ray.d().len_sq() as f32;
         let b = o.dot(&ray.d());
@@ -43,6 +45,7 @@ impl Surface for Sphere {
         hit.t = t;
         hit.p = ray.at(t);
         hit.n = (hit.p - self.c()) / self.r();
+        hit.m = Some(self.m);
         true
     }
 }
