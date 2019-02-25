@@ -1,4 +1,4 @@
-use crate::Ray;
+use crate::geometry::Ray;
 use crate::surface::{Hit, Surface};
 
 #[derive(Clone, Debug, Default)]

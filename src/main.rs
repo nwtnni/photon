@@ -1,4 +1,8 @@
-use photon::*;
+use photon::geometry::{Ray, Vec3};
+use photon::material::{Diffuse, Metal};
+use photon::surface::{Surface, Sphere, List, Hit};
+use photon::camera::Camera;
+use photon::ppm::PPM;
 
 fn color(ray: &Ray, scene: &Surface, depth: i32) -> Vec3 {
     let mut hit = Hit::default();
@@ -23,7 +27,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let nx = 1600;
     let ny = 800;
     let ns = 100;
-    let mut ppm = photon::PPM::new(nx, ny, "test.ppm")?;
+    let mut ppm = PPM::new(nx, ny, "test.ppm")?;
 
     let camera = Camera::new(
         Vec3::new(-2.0, -1.0, -1.0),

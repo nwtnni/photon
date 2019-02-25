@@ -1,4 +1,4 @@
-use crate::{Vec3, Ray};
+use crate::geometry::{Ray, Vec3};
 
 pub struct Camera {
     corner: Vec3,

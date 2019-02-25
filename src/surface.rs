@@ -1,4 +1,5 @@
-use crate::{Ray, Vec3, Material};
+use crate::geometry::{Ray, Vec3};
+use crate::material::Material;
 
 mod sphere;
 mod list;

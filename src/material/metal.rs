@@ -1,4 +1,6 @@
-use crate::{Vec3, Hit, Ray, Material, uniform_sphere};
+use crate::geometry::{Ray, Vec3, uniform_sphere};
+use crate::material::Material;
+use crate::surface::Hit;
 
 #[derive(Copy, Clone, Debug, Default)]
 pub struct Metal {

@@ -1,4 +1,6 @@
-use crate::{Material, Ray, Hit, Vec3, uniform_sphere};
+use crate::geometry::{Ray, Vec3, uniform_sphere};
+use crate::surface::Hit;
+use crate::material::Material;
 
 #[derive(Copy, Clone, Debug, Default)]
 pub struct Diffuse {
