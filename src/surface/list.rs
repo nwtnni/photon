@@ -1,5 +1,5 @@
 use crate::Ray;
-use crate::geometry::{Hit, Surface};
+use crate::surface::{Hit, Surface};
 
 #[derive(Clone, Debug, Default)]
 pub struct List<'scene> {

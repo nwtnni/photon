@@ -1,5 +1,5 @@
 use crate::{Ray, Vec3};
-use crate::geometry::{Surface, Hit};
+use crate::surface::{Surface, Hit};
 use crate::material::Material;
 
 #[derive(Copy, Clone, Debug)]
