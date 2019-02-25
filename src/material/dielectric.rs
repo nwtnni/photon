@@ -11,25 +11,41 @@ impl Dielectric {
     pub fn new(index: f32) -> Self {
         Dielectric { index }
     }
+
+    fn shlick(&self, cosine: f32) -> f32 {
+        let r = (1.0 - self.index) / (1.0 + self.index);
+        let r = r * r;
+        r + (1.0 - r) * (1.0 - cosine).powf(5.0)
+    }
 }
 
 impl Material for Dielectric {
     fn scatter<'scene>(&self, ray: &Ray, hit: &'scene Hit, attenuation: &mut Vec3, scattered: &mut Ray) -> bool {
-        let reflected = reflect(ray.d(), hit.n);
         *attenuation = Vec3::new(1.0, 1.0, 1.0);
+        let reflected = reflect(ray.d(), hit.n);
+        let dot = ray.d().dot(&hit.n);
+        let cosine;
+        let outward;
+        let ni_over_nt;
 
-        let (outward, ni_over_nt) = if ray.d().dot(&hit.n) > 0.0 {
-            (-hit.n, self.index)
+        if dot > 0.0 {
+            cosine = self.index * dot / ray.d().len();
+            outward = -hit.n;
+            ni_over_nt = self.index;
         } else {
-            (hit.n, 1.0 / self.index)
+            cosine = -dot / ray.d().len();
+            outward = hit.n;
+            ni_over_nt = 1.0 / self.index;
         };
 
         if let Some(refracted) = refract(ray.d(), outward, ni_over_nt) {
-            *scattered = Ray::new(hit.p, refracted);
-        } else {
-            *scattered = Ray::new(hit.p, reflected);
+            if rand::random::<f32>() >= self.shlick(cosine) {
+                *scattered = Ray::new(hit.p, refracted);
+                return true
+            }
         }
 
+        *scattered = Ray::new(hit.p, reflected);
         true
     }
 }
