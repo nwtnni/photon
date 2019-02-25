@@ -23,8 +23,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let nx = 1600;
     let ny = 800;
     let ns = 100;
-    let mut ppm = photon::PPM::new(nx, ny);
-    let mut outfile = std::fs::File::create("test.ppm")?;
+    let mut ppm = photon::PPM::new(nx, ny, "test.ppm")?;
 
     let camera = Camera::new(
         Vec3::new(-2.0, -1.0, -1.0),
@@ -59,11 +58,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 c += color(&r, &scene, 0);
             }
             c /= ns as f32;
-            ppm.set(x, y, (c[0].sqrt(), c[1].sqrt(), c[2].sqrt()));
+            ppm.write(c[0].sqrt(), c[1].sqrt(), c[2].sqrt())?;
         }
         if y % 10 == 0 { println!("{}", y) }
     }
 
-    ppm.write(&mut outfile)?; 
     Ok(())
 }
