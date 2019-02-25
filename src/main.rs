@@ -1,5 +1,5 @@
 use photon::geometry::{Ray, Vec3};
-use photon::material::{Diffuse, Metal};
+use photon::material::{Diffuse, Metal, Dielectric};
 use photon::surface::{Surface, Sphere, List, Hit};
 use photon::camera::Camera;
 use photon::ppm::PPM;
@@ -38,12 +38,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let da = Diffuse::new(Vec3::new(0.8, 0.3, 0.3));
     let db = Diffuse::new(Vec3::new(0.8, 0.8, 0.0));
-    let ma = Metal::new(Vec3::new(0.8, 0.8, 0.8), 0.3);
+    let ga = Dielectric::new(1.5);
     let mb = Metal::new(Vec3::new(0.8, 0.6, 0.2), 1.0);
 
     let small = Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5, &da);
     let large = Sphere::new(Vec3::new(0.0, -100.5, -1.0), 100.0, &db);
-    let left = Sphere::new(Vec3::new(-1.0, 0.0, -1.0), 0.5, &ma);
+    let left = Sphere::new(Vec3::new(-1.0, 0.0, -1.0), 0.5, &ga);
     let right = Sphere::new(Vec3::new(1.0, 0.0, -1.0), 0.5, &mb);
 
     let mut scene = List::default();
@@ -52,7 +52,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     scene.push(&left);
     scene.push(&right);
 
-    for y in 0..ny {
+    for y in (0..ny).rev() {
         for x in 0..nx {
             let mut c = Vec3::default();
             for _ in 0..ns {

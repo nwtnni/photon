@@ -1,5 +1,5 @@
 use crate::geometry::{Ray, Vec3, uniform_sphere};
-use crate::material::Material;
+use crate::material::{Material, reflect};
 use crate::surface::Hit;
 
 #[derive(Copy, Clone, Debug, Default)]
@@ -18,8 +18,7 @@ impl Metal {
 impl Material for Metal {
     fn scatter(&self, ray: &Ray, hit: &Hit, attenuation: &mut Vec3, scattered: &mut Ray) -> bool {
         let d = ray.d().normalize();
-        let reflected = d - hit.n * 2.0 * d.dot(&hit.n);
-        *scattered = Ray::new(hit.p, reflected + uniform_sphere() * self.fuzz);
+        *scattered = Ray::new(hit.p, reflect(d, hit.n) + uniform_sphere() * self.fuzz);
         *attenuation = self.albedo;
         scattered.d().dot(&hit.n) > 0.0
     }
