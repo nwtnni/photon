@@ -28,6 +28,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let ny = 800;
     let ns = 100;
     let mut ppm = PPM::new(nx, ny, "test.ppm")?;
+    let bar = indicatif::ProgressBar::new(ny as u64);
+    bar.set_style(
+        indicatif::ProgressStyle::default_bar()
+            .template("[RENDERING] {bar:40.cyan/blue} | Elapsed: {elapsed_precise} | ETA: {eta_precise}")
+            .progress_chars("██ ")
+    );
 
     let origin = Vec3::new(3.0, 3.0, 2.0);
     let toward = Vec3::new(0.0, 0.0, -1.0);
@@ -73,7 +79,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             c /= ns as f32;
             ppm.write(c[0].sqrt(), c[1].sqrt(), c[2].sqrt())?;
         }
-        if y % 10 == 0 { println!("{}", y) }
+        if y % 10 == 0 { bar.inc(10); }
     }
 
     Ok(())
