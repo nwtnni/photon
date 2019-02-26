@@ -29,16 +29,27 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let ns = 100;
     let mut ppm = PPM::new(nx, ny, "test.ppm")?;
 
-    let camera = Camera::new(90.0, nx as f32 / ny as f32);
+    let camera = Camera::new(
+        Vec3::new(-2.0, 2.0, 1.0),
+        Vec3::new(0.0, 0.0, -1.0),
+        Vec3::new(0.0, 1.0, 0.0),
+        90.0,
+        nx as f32 / ny as f32,
+    );
 
-    let r = std::f32::consts::PI / 4.0;
-    let dl = Diffuse::new(Vec3::new(0.0, 0.0, 1.0));
-    let dr = Diffuse::new(Vec3::new(1.0, 0.0, 0.0));
+    let da = Diffuse::new(Vec3::new(0.8, 0.3, 0.3));
+    let db = Diffuse::new(Vec3::new(0.8, 0.8, 0.0));
+    let ga = Dielectric::new(1.5);
+    let mb = Metal::new(Vec3::new(0.8, 0.6, 0.2), 1.0);
 
-    let left = Sphere::new(Vec3::new(-r, 0.0, -1.0), r, &dl);
-    let right = Sphere::new(Vec3::new(r, 0.0, -1.0), r, &dr);
+    let small = Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5, &da);
+    let large = Sphere::new(Vec3::new(0.0, -100.5, -1.0), 100.0, &db);
+    let left = Sphere::new(Vec3::new(-1.0, 0.0, -1.0), 0.5, &ga);
+    let right = Sphere::new(Vec3::new(1.0, 0.0, -1.0), 0.5, &mb);
 
     let mut scene = List::default();
+    scene.push(&small);
+    scene.push(&large);
     scene.push(&left);
     scene.push(&right);
 

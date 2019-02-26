@@ -57,7 +57,7 @@ impl Vec3 {
         Vec3([
             self.y() * rhs.z() - self.z() * rhs.y(),
             self.z() * rhs.x() - self.x() * rhs.z(),
-            self.x() * rhs.y() - self.y() - rhs.z(),
+            self.x() * rhs.y() - self.y() * rhs.x(),
         ])
     }
 

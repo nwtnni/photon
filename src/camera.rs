@@ -8,14 +8,16 @@ pub struct Camera {
 }
 
 impl Camera {
-    pub fn new(fov: f32, aspect: f32) -> Self {
+    pub fn new(origin: Vec3, toward: Vec3, up: Vec3, fov: f32, aspect: f32) -> Self {
         let theta = fov * std::f32::consts::PI / 180.0;
         let height = (theta / 2.0).tan(); 
         let width = aspect * height;
-        let corner = Vec3::new(-width, -height, -1.0);
-        let horizontal = Vec3::new(2.0 * width, 0.0, 0.0);
-        let vertical = Vec3::new(0.0, 2.0 * height, 0.0);
-        let origin = Vec3::default();
+        let w = (origin - toward).normalize();
+        let u = up.cross(&w).normalize();
+        let v = w.cross(&u);
+        let corner = origin - u * width - v * height - w;
+        let horizontal = u * 2.0 * width;
+        let vertical = v * 2.0 * height;
         Camera { corner, horizontal, vertical, origin }
     }
 
