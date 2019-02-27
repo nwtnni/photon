@@ -7,6 +7,7 @@ A Rust implementation of [Ray Tracing in One Weekend][1], by Peter Shirley.
 - Live preview using an [`sdl2`][2] canvas
 - Multithreading using [`rayon`][3]
 - Vector operations using [macros to reduce boilerplate][4]
+- Simple [bump allocator][10]
 
 # Examples
 
@@ -38,3 +39,4 @@ since they were rendered before I switched to using [`lodepng`][5] for PNG encod
 [7]: renders/dielectric.png
 [8]: renders/focus.png
 [9]: renders/full.png
+[10]: src/arena/copy.rs
