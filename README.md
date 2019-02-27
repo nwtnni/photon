@@ -4,22 +4,37 @@ A Rust implementation of [Ray Tracing in One Weekend][1], by Peter Shirley.
 
 # Features
 
-- Live preview using an [`sdl2`][5] canvas
-- Multithreading using [`rayon`][6]
-- Vector operations using [macros to reduce boilerplate][7]
+- Live preview using an [`sdl2`][2] canvas
+- Multithreading using [`rayon`][3]
+- Vector operations using [macros to reduce boilerplate][4]
 
 # Examples
 
-![Metal spheres][2]
+Note: all images in the `render` directory except `full.png` were converted from .ppm to .png,
+since they were rendered before I switched to using [`lodepng`][5] for PNG encoding.
 
-![Glass spheres][3]
+### Metal
 
-![Full scene][4]
+![Metal spheres][6]
+
+### Glass
+
+![Glass spheres][7]
+
+### Depth of Field
+
+![Depth of field][8]
+
+### Full Scene
+
+![Full scene][9]
 
 [1]: https://github.com/petershirley/raytracinginoneweekend
-[2]: renders/metal.ppm
-[3]: renders/dielectric.ppm
-[4]: renders/full.ppm
-[5]: https://github.com/Rust-SDL2/rust-sdl2 
-[6]: https://github.com/rayon-rs/rayon
-[7]: src/geometry/vec.rs
+[2]: https://github.com/Rust-SDL2/rust-sdl2 
+[3]: https://github.com/rayon-rs/rayon
+[4]: src/geometry/vec.rs
+[5]: https://github.com/kornelski/lodepng-rust 
+[6]: renders/metal.png
+[7]: renders/dielectric.png
+[8]: renders/focus.png
+[9]: renders/full.png

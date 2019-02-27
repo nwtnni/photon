@@ -7,7 +7,6 @@ use photon::material::{Material, Diffuse, Metal, Dielectric};
 use photon::surface::{Surface, Sphere, List, Hit};
 use photon::camera::Camera;
 use photon::preview::Preview;
-use photon::ppm::PPM;
 
 fn color(ray: &Ray, scene: &Surface, depth: i32) -> Vec3 {
     let mut hit = Hit::default();
@@ -33,7 +32,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let ny = 1080;
     let ns = 100;
 
-    let mut ppm = PPM::new(nx, ny, "test.ppm")?;
     let (tx, rx) = crossbeam::channel::unbounded();
     let preview = Preview::new(nx, ny, rx);
     let handle = std::thread::spawn(|| preview.run());
@@ -42,7 +40,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let toward = Vec3::new(0.0, 0.0, 0.0);
     let up = Vec3::new(0.0, 1.0, 0.0);
     let focus = 12.0;
-    let aperture = 0.5;
+    let aperture = 0.20;
     let camera = Camera::new(origin, toward, up, 20.0, nx as f32 / ny as f32, aperture, focus);
 
     let mut scene = List::default();
@@ -138,12 +136,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         (y, buffer)
     }));
 
-    for y in (0..ny).rev() {
-        for (r, g, b) in buffers.remove(&y).unwrap().into_iter() {
-            ppm.write(r, g, b)?;
-        }
-    }
+    let buffer = (0..ny).rev()
+        .flat_map(|y| buffers.remove(&y).unwrap().into_iter())
+        .collect::<Vec<_>>();
 
+    lodepng::encode24_file("out.png", &buffer, nx, ny)?;
     handle.join().unwrap();
     Ok(())
 }
