@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use rayon::prelude::*;
 
+use photon::arena::CopyArena;
 use photon::geometry::{Ray, Vec3};
 use photon::material::{Material, Diffuse, Metal, Dielectric};
 use photon::surface::{Surface, Sphere, List, Hit};
@@ -30,13 +31,14 @@ fn color(ray: &Ray, scene: &Surface, depth: i32) -> Vec3 {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let nx = 1920; // Width
-    let ny = 1080; // Height
-    let ns = 1000;  // Samples per pixel
+    let nx = 500; // Width
+    let ny = 250; // Height
+    let ns = 100;  // Samples per pixel
 
     let (tx, rx) = crossbeam::channel::unbounded();
     let preview = Preview::new(nx, ny, rx);
     let handle = std::thread::spawn(|| preview.run());
+    let arena = CopyArena::new(2 * 16 * 1024);
 
     // Camera setup
     let origin = Vec3::new(10.0, 3.0, 10.0);
@@ -46,69 +48,40 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let aperture = 0.20;
     let camera = Camera::new(origin, toward, up, 20.0, nx as f32 / ny as f32, aperture, focus);
 
-    // Scene setup
-    //
-    // -- NOTE --
-    // This is kind of hacky due to how Spheres and Lists take &dyn Material and
-    // &dyn Surface references, respectively, instead of Box<dyn Material> or
-    // Box<dyn Surface>. Theoretically reusing the same stack references should
-    // be faster than a wrapper like Box or Rc or Arc, but initialization and
-    // scene setup become kind of painful.
-    //
     let mut scene = List::default();
-    let mut diffuse = Vec::new();
-    let mut dielectric = Vec::new();
-    let mut metallic = Vec::new();
-    let mut spheres = Vec::new();
-    let mut materials = Vec::new();
-    let mut centers = Vec::new();
 
     macro_rules! rand { () => { rand::random::<f32>() } };
 
-    // Initialize materials first
     for x in (-10..=10).map(|x| x as f32) {
         for y in (-10..=10).map(|y| y as f32) {
+
             let material_chance = rand::random::<f32>();
             let center = Vec3::new(x + 0.9 * rand!(), 0.2, y + 0.9 * rand!());
-            if (center - Vec3::new(4.0, 0.2, 0.0)).len() > 0.9 {
-                centers.push(center);
-                if material_chance < 0.8 {
-                    diffuse.push(Diffuse::new(Vec3::new(
-                        rand!() * rand!(),
-                        rand!() * rand!(),
-                        rand!() * rand!(),
-                    )));
-                    materials.push(0u8);
-                } else if material_chance < 0.95 {
-                    metallic.push(Metal::new(
-                        Vec3::new(
-                            (rand!() + 1.0) * 0.5,
-                            (rand!() + 1.0) * 0.5,
-                            (rand!() + 1.0) * 0.5,
-                        ),
-                        rand!() * 0.5,
-                    ));
-                    materials.push(1u8);
-                } else {
-                    dielectric.push(Dielectric::new(rand!() * 2.0));
-                    materials.push(2u8);
-                }
-            }
-        }
-    }
+            if (center - Vec3::new(4.0, 0.2, 0.0)).len() <= 0.9 { continue }
 
-    // Then initialize spheres
-    let mut diffuse_iter = diffuse.iter();
-    let mut dielectric_iter = dielectric.iter();
-    let mut metallic_iter = metallic.iter();
-    for (m, c) in materials.into_iter().zip(centers.into_iter()) {
-        let material = match m {
-        | 0 => diffuse_iter.next().unwrap() as &dyn Material,
-        | 1 => metallic_iter.next().unwrap() as &dyn Material,
-        | 2 => dielectric_iter.next().unwrap() as &dyn Material,
-        | _ => unreachable!(),
-        };
-        spheres.push(Sphere::new(c, 0.2, material));
+            let material = if material_chance < 0.6 {
+                arena.alloc(Diffuse::new(Vec3::new(
+                    rand!() * rand!(),
+                    rand!() * rand!(),
+                    rand!() * rand!(),
+                ))) as &dyn Material
+            } else if material_chance < 0.8 {
+                arena.alloc(Metal::new(
+                    Vec3::new(
+                        (rand!() + 1.0) * 0.5,
+                        (rand!() + 1.0) * 0.5,
+                        (rand!() + 1.0) * 0.5,
+                    ),
+                    rand!() * 0.5,
+                )) as &dyn Material
+            } else {
+                arena.alloc(
+                    Dielectric::new(rand!() * 2.0)
+                ) as &dyn Material
+            };
+
+            scene.push(arena.alloc(Sphere::new(center, 0.2, material)));
+        }
     }
 
     let gray = Diffuse::new(Vec3::new(0.5, 0.5, 0.5));
@@ -121,8 +94,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mid = Sphere::new(Vec3::new(0.0, 1.0, 0.0), 1.0, &glass);
     let close = Sphere::new(Vec3::new(4.0, 1.0, 0.0), 1.0, &metal);
 
-    // Finally initialize scene list
-    for sphere in &spheres { scene.push(sphere); }
     scene.push(&floor);
     scene.push(&far);
     scene.push(&mid);
