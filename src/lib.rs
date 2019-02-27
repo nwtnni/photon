@@ -1,3 +1,6 @@
+/// Memory allocation
+pub mod arena;
+
 /// Camera model
 pub mod camera;
 

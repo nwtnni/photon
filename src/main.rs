@@ -32,7 +32,7 @@ fn color(ray: &Ray, scene: &Surface, depth: i32) -> Vec3 {
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let nx = 1920; // Width
     let ny = 1080; // Height
-    let ns = 100;  // Samples per pixel
+    let ns = 1000;  // Samples per pixel
 
     let (tx, rx) = crossbeam::channel::unbounded();
     let preview = Preview::new(nx, ny, rx);
