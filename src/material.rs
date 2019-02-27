@@ -9,14 +9,18 @@ pub use diffuse::Diffuse;
 pub use dielectric::Dielectric;
 pub use metal::Metal;
 
+/// Represents a material that can scatter light.
 pub trait Material: std::fmt::Debug + Send + Sync {
     fn scatter<'scene>(&self, ray: &Ray, hit: &'scene Hit, attenuation: &mut Vec3, scattered: &mut Ray) -> bool;
 }
 
+/// Reflects vector `v` over normal vector `n`.
 pub(crate) fn reflect(v: Vec3, n: Vec3) -> Vec3 {
     v - n * v.dot(&n) * 2.0
 }
 
+/// Refracts vector `v` at a surface with normal vector `n` and
+/// refractive index ratio `ni_over_nt`.
 pub(crate) fn refract(v: Vec3, n: Vec3, ni_over_nt: f32) -> Option<Vec3> {
     let uv = v.normalize();
     let dt = uv.dot(&n);

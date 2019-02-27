@@ -1,12 +1,26 @@
-use crate::geometry::{Ray, Vec3};
+use crate::geometry::{Ray, Vec3, uniform_disk};
 
+/// Source of light rays.
 pub struct Camera {
+    /// Lower left corner
     corner: Vec3,
+
+    /// Horizontal axis with depth of field
     horizontal: Vec3,
+
+    /// Vertical axis with depth of field
     vertical: Vec3,
+
+    /// Camera position
     origin: Vec3,
+
+    /// Normalized horizontal axis
     u: Vec3,
+
+    /// Normalized vertical axis
     v: Vec3,
+
+    /// Lens radius
     lens: f32,
 }
 
@@ -40,16 +54,15 @@ impl Camera {
         }
     }
 
+    /// Generate a random point within this camera's lens disk
     fn random_offset(&self) -> Vec3 {
-        let ones = Vec3::new(1.0, 1.0, 0.0);
-        let d = loop {
-            let d = Vec3::new(rand::random(), rand::random(), 0.0) * 2.0 - ones;
-            if d.len_sq() < 1.0 { break d }
-        };
+        let d = uniform_disk();
         self.u * self.lens * d.x() +
         self.v * self.lens * d.y()
     }
 
+    /// Generate a ray through normalized screen coordinates `(u, v)`,
+    /// where both `u` and `v` are in the range `[0.0, 1.0]`.
     pub fn get(&self, u: f32, v: f32) -> Ray {
         let offset = self.random_offset();
         Ray::new(

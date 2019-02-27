@@ -1,12 +1,15 @@
 use crate::geometry::Ray;
 use crate::surface::{Hit, Surface};
 
+/// Naive list of surfaces.
+/// Intersection is linear time w.r.t number of surfaces.
 #[derive(Clone, Debug, Default)]
 pub struct List<'scene> {
     surfaces: Vec<&'scene dyn Surface<'scene>>,
 }
 
 impl<'scene> List<'scene> {
+    /// Append a new surface to this list.
     pub fn push(&mut self, surface: &'scene Surface<'scene>) {
         self.surfaces.push(surface);
     }

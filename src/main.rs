@@ -8,6 +8,8 @@ use photon::surface::{Surface, Sphere, List, Hit};
 use photon::camera::Camera;
 use photon::preview::Preview;
 
+/// Main ray tracing function.
+/// Intersects `ray` with `scene`, potentially recursing upon reflecting or refracting.
 fn color(ray: &Ray, scene: &Surface, depth: i32) -> Vec3 {
     let mut hit = Hit::default();
     if scene.hit(ray, 0.001, std::f32::MAX, &mut hit) {
@@ -28,14 +30,15 @@ fn color(ray: &Ray, scene: &Surface, depth: i32) -> Vec3 {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let nx = 1920;
-    let ny = 1080;
-    let ns = 100;
+    let nx = 1920; // Width
+    let ny = 1080; // Height
+    let ns = 100;  // Samples per pixel
 
     let (tx, rx) = crossbeam::channel::unbounded();
     let preview = Preview::new(nx, ny, rx);
     let handle = std::thread::spawn(|| preview.run());
 
+    // Camera setup
     let origin = Vec3::new(10.0, 3.0, 10.0);
     let toward = Vec3::new(0.0, 0.0, 0.0);
     let up = Vec3::new(0.0, 1.0, 0.0);
@@ -43,6 +46,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let aperture = 0.20;
     let camera = Camera::new(origin, toward, up, 20.0, nx as f32 / ny as f32, aperture, focus);
 
+    // Scene setup
+    //
+    // -- NOTE --
+    // This is kind of hacky due to how Spheres and Lists take &dyn Material and
+    // &dyn Surface references, respectively, instead of Box<dyn Material> or
+    // Box<dyn Surface>. Theoretically reusing the same stack references should
+    // be faster than a wrapper like Box or Rc or Arc, but initialization and
+    // scene setup become kind of painful.
+    //
     let mut scene = List::default();
     let mut diffuse = Vec::new();
     let mut dielectric = Vec::new();
@@ -53,6 +65,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     macro_rules! rand { () => { rand::random::<f32>() } };
 
+    // Initialize materials first
     for x in (-10..=10).map(|x| x as f32) {
         for y in (-10..=10).map(|y| y as f32) {
             let material_chance = rand::random::<f32>();
@@ -84,6 +97,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     }
 
+    // Then initialize spheres
     let mut diffuse_iter = diffuse.iter();
     let mut dielectric_iter = dielectric.iter();
     let mut metallic_iter = metallic.iter();
@@ -97,8 +111,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         spheres.push(Sphere::new(c, 0.2, material));
     }
 
-    for sphere in &spheres { scene.push(sphere); }
-
     let gray = Diffuse::new(Vec3::new(0.5, 0.5, 0.5));
     let diffuse = Diffuse::new(Vec3::new(0.2, 0.5, 0.6));
     let glass = Dielectric::new(1.5);
@@ -109,12 +121,17 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mid = Sphere::new(Vec3::new(0.0, 1.0, 0.0), 1.0, &glass);
     let close = Sphere::new(Vec3::new(4.0, 1.0, 0.0), 1.0, &metal);
 
+    // Finally initialize scene list
+    for sphere in &spheres { scene.push(sphere); }
     scene.push(&floor);
     scene.push(&far);
     scene.push(&mid);
     scene.push(&close);
 
+    // Row to pixel buffer map
     let mut buffers: HashMap<usize, Vec<(u8, u8, u8)>> = HashMap::with_capacity(ny);
+
+    // Allow each thread exclusive access to a single row 
     buffers.par_extend((0..ny).into_par_iter().map(move |y| {
         let mut buffer = Vec::with_capacity(nx);
         for x in 0..nx {
@@ -136,6 +153,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         (y, buffer)
     }));
 
+    // Collect buffers for PNG encoding
     let buffer = (0..ny).rev()
         .flat_map(|y| buffers.remove(&y).unwrap().into_iter())
         .collect::<Vec<_>>();

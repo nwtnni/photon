@@ -2,10 +2,16 @@ use crate::geometry::{Ray, Vec3};
 use crate::surface::{Surface, Hit};
 use crate::material::Material;
 
+/// Basic sphere.
 #[derive(Copy, Clone, Debug)]
 pub struct Sphere<'scene> {
+    /// Center
     c: Vec3,
+
+    /// Radius
     r: f32,
+
+    /// Material
     m: &'scene dyn Material,
 }
 
@@ -34,6 +40,7 @@ impl<'scene> Surface<'scene> for Sphere<'scene> {
 
         let (t_a, t_b) = ((-b - d.sqrt()) / a, (-b + d.sqrt()) / a);
 
+        // Get first intersection within [t_min, t_max]
         let t = if t_a > t_min && t_a < t_max {
             t_a
         } else if t_b > t_min && t_a < t_max {

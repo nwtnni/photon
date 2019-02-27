@@ -7,6 +7,9 @@ use std::ops::{
     Neg
 };
 
+pub const ONES_3D: Vec3 = Vec3([1.0, 1.0, 1.0]);
+pub const ONES_2D: Vec3 = Vec3([1.0, 1.0, 0.0]);
+
 #[derive(Copy, Clone, Debug, Default, PartialEq, PartialOrd)]
 pub struct Vec3([f32; 3]);
 
