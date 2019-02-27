@@ -3,7 +3,7 @@ use crate::surface::{Hit, Surface};
 
 #[derive(Clone, Debug, Default)]
 pub struct List<'scene> {
-    surfaces: Vec<&'scene Surface<'scene>>,
+    surfaces: Vec<&'scene dyn Surface<'scene>>,
 }
 
 impl<'scene> List<'scene> {

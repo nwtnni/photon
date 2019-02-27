@@ -11,13 +11,7 @@ impl PPM {
         Ok(PPM(writer))
     }
 
-    pub fn write(&mut self, r: f32, g: f32, b: f32) -> Result<(), std::io::Error> {
-        write!(
-            self.0,
-            "{} {} {} ",
-            (r * 255.99) as u8,
-            (g * 255.99) as u8,
-            (b * 255.99) as u8,
-        )
+    pub fn write(&mut self, r: u8, g: u8, b: u8) -> Result<(), std::io::Error> {
+        write!(self.0, "{} {} {} ", r, g, b)
     }
 }

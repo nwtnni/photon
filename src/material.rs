@@ -9,7 +9,7 @@ pub use diffuse::Diffuse;
 pub use dielectric::Dielectric;
 pub use metal::Metal;
 
-pub trait Material: std::fmt::Debug {
+pub trait Material: std::fmt::Debug + Send + Sync {
     fn scatter<'scene>(&self, ray: &Ray, hit: &'scene Hit, attenuation: &mut Vec3, scattered: &mut Ray) -> bool;
 }
 

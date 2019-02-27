@@ -6,7 +6,7 @@ use crate::material::Material;
 pub struct Sphere<'scene> {
     c: Vec3,
     r: f32,
-    m: &'scene Material,
+    m: &'scene dyn Material,
 }
 
 impl<'scene> Sphere<'scene> {

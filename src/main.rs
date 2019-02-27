@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use photon::geometry::{Ray, Vec3};
 use photon::material::{Diffuse, Metal, Dielectric};
 use photon::surface::{Surface, Sphere, List, Hit};
@@ -27,13 +29,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let nx = 1600;
     let ny = 800;
     let ns = 100;
+
     let mut ppm = PPM::new(nx, ny, "test.ppm")?;
-    let bar = indicatif::ProgressBar::new(ny as u64);
-    bar.set_style(
-        indicatif::ProgressStyle::default_bar()
-            .template("[RENDERING] {bar:40.cyan/blue} | Elapsed: {elapsed_precise} | ETA: {eta_precise}")
-            .progress_chars("██ ")
-    );
 
     let origin = Vec3::new(3.0, 3.0, 2.0);
     let toward = Vec3::new(0.0, 0.0, -1.0);
@@ -67,19 +64,39 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     scene.push(&left);
     scene.push(&right);
 
-    for y in (0..ny).rev() {
-        for x in 0..nx {
-            let mut c = Vec3::default();
-            for _ in 0..ns {
-                let u = (x as f32 + rand::random::<f32>()) / nx as f32;
-                let v = (y as f32 + rand::random::<f32>()) / ny as f32;
-                let r = camera.get(u, v);
-                c += color(&r, &scene, 0);
-            }
-            c /= ns as f32;
-            ppm.write(c[0].sqrt(), c[1].sqrt(), c[2].sqrt())?;
+    let mut pool = scoped_threadpool::Pool::new(8);
+    let mut buffers: HashMap<usize, Vec<(u8, u8, u8)>> = (0..ny)
+        .map(|y| (y, Vec::with_capacity(nx)))
+        .collect();
+
+    pool.scoped(|s| {
+        for (&y, buffer) in &mut buffers {
+            let scene = &scene;
+            let camera = &camera;
+            s.execute(move || {
+                for x in 0..nx {
+                    let mut c = Vec3::default();
+                    for _ in 0..ns {
+                        let u = (x as f32 + rand::random::<f32>()) / nx as f32;
+                        let v = (y as f32 + rand::random::<f32>()) / ny as f32;
+                        let r = camera.get(u, v);
+                        c += color(&r, scene, 0);
+                    }
+                    c /= ns as f32;
+                    buffer.push((
+                        (c[0].sqrt() * 255.99) as u8,
+                        (c[1].sqrt() * 255.99) as u8,
+                        (c[2].sqrt() * 255.99) as u8,
+                    ));
+                }
+            });
         }
-        if y % 10 == 0 { bar.inc(10); }
+    });
+
+    for y in (0..ny).rev() {
+        for (r, g, b) in buffers.remove(&y).unwrap().into_iter() {
+            ppm.write(r, g, b)?;
+        }
     }
 
     Ok(())
