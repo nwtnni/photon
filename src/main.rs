@@ -6,6 +6,7 @@ use photon::geometry::{Ray, Vec3};
 use photon::material::{Diffuse, Metal, Dielectric};
 use photon::surface::{Surface, Sphere, List, Hit};
 use photon::camera::Camera;
+use photon::preview::Preview;
 use photon::ppm::PPM;
 
 fn color(ray: &Ray, scene: &Surface, depth: i32) -> Vec3 {
@@ -33,6 +34,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let ns = 100;
 
     let mut ppm = PPM::new(nx, ny, "test.ppm")?;
+    let (tx, rx) = crossbeam::channel::unbounded();
+    let preview = Preview::new(nx, ny, rx);
+    let handle = std::thread::spawn(|| preview.run());
 
     let origin = Vec3::new(3.0, 3.0, 2.0);
     let toward = Vec3::new(0.0, 0.0, -1.0);
@@ -67,7 +71,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     scene.push(&right);
 
     let mut buffers: HashMap<usize, Vec<(u8, u8, u8)>> = HashMap::with_capacity(ny);
-    buffers.par_extend((0..ny).into_par_iter().map(|y| {
+    buffers.par_extend((0..ny).into_par_iter().map(move |y| {
         let mut buffer = Vec::with_capacity(nx);
         for x in 0..nx {
             let mut c = Vec3::default();
@@ -75,14 +79,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 let u = (x as f32 + rand::random::<f32>()) / nx as f32;
                 let v = (y as f32 + rand::random::<f32>()) / ny as f32;
                 let r = camera.get(u, v);
-                c += color(&r, &scene, 0);
+                c += color(&r, &scene, 0) / ns as f32;
             }
-            c /= ns as f32;
-            buffer.push((
+            let rgb = (
                 (c[0].sqrt() * 255.99) as u8,
                 (c[1].sqrt() * 255.99) as u8,
                 (c[2].sqrt() * 255.99) as u8,
-            ));
+            );
+            tx.send((x, y, rgb)).ok();
+            buffer.push(rgb);
         }
         (y, buffer)
     }));
@@ -93,5 +98,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     }
 
+    handle.join().unwrap();
     Ok(())
 }
