@@ -3,19 +3,17 @@ use std::cell;
 
 #[derive(Debug)]
 pub struct CopyArena {
-    cap: cell::Cell<usize>,
+    buf: *mut u8,
+    cap: usize,
     len: cell::Cell<usize>,
-    buf: cell::Cell<*mut u8>,
 }
 
 impl CopyArena {
     pub fn new(capacity: usize) -> Self {
         unsafe {
-            let cap = cell::Cell::new(capacity);
+            let cap = capacity;
             let len = cell::Cell::new(0);
-            let buf = cell::Cell::new(alloc::alloc(
-                alloc::Layout::from_size_align_unchecked(capacity, 8)
-            ));
+            let buf = alloc::alloc(alloc::Layout::from_size_align_unchecked(cap, 8));
             CopyArena { cap, len, buf }
         }
     }
@@ -23,13 +21,11 @@ impl CopyArena {
     pub fn alloc<T: Copy>(&self, item: T) -> &T {
         let size = std::mem::size_of::<T>();
         let len = self.len.get();
-        let cap = self.cap.get();
-        if len + size >= cap { panic!("[INTERNAL ERROR]: Arena ran out of memory"); }
+        if len + size >= self.cap { panic!("[INTERNAL ERROR]: Arena ran out of memory"); }
+        self.len.set(len + size);
         unsafe {
-            let ptr = self.buf.get() as *mut T;
-            ptr.write_unaligned(item);
-            self.len.set(len + size);
-            self.buf.set(ptr.add(size) as *mut u8);
+            let ptr = self.buf.add(len) as *mut T;
+            ptr.write(item);
             &*ptr
         }
     }
@@ -39,8 +35,8 @@ impl Drop for CopyArena {
     fn drop(&mut self) {
         unsafe {
             alloc::dealloc(
-                self.buf.get(),
-                alloc::Layout::from_size_align_unchecked(self.cap.get(), 8)
+                self.buf,
+                alloc::Layout::from_size_align_unchecked(self.cap, 8)
             );
         }
     }
