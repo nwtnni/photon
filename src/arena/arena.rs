@@ -1,6 +1,7 @@
 use std::alloc;
 use std::cell;
 
+#[derive(Debug)]
 pub struct Arena<T> {
     buf: *mut T,
     cap: usize,
@@ -32,14 +33,36 @@ impl<T> Arena<T> {
 impl<T> Drop for Arena<T> {
     fn drop(&mut self) {
         unsafe {
-            // Call destructors
+            // Run drop implementations
             for i in (0..self.len.get()).rev() {
                 std::ptr::read(self.buf.add(i) as *const T);
             }
+
             alloc::dealloc(
                 self.buf as *mut u8,
                 alloc::Layout::from_size_align_unchecked(self.cap, 8),
             );
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::Arena;
+
+    struct Dropper(usize);
+    
+    impl Drop for Dropper {
+        fn drop(&mut self) {
+            println!("Dropping {}", self.0);
+        }
+    }
+
+    #[test]
+    fn test_drop() {
+        let arena = Arena::new(1024);
+        arena.alloc(Dropper(0));
+        arena.alloc(Dropper(1));
+        arena.alloc(Dropper(2));
     }
 }
