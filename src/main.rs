@@ -1,5 +1,7 @@
 use std::collections::HashMap;
 
+use rayon::prelude::*;
+
 use photon::geometry::{Ray, Vec3};
 use photon::material::{Diffuse, Metal, Dielectric};
 use photon::surface::{Surface, Sphere, List, Hit};
@@ -64,34 +66,26 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     scene.push(&left);
     scene.push(&right);
 
-    let mut pool = scoped_threadpool::Pool::new(8);
-    let mut buffers: HashMap<usize, Vec<(u8, u8, u8)>> = (0..ny)
-        .map(|y| (y, Vec::with_capacity(nx)))
-        .collect();
-
-    pool.scoped(|s| {
-        for (&y, buffer) in &mut buffers {
-            let scene = &scene;
-            let camera = &camera;
-            s.execute(move || {
-                for x in 0..nx {
-                    let mut c = Vec3::default();
-                    for _ in 0..ns {
-                        let u = (x as f32 + rand::random::<f32>()) / nx as f32;
-                        let v = (y as f32 + rand::random::<f32>()) / ny as f32;
-                        let r = camera.get(u, v);
-                        c += color(&r, scene, 0);
-                    }
-                    c /= ns as f32;
-                    buffer.push((
-                        (c[0].sqrt() * 255.99) as u8,
-                        (c[1].sqrt() * 255.99) as u8,
-                        (c[2].sqrt() * 255.99) as u8,
-                    ));
-                }
-            });
+    let mut buffers: HashMap<usize, Vec<(u8, u8, u8)>> = HashMap::with_capacity(ny);
+    buffers.par_extend((0..ny).into_par_iter().map(|y| {
+        let mut buffer = Vec::with_capacity(nx);
+        for x in 0..nx {
+            let mut c = Vec3::default();
+            for _ in 0..ns {
+                let u = (x as f32 + rand::random::<f32>()) / nx as f32;
+                let v = (y as f32 + rand::random::<f32>()) / ny as f32;
+                let r = camera.get(u, v);
+                c += color(&r, &scene, 0);
+            }
+            c /= ns as f32;
+            buffer.push((
+                (c[0].sqrt() * 255.99) as u8,
+                (c[1].sqrt() * 255.99) as u8,
+                (c[2].sqrt() * 255.99) as u8,
+            ));
         }
-    });
+        (y, buffer)
+    }));
 
     for y in (0..ny).rev() {
         for (r, g, b) in buffers.remove(&y).unwrap().into_iter() {
