@@ -1,3 +1,4 @@
+mod bound;
 mod ray;
 mod vec;
 
