@@ -31,9 +31,9 @@ fn color(ray: &Ray, scene: &Surface, depth: i32) -> Vec3 {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let nx = 500; // Width
-    let ny = 250; // Height
-    let ns = 100;  // Samples per pixel
+    let nx = 1920; // Width
+    let ny = 1080; // Height
+    let ns = 250;  // Samples per pixel
 
     let (tx, rx) = crossbeam::channel::unbounded();
     let preview = Preview::new(nx, ny, rx);
@@ -44,9 +44,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let origin = Vec3::new(10.0, 3.0, 10.0);
     let toward = Vec3::new(0.0, 0.0, 0.0);
     let up = Vec3::new(0.0, 1.0, 0.0);
+    let fov = 20.0;
+    let aspect = nx as f32 / ny as f32;
     let focus = 12.0;
     let aperture = 0.20;
-    let camera = Camera::new(origin, toward, up, 20.0, nx as f32 / ny as f32, aperture, focus);
+    let open = 0.0;
+    let shut = 1.0;
+    let camera = Camera::new(origin, toward, up, fov, aspect, aperture, focus, open, shut);
 
     let mut scene = List::default();
 
@@ -54,11 +58,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     for x in (-10..=10).map(|x| x as f32) {
         for y in (-10..=10).map(|y| y as f32) {
-
             let material_chance = rand::random::<f32>();
             let center = Vec3::new(x + 0.9 * rand!(), 0.2, y + 0.9 * rand!());
             if (center - Vec3::new(4.0, 0.2, 0.0)).len() <= 0.9 { continue }
-
             let material = if material_chance < 0.6 {
                 arena.alloc(Diffuse::new(Vec3::new(
                     rand!() * rand!(),
@@ -79,8 +81,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     Dielectric::new(rand!() * 2.0)
                 ) as &dyn Material
             };
-
-            scene.push(arena.alloc(Sphere::new(center, 0.2, material)));
+            let sphere = Sphere::new(center, 0.2, material);
+            let moving = if rand!() < 0.5 {
+                sphere.with_velocity(Vec3::new(0.0, 0.5 * rand!(), 0.0))
+            } else {
+                sphere
+            };
+            scene.push(arena.alloc(moving));
         }
     }
 

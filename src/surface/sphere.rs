@@ -8,6 +8,9 @@ pub struct Sphere<'scene> {
     /// Center
     c: Vec3,
 
+    /// Velocity
+    v: Vec3,
+
     /// Radius
     r: f32,
 
@@ -18,7 +21,12 @@ pub struct Sphere<'scene> {
 impl<'scene> Sphere<'scene> {
     #[inline(always)]
     pub fn new(c: Vec3, r: f32, m: &'scene Material) -> Self {
-        Sphere { c, r, m }
+        Sphere { c, r, m, v: Vec3::default() }
+    }
+
+    #[inline(always)]
+    pub fn with_velocity(self, v: Vec3) -> Self {
+        Sphere { v, .. self }
     }
 
     #[inline(always)]
@@ -26,11 +34,15 @@ impl<'scene> Sphere<'scene> {
 
     #[inline(always)]
     pub fn r(&self) -> f32 { self.r }
+
+    fn center(&self, t: f32) -> Vec3 {
+        self.c + self.v * t
+    }
 }
 
 impl<'scene> Surface<'scene> for Sphere<'scene> {
     fn hit(&self, ray: &Ray, t_min: f32, t_max: f32, hit: &mut Hit<'scene>) -> bool {
-        let o = ray.o() - self.c;
+        let o = ray.o() - self.center(ray.t());
         let a = ray.d().len_sq() as f32;
         let b = o.dot(&ray.d());
         let c = o.len_sq() - self.r * self.r;

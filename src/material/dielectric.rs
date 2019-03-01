@@ -40,12 +40,12 @@ impl Material for Dielectric {
 
         if let Some(refracted) = refract(ray.d(), outward, ni_over_nt) {
             if rand::random::<f32>() >= self.shlick(cosine) {
-                *scattered = Ray::new(hit.p, refracted);
+                *scattered = Ray::new(hit.p, refracted, ray.t());
                 return true
             }
         }
 
-        *scattered = Ray::new(hit.p, reflected);
+        *scattered = Ray::new(hit.p, reflected, ray.t());
         true
     }
 }

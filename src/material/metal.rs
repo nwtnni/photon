@@ -18,8 +18,12 @@ impl Metal {
 impl Material for Metal {
     fn scatter(&self, ray: &Ray, hit: &Hit, attenuation: &mut Vec3, scattered: &mut Ray) -> bool {
         let d = ray.d().normalize();
-        *scattered = Ray::new(hit.p, reflect(d, hit.n) + uniform_sphere() * self.fuzz);
         *attenuation = self.albedo;
+        *scattered = Ray::new(
+            hit.p,
+            reflect(d, hit.n) + uniform_sphere() * self.fuzz,
+            ray.t(),
+        );
         scattered.d().dot(&hit.n) > 0.0
     }
 }

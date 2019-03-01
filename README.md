@@ -30,6 +30,10 @@ since they were rendered before I switched to using [`lodepng`][5] for PNG encod
 
 ![Full scene][9]
 
+### Motion Blur
+
+![Motion blur][11]
+
 [1]: https://github.com/petershirley/raytracinginoneweekend
 [2]: https://github.com/Rust-SDL2/rust-sdl2 
 [3]: https://github.com/rayon-rs/rayon
@@ -40,3 +44,4 @@ since they were rendered before I switched to using [`lodepng`][5] for PNG encod
 [8]: renders/focus.png
 [9]: renders/full.png
 [10]: src/arena/copy.rs
+[11]: renders/motion.png
