@@ -1,4 +1,4 @@
-use crate::geometry::Ray;
+use crate::geometry::{Bound, Ray};
 use crate::surface::{Hit, Surface};
 
 /// Naive list of surfaces.
@@ -16,6 +16,14 @@ impl<'scene> List<'scene> {
 }
 
 impl<'scene> Surface<'scene> for List<'scene> {
+    fn bound(&self, t0: f32, t1: f32) -> Bound {
+        let mut bound = Bound::default();
+        for surface in &self.surfaces {
+            bound = bound.union(&surface.bound(t0, t1));
+        }
+        bound
+    }
+
     fn hit(&self, ray: &Ray, t_min: f32, t_max: f32, hit: &mut Hit<'scene>) -> bool {
         let mut record = Hit::default();
         let mut closest = t_max;

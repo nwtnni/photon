@@ -2,10 +2,21 @@ mod bound;
 mod ray;
 mod vec;
 
+pub use bound::Bound;
 pub use ray::Ray;
 pub use vec::Vec3;
 
 use rand::random;
+
+/// Floating point minimum
+pub fn min(a: f32, b: f32) -> f32 {
+    if a < b { a } else { b }
+}
+
+/// Floating point maximum
+pub fn max(a: f32, b: f32) -> f32 {
+    if a > b { a } else { b }
+}
 
 /// Generate a point in the unit sphere with uniform probability.
 pub fn uniform_sphere() -> Vec3 {

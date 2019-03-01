@@ -12,9 +12,31 @@ impl Bound {
     pub fn new(min: Vec3, max: Vec3) -> Self {
         Bound { min, max }
     }
+
+    pub fn union(&self, rhs: &Self) -> Self {
+        let min = self.min.min(&rhs.min);
+        let max = self.max.max(&rhs.max);
+        Bound { min, max }
+    }
+}
+
+impl Default for Bound {
+    fn default() -> Self {
+        let min = std::f32::MIN;
+        let max = std::f32::MAX;
+        Bound {
+            min: Vec3::new(min, min, min),
+            max: Vec3::new(max, max, max),
+        }
+    }
+
 }
 
 impl<'scene> Surface<'scene> for Bound {
+    fn bound(&self, _: f32, _: f32) -> Bound {
+        *self
+    }
+
     fn hit(&self, ray: &Ray, t_min: f32, t_max: f32, _: &mut Hit<'scene>) -> bool {
         let o = ray.o();
         let d = ray.d();

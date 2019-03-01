@@ -1,4 +1,4 @@
-use crate::geometry::{Ray, Vec3};
+use crate::geometry::{Bound, Ray, Vec3};
 use crate::surface::{Surface, Hit};
 use crate::material::Material;
 
@@ -41,6 +41,15 @@ impl<'scene> Sphere<'scene> {
 }
 
 impl<'scene> Surface<'scene> for Sphere<'scene> {
+    fn bound(&self, t0: f32, t1: f32) -> Bound {
+        let c0 = self.c + self.v * t0;
+        let c1 = self.c + self.v * t1;
+        let r = Vec3::new(self.r, self.r, self.r);
+        let b0 = Bound::new(c0 - r, c0 + r);
+        let b1 = Bound::new(c1 - r, c1 + r);
+        b0.union(&b1)
+    }
+
     fn hit(&self, ray: &Ray, t_min: f32, t_max: f32, hit: &mut Hit<'scene>) -> bool {
         let o = ray.o() - self.center(ray.t());
         let a = ray.d().len_sq() as f32;

@@ -7,6 +7,8 @@ use std::ops::{
     Neg
 };
 
+use crate::geometry::{min, max};
+
 pub const ONES_3D: Vec3 = Vec3([1.0, 1.0, 1.0]);
 pub const ONES_2D: Vec3 = Vec3([1.0, 1.0, 0.0]);
 
@@ -72,6 +74,22 @@ impl Vec3 {
     #[inline(always)]
     pub fn lerp(&self, to: &Self, t: f32) -> Self {
         self * (1.0 - t) + to * t
+    }
+
+    pub fn min(&self, rhs: &Self) -> Self {
+        Vec3([
+            min(self[0], rhs[0]),
+            min(self[1], rhs[1]),
+            min(self[2], rhs[2]),
+        ])
+    }
+
+    pub fn max(&self, rhs: &Self) -> Self {
+        Vec3([
+            max(self[0], rhs[0]),
+            max(self[1], rhs[1]),
+            max(self[2], rhs[2]),
+        ])
     }
 }
 
