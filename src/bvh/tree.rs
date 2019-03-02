@@ -15,7 +15,8 @@ pub enum Tree<'scene> {
     Node {
         bound: Bound,
         axis: u8,
-        children: [Box<Tree<'scene>>; 2],
+        l: Box<Tree<'scene>>,
+        r: Box<Tree<'scene>>,
     },
 }
 
@@ -34,6 +35,13 @@ impl<'scene> Tree<'scene> {
             .collect();
         build(surfaces, &mut info, lo, hi, maximum, ts, tf)
     }
+
+    pub fn len(&self) -> usize {
+        match self {
+        | Tree::Leaf { .. } => 1,
+        | Tree::Node { l, r, .. } => 1 + l.len() + r.len(),
+        }
+    }
 }
 
 impl<'scene> Surface<'scene> for Tree<'scene> {
@@ -48,16 +56,16 @@ impl<'scene> Surface<'scene> for Tree<'scene> {
         if !self.bound(0.0, 0.0).hit(ray, t_min, t_max, hit) { return false }
         match self {
         | Tree::Leaf { surfaces, .. } => surfaces.hit(ray, t_min, t_max, hit),
-        | Tree::Node { children, .. } => {
+        | Tree::Node { l, r, .. } => {
             let mut record = Hit::default();
             let mut closest = t_max;
             let mut success = false;
-            if children[0].hit(ray, t_min, closest, &mut record) {
+            if l.hit(ray, t_min, closest, &mut record) {
                 success = true;
                 closest = record.t;
                 *hit = record;
             }
-            if children[1].hit(ray, t_min, closest, &mut record) {
+            if r.hit(ray, t_min, closest, &mut record) {
                 success = true;
                 *hit = record;
             }
@@ -182,6 +190,7 @@ fn build<'scene>(
     Tree::Node {
         axis: dim,
         bound: l.bound(ts, tf).union_b(&r.bound(ts, tf)),
-        children: [Box::new(l), Box::new(r)],
+        l: Box::new(l),
+        r: Box::new(r),
     }
 }

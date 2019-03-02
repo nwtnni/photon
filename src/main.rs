@@ -151,6 +151,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     surfaces.push(&close);
 
     let scene = bvh::Tree::new(surfaces.as_slice(), 6, 0.0, 1.0);
+    let scene = bvh::Linear::from(scene);
 
     render(nx, ny, ns, tx, &camera, &scene);
     handle.join().unwrap();
