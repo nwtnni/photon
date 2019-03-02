@@ -1,11 +1,12 @@
-use crate::arena::Arena;
+use std::collections::HashMap;
+
 use crate::geometry::{Bound, Ray, Vec3};
 use crate::surface::{Hit, List, Surface};
 
 const BUCKETS: usize = 12;
 
 #[derive(Clone, Debug)]
-pub enum Tree<'arena, 'scene> {
+pub enum Tree<'scene> {
     Leaf {
         bound: Bound,
         surfaces: List<'scene>,
@@ -14,29 +15,28 @@ pub enum Tree<'arena, 'scene> {
     Node {
         bound: Bound,
         axis: u8,
-        children: [&'arena Tree<'arena, 'scene>; 2],
+        children: [Box<Tree<'scene>>; 2],
     },
 }
 
-impl<'arena, 'scene> Tree<'arena, 'scene> {
+impl<'scene> Tree<'scene> {
     pub fn new(
-        arena: &'arena Arena<Tree<'arena, 'scene>>,
         surfaces: &'scene [&'scene dyn Surface<'scene>],
         maximum: usize,
         ts: f32,
         tf: f32,
-    ) -> &'arena Self {
+    ) -> Self {
         let lo = 0;
         let hi = surfaces.len();
         let mut info: Vec<Info> = surfaces.iter()
             .enumerate()
             .map(|(i, surface)| Info::new(i, surface.bound(ts, tf)))
             .collect();
-        build(surfaces, arena, &mut info, lo, hi, maximum, ts, tf)
+        build(surfaces, &mut info, lo, hi, maximum, ts, tf)
     }
 }
 
-impl<'arena, 'scene> Surface<'scene> for &Tree<'arena, 'scene> {
+impl<'scene> Surface<'scene> for Tree<'scene> {
     fn bound(&self, _: f32, _: f32) -> Bound {
         match self {
         | Tree::Leaf { bound, .. }
@@ -81,31 +81,30 @@ impl Info {
     }
 }
 
-fn build<'arena, 'scene>(
+fn build<'scene>(
     surfaces: &'scene [&'scene dyn Surface<'scene>],
-    arena: &'arena Arena<Tree<'arena, 'scene>>,
     info: &mut [Info],
     lo: usize,
     hi: usize,
     maximum: usize,
     ts: f32,
     tf: f32,
-) -> &'arena Tree<'arena, 'scene> {
+) -> Tree<'scene> {
 
     let count = hi - lo;
     let bound = info[lo..hi].iter()
         .map(|info| info.bound)
         .fold(Bound::smallest(), |a, b| a.union_b(&b));
 
-    macro_rules! return_leaf {
+    macro_rules! leaf {
         () => {{
             let mut list = List::with_capacity(count);
             for i in lo..hi { list.push(surfaces[info[i].index]); }
-            return arena.alloc(Tree::Leaf { bound, surfaces: list })
+            return Tree::Leaf { bound, surfaces: list }
         }}
     };
 
-    if count == 1 { return_leaf!() }
+    if count <= 1 { leaf!() }
 
     let centroid_bound = info[lo..hi].iter()
         .map(|info| info.centroid)
@@ -113,7 +112,7 @@ fn build<'arena, 'scene>(
 
     let dim = centroid_bound.max_extent();
     if centroid_bound.max()[dim as usize]
-    == centroid_bound.min()[dim as usize] { return_leaf!() }
+    == centroid_bound.min()[dim as usize] { leaf!() }
 
     let mid = if count <= 4 {
 
@@ -128,14 +127,14 @@ fn build<'arena, 'scene>(
     } else {
 
         let mut buckets = [(0, Bound::smallest()); BUCKETS];
-        let mut assignment = vec![0; count];
+        let mut assignment: HashMap<usize, usize> = HashMap::default();
         for i in lo..hi {
             let o = centroid_bound.offset(&info[i].centroid)[dim as usize];
-            let b = (BUCKETS as f32 * o).floor() as usize;
+            let b = (BUCKETS as f32 * o).round() as usize;
             let b = std::cmp::min(b, BUCKETS - 1);
             buckets[b].0 += 1;
             buckets[b].1 = buckets[b].1.union_b(&info[i].bound);
-            assignment[info[i].index] = b;
+            assignment.insert(info[i].index, b);
         }
 
         let mut cost = [0.0; BUCKETS - 1];
@@ -170,19 +169,19 @@ fn build<'arena, 'scene>(
             }
         }
 
-        if count <= maximum && min_cost >= leaf_cost { return_leaf!() }
+        if count <= maximum && min_cost >= leaf_cost { leaf!() }
 
         lo + partition::partition(
             &mut info[lo..hi],
-            |info| assignment[info.index] <= min_bucket
+            |info| assignment[&info.index] <= min_bucket
         ).0.len()
     };
 
-    let l = build(surfaces, arena, info, lo, mid, maximum, ts, tf);
-    let r = build(surfaces, arena, info, mid, hi, maximum, ts, tf);
-    arena.alloc(Tree::Node {
+    let l = build(surfaces, info, lo, mid, maximum, ts, tf);
+    let r = build(surfaces, info, mid, hi, maximum, ts, tf);
+    Tree::Node {
         axis: dim,
         bound: l.bound(ts, tf).union_b(&r.bound(ts, tf)),
-        children: [l, r],
-    })
+        children: [Box::new(l), Box::new(r)],
+    }
 }

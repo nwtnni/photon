@@ -57,9 +57,9 @@ impl Bound {
 
     pub fn offset(&self, v: &Vec3) -> Vec3 {
         let mut o = v - self.min;
-        if self.max[0] > self.min[0] { o /= self.max[0] - self.min[0] }
-        if self.max[1] > self.min[1] { o /= self.max[1] - self.min[1] }
-        if self.max[2] > self.min[2] { o /= self.max[2] - self.min[2] }
+        if self.max[0] > self.min[0] { o[0] /= self.max[0] - self.min[0] }
+        if self.max[1] > self.min[1] { o[1] /= self.max[1] - self.min[1] }
+        if self.max[2] > self.min[2] { o[2] /= self.max[2] - self.min[2] }
         o
     }
 

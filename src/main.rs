@@ -77,7 +77,7 @@ fn render(
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let nx = 1920; // Width
     let ny = 1080; // Height
-    let ns = 250;  // Samples per pixel
+    let ns = 100;  // Samples per pixel
 
     let (tx, rx) = crossbeam::channel::unbounded();
     let preview = Preview::new(nx, ny, rx);
@@ -150,12 +150,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     surfaces.push(&mid);
     surfaces.push(&close);
 
-    let bvh_arena = Arena::<bvh::Tree>::new(1000);
+    let scene = bvh::Tree::new(surfaces.as_slice(), 6, 0.0, 1.0);
 
-    {{
-        let scene = bvh::Tree::new(&bvh_arena, surfaces.as_slice(), 6, 0.0, 1.0);
-    }}
-
+    render(nx, ny, ns, tx, &camera, &scene);
     handle.join().unwrap();
     Ok(())
 }
