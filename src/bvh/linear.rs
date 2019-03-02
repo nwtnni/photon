@@ -9,6 +9,10 @@ pub struct Linear<'scene>(Vec<Tree<'scene>>);
 enum Tree<'scene> {
     Leaf {
         bound: Bound,
+        surface: &'scene Surface<'scene>,
+    },
+    List {
+        bound: Bound,
         surfaces: List<'scene>,
     },
     Node {
@@ -22,6 +26,7 @@ impl<'scene> Tree<'scene> {
     fn bound(&self) -> Bound {
         match self {
         | Tree::Leaf { bound, .. }
+        | Tree::List { bound, .. }
         | Tree::Node { bound, .. } => *bound,
         }
     }
@@ -39,8 +44,11 @@ impl<'scene> From<bvh::Tree<'scene>> for Linear<'scene> {
 impl<'scene> bvh::Tree<'scene> {
     fn flatten(self, nodes: &mut Vec<Tree<'scene>>) {
         match self {
-        | bvh::Tree::Leaf { bound, surfaces } => {
-            nodes.push(Tree::Leaf { bound, surfaces });
+        | bvh::Tree::Leaf { bound, surface } => {
+            nodes.push(Tree::Leaf { bound, surface });
+        }
+        | bvh::Tree::List { bound, surfaces } => {
+            nodes.push(Tree::List { bound, surfaces });
         }
         | bvh::Tree::Node { bound, axis, l, r } => {
             let index = nodes.len() + l.len() + 1;
@@ -89,7 +97,15 @@ impl<'scene> Surface<'scene> for Linear<'scene> {
                 continue
             }
             match node {
-            | Tree::Leaf { surfaces, .. } => {
+            | Tree::Leaf { surface, .. } => {
+                if surface.hit(ray, t_min, closest, &mut record) {
+                    success = true;
+                    closest = record.t;
+                    *hit = record;
+                }
+                pop!()
+            }
+            | Tree::List { surfaces, .. } => {
                 if surfaces.hit(ray, t_min, closest, &mut record) {
                     success = true;
                     closest = record.t;

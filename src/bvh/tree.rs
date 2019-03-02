@@ -9,9 +9,12 @@ const BUCKETS: usize = 12;
 pub enum Tree<'scene> {
     Leaf {
         bound: Bound,
+        surface: &'scene Surface<'scene>,
+    },
+    List {
+        bound: Bound,
         surfaces: List<'scene>,
     },
-
     Node {
         bound: Bound,
         axis: u8,
@@ -39,6 +42,7 @@ impl<'scene> Tree<'scene> {
     pub fn len(&self) -> usize {
         match self {
         | Tree::Leaf { .. } => 1,
+        | Tree::List { .. } => 1,
         | Tree::Node { l, r, .. } => 1 + l.len() + r.len(),
         }
     }
@@ -48,6 +52,7 @@ impl<'scene> Surface<'scene> for Tree<'scene> {
     fn bound(&self, _: f32, _: f32) -> Bound {
         match self {
         | Tree::Leaf { bound, .. }
+        | Tree::List { bound, .. }
         | Tree::Node { bound, .. } => *bound,
         }
     }
@@ -55,7 +60,8 @@ impl<'scene> Surface<'scene> for Tree<'scene> {
     fn hit(&self, ray: &Ray, t_min: f32, t_max: f32, hit: &mut Hit<'scene>) -> bool {
         if !self.bound(0.0, 0.0).hit(ray, t_min, t_max, hit) { return false }
         match self {
-        | Tree::Leaf { surfaces, .. } => surfaces.hit(ray, t_min, t_max, hit),
+        | Tree::Leaf { surface, .. } => surface.hit(ray, t_min, t_max, hit),
+        | Tree::List { surfaces, .. } => surfaces.hit(ray, t_min, t_max, hit),
         | Tree::Node { l, r, .. } => {
             let mut record = Hit::default();
             let mut closest = t_max;
@@ -108,11 +114,16 @@ fn build<'scene>(
         () => {{
             let mut list = List::with_capacity(count);
             for i in lo..hi { list.push(surfaces[info[i].index]); }
-            return Tree::Leaf { bound, surfaces: list }
+            return Tree::List { bound, surfaces: list }
         }}
     };
 
-    if count <= 1 { leaf!() }
+    if count == 1 {
+        return Tree::Leaf {
+            bound,
+            surface: surfaces[info[lo].index],
+        }
+    }
 
     let centroid_bound = info[lo..hi].iter()
         .map(|info| info.centroid)
