@@ -2,7 +2,8 @@ use std::collections::HashMap;
 
 use rayon::prelude::*;
 
-use photon::arena::CopyArena;
+use photon::arena::{Arena, CopyArena};
+use photon::bvh;
 use photon::geometry::{Ray, Vec3};
 use photon::material::{Material, Diffuse, Metal, Dielectric};
 use photon::surface::{Surface, Sphere, List, Hit};
@@ -30,6 +31,49 @@ fn color(ray: &Ray, scene: &Surface, depth: i32) -> Vec3 {
     }
 }
 
+fn render(
+    nx: usize, 
+    ny: usize,
+    ns: usize,
+    tx: crossbeam::channel::Sender<(usize, usize, (u8, u8, u8))>,
+    camera: &Camera,
+    scene: &Surface
+) {
+
+    // Row to pixel buffer map
+    let mut buffers: HashMap<usize, Vec<(u8, u8, u8)>> = HashMap::with_capacity(ny);
+
+    // Allow each thread exclusive access to a single row 
+    buffers.par_extend((0..ny).into_par_iter().map(move |y| {
+        let mut buffer = Vec::with_capacity(nx);
+        for x in 0..nx {
+            let mut c = Vec3::default();
+            for _ in 0..ns {
+                let u = (x as f32 + rand::random::<f32>()) / nx as f32;
+                let v = (y as f32 + rand::random::<f32>()) / ny as f32;
+                let r = camera.get(u, v);
+                c += color(&r, scene, 0) / ns as f32;
+            }
+            let rgb = (
+                (c[0].sqrt() * 255.99) as u8,
+                (c[1].sqrt() * 255.99) as u8,
+                (c[2].sqrt() * 255.99) as u8,
+            );
+            tx.send((x, y, rgb)).ok();
+            buffer.push(rgb);
+        }
+        (y, buffer)
+    }));
+
+    // Collect buffers for PNG encoding
+    let buffer = (0..ny).rev()
+        .flat_map(|y| buffers.remove(&y).unwrap().into_iter())
+        .collect::<Vec<_>>();
+
+    lodepng::encode24_file("out.png", &buffer, nx, ny)
+        .unwrap();
+}
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let nx = 1920; // Width
     let ny = 1080; // Height
@@ -52,7 +96,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let shut = 1.0;
     let camera = Camera::new(origin, toward, up, fov, aspect, aperture, focus, open, shut);
 
-    let mut scene = List::default();
+    let mut surfaces = Vec::new();
 
     macro_rules! rand { () => { rand::random::<f32>() } };
 
@@ -87,7 +131,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             } else {
                 sphere
             };
-            scene.push(arena.alloc(moving));
+            surfaces.push(arena.alloc(moving) as &dyn Surface);
         }
     }
 
@@ -101,42 +145,17 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mid = Sphere::new(Vec3::new(0.0, 1.0, 0.0), 1.0, &glass);
     let close = Sphere::new(Vec3::new(4.0, 1.0, 0.0), 1.0, &metal);
 
-    scene.push(&floor);
-    scene.push(&far);
-    scene.push(&mid);
-    scene.push(&close);
+    surfaces.push(&floor);
+    surfaces.push(&far);
+    surfaces.push(&mid);
+    surfaces.push(&close);
 
-    // Row to pixel buffer map
-    let mut buffers: HashMap<usize, Vec<(u8, u8, u8)>> = HashMap::with_capacity(ny);
+    let bvh_arena = Arena::<bvh::Tree>::new(1000);
 
-    // Allow each thread exclusive access to a single row 
-    buffers.par_extend((0..ny).into_par_iter().map(move |y| {
-        let mut buffer = Vec::with_capacity(nx);
-        for x in 0..nx {
-            let mut c = Vec3::default();
-            for _ in 0..ns {
-                let u = (x as f32 + rand::random::<f32>()) / nx as f32;
-                let v = (y as f32 + rand::random::<f32>()) / ny as f32;
-                let r = camera.get(u, v);
-                c += color(&r, &scene, 0) / ns as f32;
-            }
-            let rgb = (
-                (c[0].sqrt() * 255.99) as u8,
-                (c[1].sqrt() * 255.99) as u8,
-                (c[2].sqrt() * 255.99) as u8,
-            );
-            tx.send((x, y, rgb)).ok();
-            buffer.push(rgb);
-        }
-        (y, buffer)
-    }));
+    {{
+        let scene = bvh::Tree::new(&bvh_arena, surfaces.as_slice(), 6, 0.0, 1.0);
+    }}
 
-    // Collect buffers for PNG encoding
-    let buffer = (0..ny).rev()
-        .flat_map(|y| buffers.remove(&y).unwrap().into_iter())
-        .collect::<Vec<_>>();
-
-    lodepng::encode24_file("out.png", &buffer, nx, ny)?;
     handle.join().unwrap();
     Ok(())
 }

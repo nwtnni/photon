@@ -13,10 +13,59 @@ impl Bound {
         Bound { min, max }
     }
 
-    pub fn union(&self, rhs: &Self) -> Self {
+    #[inline(always)]
+    pub fn min(&self) -> Vec3 {
+        self.min
+    }
+
+    #[inline(always)]
+    pub fn max(&self) -> Vec3 {
+        self.max
+    }
+
+    pub fn max_extent(&self) -> u8 {
+        let x = (self.max[0] - self.min[0]).abs();
+        let y = (self.max[1] - self.min[1]).abs();
+        let z = (self.max[2] - self.min[2]).abs();
+        if x > y {
+            if x > z { 0 } else { 2 }
+        } else {
+            if y > z { 1 } else { 2 }
+        }
+    }
+
+    pub fn union_b(&self, rhs: &Self) -> Self {
         let min = self.min.min(&rhs.min);
         let max = self.max.max(&rhs.max);
         Bound { min, max }
+    }
+
+    pub fn union_v(&self, rhs: &Vec3) -> Self {
+        let min = self.min.min(rhs);
+        let max = self.max.max(rhs);
+        Bound { min, max }
+    }
+
+    pub fn smallest() -> Self {
+        let min = std::f32::MIN;
+        let max = std::f32::MAX;
+        Bound {
+            min: Vec3::new(max, max, max),
+            max: Vec3::new(min, min, min),
+        }
+    }
+
+    pub fn offset(&self, v: &Vec3) -> Vec3 {
+        let mut o = v - self.min;
+        if self.max[0] > self.min[0] { o /= self.max[0] - self.min[0] }
+        if self.max[1] > self.min[1] { o /= self.max[1] - self.min[1] }
+        if self.max[2] > self.min[2] { o /= self.max[2] - self.min[2] }
+        o
+    }
+
+    pub fn surface_area(&self) -> f32 {
+        let d = self.max - self.min;
+        2.0 * (d.x() * d.x() + d.y() * d.y() + d.z() * d.z())
     }
 }
 

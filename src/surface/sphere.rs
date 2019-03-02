@@ -47,7 +47,7 @@ impl<'scene> Surface<'scene> for Sphere<'scene> {
         let r = Vec3::new(self.r, self.r, self.r);
         let b0 = Bound::new(c0 - r, c0 + r);
         let b1 = Bound::new(c1 - r, c1 + r);
-        b0.union(&b1)
+        b0.union_b(&b1)
     }
 
     fn hit(&self, ray: &Ray, t_min: f32, t_max: f32, hit: &mut Hit<'scene>) -> bool {

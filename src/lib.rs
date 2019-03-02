@@ -1,6 +1,9 @@
 /// Memory allocation
 pub mod arena;
 
+/// Bounding volume hierarchy
+pub mod bvh;
+
 /// Camera model
 pub mod camera;
 

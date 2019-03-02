@@ -11,9 +11,10 @@ pub struct Arena<T> {
 impl<T> Arena<T> {
     pub fn new(capacity: usize) -> Self {
         unsafe {
+            let size = std::mem::size_of::<T>();
             let cap = capacity;
             let len = cell::Cell::new(0);
-            let buf = alloc::alloc(alloc::Layout::from_size_align_unchecked(cap, 8)) as *mut T;
+            let buf = alloc::alloc(alloc::Layout::from_size_align_unchecked(cap * size, 8)) as *mut T;
             Arena { cap, len, buf }
         }
     }

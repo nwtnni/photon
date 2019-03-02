@@ -9,6 +9,11 @@ pub struct List<'scene> {
 }
 
 impl<'scene> List<'scene> {
+    /// Construct a list with the provided capacity.
+    pub fn with_capacity(capacity: usize) -> Self {
+        List { surfaces: Vec::with_capacity(capacity) }
+    }
+
     /// Append a new surface to this list.
     pub fn push(&mut self, surface: &'scene Surface<'scene>) {
         self.surfaces.push(surface);
@@ -17,11 +22,9 @@ impl<'scene> List<'scene> {
 
 impl<'scene> Surface<'scene> for List<'scene> {
     fn bound(&self, t0: f32, t1: f32) -> Bound {
-        let mut bound = Bound::default();
-        for surface in &self.surfaces {
-            bound = bound.union(&surface.bound(t0, t1));
-        }
-        bound
+        self.surfaces.iter()
+            .map(|surface| surface.bound(t0, t1))
+            .fold(Bound::smallest(), |a, b| a.union_b(&b))
     }
 
     fn hit(&self, ray: &Ray, t_min: f32, t_max: f32, hit: &mut Hit<'scene>) -> bool {
