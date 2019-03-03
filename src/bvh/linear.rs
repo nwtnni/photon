@@ -1,6 +1,6 @@
 use crate::bvh;
 use crate::geometry::{Ray, Bound};
-use crate::surface::{Hit, List, Surface};
+use crate::surface::{Hit, Surface};
 
 #[derive(Clone, Debug)]
 pub struct Linear<'scene>(Vec<Tree<'scene>>);
@@ -10,10 +10,6 @@ enum Tree<'scene> {
     Leaf {
         bound: Bound,
         surface: &'scene Surface<'scene>,
-    },
-    List {
-        bound: Bound,
-        surfaces: List<'scene>,
     },
     Node {
         bound: Bound,
@@ -26,14 +22,13 @@ impl<'scene> Tree<'scene> {
     fn bound(&self) -> Bound {
         match self {
         | Tree::Leaf { bound, .. }
-        | Tree::List { bound, .. }
         | Tree::Node { bound, .. } => *bound,
         }
     }
 }
 
-impl<'scene> From<bvh::Tree<'scene>> for Linear<'scene> {
-    fn from(tree: bvh::Tree<'scene>) -> Self {
+impl<'scene> From<&'scene bvh::Tree<'scene>> for Linear<'scene> {
+    fn from(tree: &'scene bvh::Tree<'scene>) -> Self {
         let mut nodes = Vec::with_capacity(tree.len());
         tree.flatten(&mut nodes);
         Linear(nodes)
@@ -45,9 +40,6 @@ impl<'scene> bvh::Tree<'scene> {
         match self {
         | bvh::Tree::Leaf { bound, surface } => {
             nodes.push(Tree::Leaf { bound, surface });
-        }
-        | bvh::Tree::List { bound, surfaces } => {
-            nodes.push(Tree::List { bound, surfaces });
         }
         | bvh::Tree::Node { bound, axis, l, r } => {
             let offset = l.len() + 1;
@@ -93,10 +85,6 @@ impl<'scene> Surface<'scene> for Linear<'scene> {
             match node {
             | Tree::Leaf { surface, .. } => {
                 if surface.hit(ray, hit) { success = true; }
-                pop!()
-            }
-            | Tree::List { surfaces, .. } => {
-                if surfaces.hit(ray, hit) { success = true; }
                 pop!()
             }
             | Tree::Node { axis, offset, .. } => {

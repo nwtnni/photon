@@ -82,7 +82,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let (tx, rx) = crossbeam::channel::unbounded();
     let preview = Preview::new(nx, ny, rx);
     let handle = std::thread::spawn(|| preview.run());
-    let arena = CopyArena::new(2 * 16 * 1024);
+    let arena = CopyArena::new(100 * 1024);
 
     // Camera setup
     let origin = Vec3::new(10.0, 3.0, 10.0);
@@ -151,9 +151,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     surfaces.push(&mid);
     surfaces.push(&close);
 
-    let scene = bvh::Tree::new(surfaces.as_slice(), 6, 0.0, 1.0);
-    let scene = bvh::Linear::from(scene);
-    render(nx, ny, ns, tx, &camera, &scene);
+    let scene = bvh::Tree::new(&arena, surfaces.as_slice(), 6, 0.0, 1.0);
+    // let scene = bvh::Linear::from(scene);
+    render(nx, ny, ns, tx, &camera, scene);
     // render(nx, ny, ns, tx, &camera, &surfaces);
 
     if cfg!(feature = "stats") {
