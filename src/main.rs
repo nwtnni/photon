@@ -82,7 +82,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let (tx, rx) = crossbeam::channel::unbounded();
     let preview = Preview::new(nx, ny, rx);
     let handle = std::thread::spawn(|| preview.run());
-    let arena = CopyArena::new(100 * 1024);
+    let arena = CopyArena::new(16 * 1024 * 1024);
 
     // Camera setup
     let origin = Vec3::new(10.0, 3.0, 10.0);
@@ -101,8 +101,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     macro_rules! rand { () => { rand::random::<f32>() } };
 
-    for x in (-10..=10).map(|x| x as f32) {
-        for y in (-10..=10).map(|y| y as f32) {
+    for x in (-100..=100).map(|x| x as f32) {
+        for y in (-100..=100).map(|y| y as f32) {
             let material_chance = rand::random::<f32>();
             let center = Vec3::new(x + 0.9 * rand!(), 0.2, y + 0.9 * rand!());
             if (center - Vec3::new(4.0, 0.2, 0.0)).len() <= 0.9 { continue }
@@ -151,9 +151,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     surfaces.push(&mid);
     surfaces.push(&close);
 
+    println!("Rendering...");
+
     let scene = bvh::Tree::new(&arena, surfaces.as_slice(), 6, 0.0, 1.0);
-    // let scene = bvh::Linear::from(scene);
-    render(nx, ny, ns, tx, &camera, scene);
+    let scene = bvh::Linear::from(scene);
+    render(nx, ny, ns, tx, &camera, &scene);
     // render(nx, ny, ns, tx, &camera, &surfaces);
 
     if cfg!(feature = "stats") {

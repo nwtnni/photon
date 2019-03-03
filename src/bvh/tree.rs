@@ -14,7 +14,6 @@ pub enum Tree<'scene> {
     },
     Node {
         bound: Bound,
-        axis: u8,
         l: &'scene Tree<'scene>,
         r: &'scene Tree<'scene>,
     },
@@ -55,10 +54,7 @@ impl<'scene> Surface<'scene> for Tree<'scene> {
 
     fn hit(&self, ray: &mut Ray, hit: &mut Hit<'scene>) -> bool {
         
-        if !self.bound(0.0, 0.0).hit(ray, hit) {
-            return false
-        }
-
+        if !self.bound(0.0, 0.0).hit(ray, hit) { return false }
         match self {
         | Tree::Leaf { surface, .. } => surface.hit(ray, hit),
         | Tree::Node { l, r, .. } => {
@@ -137,7 +133,7 @@ fn build<'scene>(
         let mut assignment: HashMap<usize, usize> = HashMap::default();
         for i in lo..hi {
             let o = centroid_bound.offset(&info[i].centroid)[dim as usize];
-            let b = (BUCKETS as f32 * o).round() as usize;
+            let b = (BUCKETS as f32 * o) as usize;
             let b = std::cmp::min(b, BUCKETS - 1);
             buckets[b].0 += 1;
             buckets[b].1 = buckets[b].1.union_b(&info[i].bound);
@@ -160,7 +156,7 @@ fn build<'scene>(
                 right_bound = right_bound.union_b(&buckets[j].1);
             }
 
-            cost[i] = 0.125 + (
+            cost[i] = ( 
                 left_count as f32 * left_bound.surface_area() +
                 right_count as f32 * right_bound.surface_area()
             ) / bound.surface_area();
@@ -184,7 +180,6 @@ fn build<'scene>(
     let l = build(arena, surfaces, info, lo, mid, maximum, ts, tf);
     let r = build(arena, surfaces, info, mid, hi, maximum, ts, tf);
     arena.alloc(Tree::Node {
-        axis: dim,
         bound: l.bound(ts, tf).union_b(&r.bound(ts, tf)),
         l,
         r,

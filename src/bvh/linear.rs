@@ -13,7 +13,6 @@ enum Tree<'scene> {
     },
     Node {
         bound: Bound,
-        axis: u8,
         offset: usize,
     },
 }
@@ -41,9 +40,9 @@ impl<'scene> bvh::Tree<'scene> {
         | bvh::Tree::Leaf { bound, surface } => {
             nodes.push(Tree::Leaf { bound, surface });
         }
-        | bvh::Tree::Node { bound, axis, l, r } => {
+        | bvh::Tree::Node { bound, l, r } => {
             let offset = l.len() + 1;
-            nodes.push(Tree::Node { bound, axis, offset });
+            nodes.push(Tree::Node { bound, offset });
             l.flatten(nodes);
             r.flatten(nodes)
         }
@@ -58,13 +57,10 @@ impl<'scene> Surface<'scene> for Linear<'scene> {
 
     fn hit(&self, ray: &mut Ray, hit: &mut Hit<'scene>) -> bool {
 
-        let mut success = false;
-
-        let neg = [ray.d.x() < 0.0, ray.d.y() < 0.0, ray.d.z() < 0.0];
-
         let mut next = 0;
         let mut this = 0;
         let mut visit = [0; 32];
+        let mut success = false;
 
         macro_rules! push { ($i:expr) => {{
             visit[next] = $i; 
@@ -87,14 +83,9 @@ impl<'scene> Surface<'scene> for Linear<'scene> {
                 if surface.hit(ray, hit) { success = true; }
                 pop!()
             }
-            | Tree::Node { axis, offset, .. } => {
-                if neg[*axis as usize] {
-                    push!(this + 1); 
-                    this += *offset;
-                } else {
-                    push!(this + *offset);
-                    this += 1;
-                }
+            | Tree::Node { offset, .. } => {
+                push!(this + *offset);
+                this += 1;
             }
             }
         }
