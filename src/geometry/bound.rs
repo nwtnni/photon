@@ -9,7 +9,9 @@ pub struct Bound {
 
 impl Bound {
     #[inline(always)]
-    pub fn new(min: Vec3, max: Vec3) -> Self {
+    pub fn new(a: Vec3, b: Vec3) -> Self {
+        let min = a.min(&b);
+        let max = a.max(&b);
         Bound { min, max }
     }
 

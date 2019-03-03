@@ -12,7 +12,7 @@ pub struct Ray {
 impl Ray {
     #[inline(always)]
     pub fn new(o: Vec3, d: Vec3, t: f32) -> Self {
-        Ray { o, d, t, min: 0.001, max: std::f32::MAX, }
+        Ray { o, d: d.normalize(), t, min: 0.001, max: std::f32::MAX, }
     }
 
     #[inline(always)]

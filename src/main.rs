@@ -7,7 +7,7 @@ use photon::bvh;
 use photon::geometry::{Ray, Vec3};
 use photon::material::{Material, Diffuse, Metal, Dielectric};
 use photon::model::obj;
-use photon::surface::{List, Surface, Sphere, Hit};
+use photon::surface::{Surface, Sphere, Hit};
 use photon::camera::Camera;
 use photon::preview::Preview;
 
@@ -76,88 +76,38 @@ fn render(
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let nx = 200; // Width
-    let ny = 100; // Height
-    let ns = 1;  // Samples per pixel
+    let nx = 1920; // Width
+    let ny = 1080; // Height
+    let ns = 100;  // Samples per pixel
 
     let (tx, rx) = crossbeam::channel::unbounded();
     let preview = Preview::new(nx, ny, rx);
     let handle = std::thread::spawn(|| preview.run());
-    let arena = CopyArena::new(16 * 1024 * 1024);
+    let arena = CopyArena::new(96 * 1024 * 1024);
 
     // Camera setup
-    let origin = Vec3::new(10.0, 3.0, 10.0);
-    let toward = Vec3::new(0.0, 0.0, 0.0);
+    let origin = Vec3::new(-15.0, 7.0, -30.0);
+    let toward = Vec3::new(0.0, 3.0, 0.0);
     let up = Vec3::new(0.0, 1.0, 0.0);
-    let fov = 20.0;
+    let fov = 25.0;
     let aspect = nx as f32 / ny as f32;
-    let focus = 12.0;
+    let focus = 34.0;
     let aperture = 0.20;
     let open = 0.0;
     let shut = 1.0;
     let camera = Camera::new(origin, toward, up, fov, aspect, aperture, focus, open, shut);
 
-    // let mut surfaces = List::default();
-    let mut surfaces = Vec::new();
+    let metal = Metal::new(Vec3::new(0.83, 0.68, 0.21), 0.1);
+    let floor = Sphere::new(Vec3::new(0.0, -1000.0, 0.0), 1000.0, &metal);
 
-    macro_rules! rand { () => { rand::random::<f32>() } };
-
-    for x in (-100..=100).map(|x| x as f32) {
-        for y in (-100..=100).map(|y| y as f32) {
-            let material_chance = rand::random::<f32>();
-            let center = Vec3::new(x + 0.9 * rand!(), 0.2, y + 0.9 * rand!());
-            if (center - Vec3::new(4.0, 0.2, 0.0)).len() <= 0.9 { continue }
-            let material = if material_chance < 0.6 {
-                arena.alloc(Diffuse::new(Vec3::new(
-                    rand!() * rand!(),
-                    rand!() * rand!(),
-                    rand!() * rand!(),
-                ))) as &dyn Material
-            } else if material_chance < 0.8 {
-                arena.alloc(Metal::new(
-                    Vec3::new(
-                        (rand!() + 1.0) * 0.5,
-                        (rand!() + 1.0) * 0.5,
-                        (rand!() + 1.0) * 0.5,
-                    ),
-                    rand!() * 0.5,
-                )) as &dyn Material
-            } else {
-                arena.alloc(
-                    Dielectric::new(rand!() * 2.0)
-                ) as &dyn Material
-            };
-            let sphere = Sphere::new(center, 0.2, material);
-            let moving = if rand!() < 0.5 {
-                sphere.with_velocity(Vec3::new(0.0, 0.5 * rand!(), 0.0))
-            } else {
-                sphere
-            };
-            surfaces.push(arena.alloc(moving) as &dyn Surface);
-        }
-    }
-
-    let gray = Diffuse::new(Vec3::new(0.5, 0.5, 0.5));
-    let diffuse = Diffuse::new(Vec3::new(0.2, 0.5, 0.6));
     let glass = Dielectric::new(1.5);
-    let metal = Metal::new(Vec3::new(0.7, 0.6, 0.5), 0.0);
+    let mut scene = obj::parse("models/dragon.obj", &arena, &glass);
+    scene.push(&floor);
 
-    let floor = Sphere::new(Vec3::new(0.0, -1000.0, 0.0), 1000.0, &gray);
-    let far = Sphere::new(Vec3::new(-4.0, 1.0, 0.0), 1.0, &diffuse);
-    let mid = Sphere::new(Vec3::new(0.0, 1.0, 0.0), 1.0, &glass);
-    let close = Sphere::new(Vec3::new(4.0, 1.0, 0.0), 1.0, &metal);
-
-    surfaces.push(&floor);
-    surfaces.push(&far);
-    surfaces.push(&mid);
-    surfaces.push(&close);
-
-    println!("Rendering...");
-
-    let scene = bvh::Tree::new(&arena, surfaces.as_slice(), 0.0, 1.0);
+    let scene = bvh::Tree::new(&arena, &scene, 0.0, 1.0);
     let scene = bvh::Linear::from(scene);
+
     render(nx, ny, ns, tx, &camera, &scene);
-    // render(nx, ny, ns, tx, &camera, &surfaces);
 
     if cfg!(feature = "stats") {
         println!("{}", photon::stats::ARENA_MEMORY);

@@ -20,7 +20,7 @@ impl CopyArena {
         }
     }
 
-    pub fn alloc<T: Copy + std::fmt::Debug>(&self, item: T) -> &T {
+    pub fn alloc<T: Copy>(&self, item: T) -> &T {
         let size = std::mem::size_of::<T>();
         let len = self.len.get();
         if len + size >= self.cap { panic!("[INTERNAL ERROR]: Arena ran out of memory"); }
