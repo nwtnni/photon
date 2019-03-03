@@ -1,5 +1,5 @@
 use crate::bvh;
-use crate::geometry::{Ray, Bound, Vec3};
+use crate::geometry::{Ray, Bound};
 use crate::surface::{Hit, List, Surface};
 
 #[derive(Clone, Debug)]
@@ -18,7 +18,7 @@ enum Tree<'scene> {
     Node {
         bound: Bound,
         axis: u8,
-        index: usize,
+        offset: usize,
     },
 }
 
@@ -50,8 +50,8 @@ impl<'scene> bvh::Tree<'scene> {
             nodes.push(Tree::List { bound, surfaces });
         }
         | bvh::Tree::Node { bound, axis, l, r } => {
-            let index = nodes.len() + l.len() + 1;
-            nodes.push(Tree::Node { bound, axis, index });
+            let offset = l.len() + 1;
+            nodes.push(Tree::Node { bound, axis, offset });
             l.flatten(nodes);
             r.flatten(nodes)
         }
@@ -66,13 +66,11 @@ impl<'scene> Surface<'scene> for Linear<'scene> {
 
     fn hit(&self, ray: &Ray, t_min: f32, t_max: f32, hit: &mut Hit<'scene>) -> bool {
 
-        let mut record = Hit::default();
         let mut closest = t_max;
         let mut success = false;
 
         let dir = ray.d();
-        let inv = Vec3::new(1.0 / dir.x(), 1.0 / dir.y(), 1.0 / dir.z());
-        let neg = [inv.x() < 0.0, inv.y() < 0.0, inv.z() < 0.0];
+        let neg = [dir.x() < 0.0, dir.y() < 0.0, dir.z() < 0.0];
 
         let mut next = 0;
         let mut this = 0;
@@ -84,45 +82,41 @@ impl<'scene> Surface<'scene> for Linear<'scene> {
         }}}
 
         macro_rules! pop { () => {{
-            if next == 0 { break }
+            if next == 0 { break success }
             next -= 1;
             this = visit[next];
         }}}
 
         loop {
             let node = &self.0[this];
-            if !node.bound().hit(ray, t_min, t_max, hit) {
-                pop!();
-                continue
-            }
+
+            if !node.bound().hit(ray, t_min, t_max, hit) { pop!(); continue }
+
             match node {
             | Tree::Leaf { surface, .. } => {
-                if surface.hit(ray, t_min, closest, &mut record) {
+                if surface.hit(ray, t_min, closest, hit) {
                     success = true;
-                    closest = record.t;
-                    *hit = record;
+                    closest = hit.t;
                 }
                 pop!()
             }
             | Tree::List { surfaces, .. } => {
-                if surfaces.hit(ray, t_min, closest, &mut record) {
+                if surfaces.hit(ray, t_min, closest, hit) {
                     success = true;
-                    closest = record.t;
-                    *hit = record;
+                    closest = hit.t;
                 }
                 pop!()
             }
-            | Tree::Node { axis, index, .. } => {
+            | Tree::Node { axis, offset, .. } => {
                 if neg[*axis as usize] {
                     push!(this + 1); 
-                    this = *index;
+                    this += *offset;
                 } else {
-                    push!(*index);
+                    push!(this + *offset);
                     this += 1;
                 }
             }
             }
         }
-        success
     }
 }

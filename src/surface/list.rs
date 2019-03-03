@@ -28,20 +28,16 @@ impl<'scene> Surface<'scene> for List<'scene> {
     }
 
     fn hit(&self, ray: &Ray, t_min: f32, t_max: f32, hit: &mut Hit<'scene>) -> bool {
-
         if cfg!(feature = "stats") {
             crate::stats::INTERSECTION_TESTS.inc();
             crate::stats::LIST_INTERSECTION_TESTS.inc();
         }
-
-        let mut record = Hit::default();
         let mut closest = t_max;
         let mut success = false;
         for surface in &self.surfaces {
-            if surface.hit(ray, t_min, closest, &mut record) {
+            if surface.hit(ray, t_min, closest, hit) {
                 success = true;
-                closest = record.t;
-                *hit = record;
+                closest = hit.t;
             }
         }
         success
