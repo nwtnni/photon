@@ -1,9 +1,24 @@
 use crate::bvh;
+use crate::arena::CopyArena;
 use crate::geometry::{Ray, Bound};
 use crate::surface::{Hit, Surface};
 
 #[derive(Clone, Debug)]
 pub struct Linear<'scene>(Vec<Tree<'scene>>);
+
+impl<'scene> Linear<'scene> {
+    pub fn new(
+        arena: &'scene CopyArena,
+        surfaces: &'scene [&'scene dyn Surface<'scene>],
+        t_min: f32,
+        t_max: f32,
+    ) -> Self {
+        let tree = bvh::Tree::new(arena, surfaces, t_min, t_max);
+        let mut nodes = Vec::with_capacity(tree.len());
+        tree.flatten(&mut nodes);
+        Linear(nodes)
+    }
+}
 
 #[derive(Clone, Debug)]
 enum Tree<'scene> {
@@ -23,14 +38,6 @@ impl<'scene> Tree<'scene> {
         | Tree::Leaf { bound, .. }
         | Tree::Node { bound, .. } => *bound,
         }
-    }
-}
-
-impl<'scene> From<&'scene bvh::Tree<'scene>> for Linear<'scene> {
-    fn from(tree: &'scene bvh::Tree<'scene>) -> Self {
-        let mut nodes = Vec::with_capacity(tree.len());
-        tree.flatten(&mut nodes);
-        Linear(nodes)
     }
 }
 

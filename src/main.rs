@@ -104,8 +104,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut scene = obj::parse("models/dragon.obj", &arena, &glass);
     scene.push(&floor);
 
-    let scene = bvh::Tree::new(&arena, &scene, 0.0, 1.0);
-    let scene = bvh::Linear::from(scene);
+    let scene = bvh::Linear::new(&arena, &scene, 0.0, 1.0);
 
     render(nx, ny, ns, tx, &camera, &scene);
 
