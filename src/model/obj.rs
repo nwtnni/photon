@@ -1,9 +1,9 @@
-use crate::arena::CopyArena;
+use crate::arena::Arena;
 use crate::material::Material;
 use crate::geometry::{Tri, Vec3};
 use crate::surface::Surface;
 
-pub fn parse<'scene, P>(obj: P, arena: &'scene CopyArena, material: &'scene Material) -> Vec<&'scene dyn Surface<'scene>>
+pub fn parse<'scene, P>(obj: P, arena: &'scene Arena, material: &'scene Material) -> Vec<&'scene dyn Surface<'scene>>
     where P: AsRef<std::path::Path>,
 {
     let obj = std::fs::read_to_string(obj).expect("[INTERNAL ERROR]: could not read OBJ file");

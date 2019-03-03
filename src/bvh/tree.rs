@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::arena::CopyArena;
+use crate::arena::Arena;
 use crate::geometry::{Bound, Ray, Vec3};
 use crate::surface::{Hit, Surface};
 
@@ -21,7 +21,7 @@ pub enum Tree<'scene> {
 
 impl<'scene> Tree<'scene> {
     pub fn new(
-        arena: &'scene CopyArena,
+        arena: &'scene Arena,
         surfaces: &'scene [&'scene dyn Surface<'scene>],
         t_min: f32,
         t_max: f32,
@@ -82,7 +82,7 @@ impl Info {
 }
 
 fn build<'scene>(
-    arena: &'scene CopyArena,
+    arena: &'scene Arena,
     surfaces: &'scene [&'scene dyn Surface<'scene>],
     info: &mut [Info],
     lo: usize,

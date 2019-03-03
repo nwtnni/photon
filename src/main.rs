@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use rayon::prelude::*;
 
-use photon::arena::{CopyArena};
+use photon::arena::Arena;
 use photon::bvh;
 use photon::geometry::{Ray, Vec3};
 use photon::material::{Metal, Dielectric};
@@ -80,7 +80,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     std::thread::spawn(move || photon::progress::run(nx * ny));
 
-    let arena = CopyArena::new(96 * 1024 * 1024);
+    let arena = Arena::new(96 * 1024 * 1024);
 
     // Camera setup
     let origin = Vec3::new(-15.0, 7.0, -30.0);

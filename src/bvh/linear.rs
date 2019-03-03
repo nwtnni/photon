@@ -1,5 +1,5 @@
 use crate::bvh;
-use crate::arena::CopyArena;
+use crate::arena::Arena;
 use crate::geometry::{Ray, Bound};
 use crate::surface::{Hit, Surface};
 
@@ -8,7 +8,7 @@ pub struct Linear<'scene>(Vec<Tree<'scene>>);
 
 impl<'scene> Linear<'scene> {
     pub fn new(
-        arena: &'scene CopyArena,
+        arena: &'scene Arena,
         surfaces: &'scene [&'scene dyn Surface<'scene>],
         t_min: f32,
         t_max: f32,
