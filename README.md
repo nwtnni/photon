@@ -5,9 +5,11 @@ A Rust implementation of [Ray Tracing in One Weekend][1], by Peter Shirley.
 # Features
 
 - Live preview using an [`sdl2`][2] canvas
+- Basic progress bar
 - Multithreading using [`rayon`][3]
 - Vector operations using [macros to reduce boilerplate][4]
 - Simple [bump allocator][10]
+- OBJ triangle mesh support
 
 # Examples
 
@@ -34,6 +36,10 @@ since they were rendered before I switched to using [`lodepng`][5] for PNG encod
 
 ![Motion blur][11]
 
+### Triangle Mesh
+
+![Triangle mesh][12]
+
 [1]: https://github.com/petershirley/raytracinginoneweekend
 [2]: https://github.com/Rust-SDL2/rust-sdl2 
 [3]: https://github.com/rayon-rs/rayon
@@ -45,3 +51,4 @@ since they were rendered before I switched to using [`lodepng`][5] for PNG encod
 [9]: renders/full.png
 [10]: src/arena/copy.rs
 [11]: renders/motion.png
+[12]: renders/dragon.png
