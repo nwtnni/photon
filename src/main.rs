@@ -5,11 +5,10 @@ use rayon::prelude::*;
 use photon::arena::{CopyArena};
 use photon::bvh;
 use photon::geometry::{Ray, Vec3};
-use photon::material::{Material, Diffuse, Metal, Dielectric};
+use photon::material::{Metal, Dielectric};
 use photon::model::obj;
 use photon::surface::{Surface, Sphere, Hit};
 use photon::camera::Camera;
-use photon::preview::Preview;
 
 /// Main ray tracing function.
 /// Intersects `ray` with `scene`, potentially recursing upon reflecting or refracting.
@@ -36,7 +35,6 @@ fn render(
     nx: usize, 
     ny: usize,
     ns: usize,
-    tx: crossbeam::channel::Sender<(usize, usize, (u8, u8, u8))>,
     camera: &Camera,
     scene: &Surface
 ) {
@@ -60,8 +58,8 @@ fn render(
                 (c[1].sqrt() * 255.99) as u8,
                 (c[2].sqrt() * 255.99) as u8,
             );
-            tx.send((x, y, rgb)).ok();
             buffer.push(rgb);
+            photon::stats::PIXELS_RENDERED.inc();
         }
         (y, buffer)
     }));
@@ -78,11 +76,10 @@ fn render(
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let nx = 1920; // Width
     let ny = 1080; // Height
-    let ns = 100;  // Samples per pixel
+    let ns = 1;  // Samples per pixel
 
-    let (tx, rx) = crossbeam::channel::unbounded();
-    let preview = Preview::new(nx, ny, rx);
-    let handle = std::thread::spawn(|| preview.run());
+    std::thread::spawn(move || photon::progress::run(nx * ny));
+
     let arena = CopyArena::new(96 * 1024 * 1024);
 
     // Camera setup
@@ -106,7 +103,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let scene = bvh::Linear::new(&arena, &scene, 0.0, 1.0);
 
-    render(nx, ny, ns, tx, &camera, &scene);
+    render(nx, ny, ns, &camera, &scene);
 
     if cfg!(feature = "stats") {
         println!("{}", photon::stats::ARENA_MEMORY);
@@ -118,6 +115,5 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         println!("{}", photon::stats::LIST_INTERSECTION_TESTS);
     }
 
-    handle.join().unwrap();
     Ok(())
 }

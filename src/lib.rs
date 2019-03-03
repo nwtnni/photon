@@ -16,6 +16,9 @@ pub mod model;
 /// Live rendering preview
 pub mod preview;
 
+/// Progress bar
+pub mod progress;
+
 /// Geometric primitives
 pub mod geometry;
 

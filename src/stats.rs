@@ -18,6 +18,7 @@ macro_rules! memory {
     }
 }
 
+counter!(PIXELS_RENDERED);
 counter!(TOTAL_NODES);
 counter!(LEAF_NODES);
 counter!(INTERSECTION_TESTS);
@@ -35,6 +36,10 @@ pub struct Counter {
 impl Counter {
     pub fn inc(&self) {
         self.value.fetch_add(1, Ordering::Relaxed);
+    }
+
+    pub fn read(&self) -> usize {
+        self.value.load(Ordering::Acquire)
     }
 }
 
