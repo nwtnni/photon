@@ -14,6 +14,7 @@ pub mod material;
 pub mod model;
 
 /// Live rendering preview
+#[cfg(feature = "preview")]
 pub mod preview;
 
 /// Progress bar

@@ -76,7 +76,7 @@ fn render(
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let nx = 1920; // Width
     let ny = 1080; // Height
-    let ns = 1;  // Samples per pixel
+    let ns = 1000;  // Samples per pixel
 
     std::thread::spawn(move || photon::progress::run(nx * ny));
 
