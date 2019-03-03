@@ -87,6 +87,11 @@ impl<'scene> Surface<'scene> for Bound {
     }
 
     fn hit(&self, ray: &Ray, t_min: f32, t_max: f32, _: &mut Hit<'scene>) -> bool {
+
+        if cfg!(feature = "stats") {
+            crate::stats::INTERSECTION_TESTS.inc();
+        }
+
         let o = ray.o();
         let d = ray.d();
         for i in 0..3 {

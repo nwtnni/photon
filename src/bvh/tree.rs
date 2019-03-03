@@ -58,6 +58,11 @@ impl<'scene> Surface<'scene> for Tree<'scene> {
     }
 
     fn hit(&self, ray: &Ray, t_min: f32, t_max: f32, hit: &mut Hit<'scene>) -> bool {
+        
+        if cfg!(feature = "stats") {
+            crate::stats::INTERSECTION_TESTS.inc();
+        }
+
         if !self.bound(0.0, 0.0).hit(ray, t_min, t_max, hit) { return false }
         match self {
         | Tree::Leaf { surface, .. } => surface.hit(ray, t_min, t_max, hit),
@@ -105,6 +110,10 @@ fn build<'scene>(
     tf: f32,
 ) -> Tree<'scene> {
 
+    if cfg!(feature = "stats") {
+        crate::stats::TOTAL_NODES.inc();
+    }
+
     let count = hi - lo;
     let bound = info[lo..hi].iter()
         .map(|info| info.bound)
@@ -112,6 +121,9 @@ fn build<'scene>(
 
     macro_rules! leaf {
         () => {{
+            if cfg!(feature = "stats") {
+                crate::stats::LEAF_NODES.inc();
+            }
             let mut list = List::with_capacity(count);
             for i in lo..hi { list.push(surfaces[info[i].index]); }
             return Tree::List { bound, surfaces: list }
@@ -119,6 +131,9 @@ fn build<'scene>(
     };
 
     if count == 1 {
+        if cfg!(feature = "stats") {
+            crate::stats::LEAF_NODES.inc();
+        }
         return Tree::Leaf {
             bound,
             surface: surfaces[info[lo].index],

@@ -2,11 +2,11 @@ use std::collections::HashMap;
 
 use rayon::prelude::*;
 
-use photon::arena::{Arena, CopyArena};
+use photon::arena::{CopyArena};
 use photon::bvh;
 use photon::geometry::{Ray, Vec3};
 use photon::material::{Material, Diffuse, Metal, Dielectric};
-use photon::surface::{Surface, Sphere, List, Hit};
+use photon::surface::{Surface, Sphere, Hit};
 use photon::camera::Camera;
 use photon::preview::Preview;
 
@@ -75,8 +75,8 @@ fn render(
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let nx = 1920; // Width
-    let ny = 1080; // Height
+    let nx = 200; // Width
+    let ny = 100; // Height
     let ns = 100;  // Samples per pixel
 
     let (tx, rx) = crossbeam::channel::unbounded();
@@ -151,9 +151,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     surfaces.push(&close);
 
     let scene = bvh::Tree::new(surfaces.as_slice(), 6, 0.0, 1.0);
-    let scene = bvh::Linear::from(scene);
-
     render(nx, ny, ns, tx, &camera, &scene);
+
+    if cfg!(feature = "stats") {
+        println!("{}", photon::stats::ARENA_MEMORY);
+        println!("{}", photon::stats::LEAF_NODES);
+        println!("{}", photon::stats::TOTAL_NODES);
+        println!("{}", photon::stats::INTERSECTION_TESTS);
+    }
+
     handle.join().unwrap();
     Ok(())
 }

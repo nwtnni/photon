@@ -18,3 +18,6 @@ pub mod geometry;
 
 /// Intersection and shape models
 pub mod surface;
+
+/// Statistic tracking
+pub mod stats;

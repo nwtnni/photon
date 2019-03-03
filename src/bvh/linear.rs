@@ -36,7 +36,6 @@ impl<'scene> From<bvh::Tree<'scene>> for Linear<'scene> {
     fn from(tree: bvh::Tree<'scene>) -> Self {
         let mut nodes = Vec::with_capacity(tree.len());
         tree.flatten(&mut nodes);
-        println!("{:#?}", nodes);
         Linear(nodes)
     }
 }
@@ -66,6 +65,10 @@ impl<'scene> Surface<'scene> for Linear<'scene> {
     }
 
     fn hit(&self, ray: &Ray, t_min: f32, t_max: f32, hit: &mut Hit<'scene>) -> bool {
+
+        if cfg!(feature = "stats") {
+            crate::stats::INTERSECTION_TESTS.inc();
+        }
 
         let mut record = Hit::default();
         let mut closest = t_max;

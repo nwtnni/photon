@@ -51,6 +51,11 @@ impl<'scene> Surface<'scene> for Sphere<'scene> {
     }
 
     fn hit(&self, ray: &Ray, t_min: f32, t_max: f32, hit: &mut Hit<'scene>) -> bool {
+
+        if cfg!(feature = "stats") {
+            crate::stats::INTERSECTION_TESTS.inc();
+        }
+
         let o = ray.o() - self.center(ray.t());
         let a = ray.d().len_sq() as f32;
         let b = o.dot(&ray.d());
