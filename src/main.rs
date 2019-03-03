@@ -6,7 +6,7 @@ use photon::arena::{CopyArena};
 use photon::bvh;
 use photon::geometry::{Ray, Vec3};
 use photon::material::{Material, Diffuse, Metal, Dielectric};
-use photon::surface::{Surface, Sphere, Hit};
+use photon::surface::{List, Surface, Sphere, Hit};
 use photon::camera::Camera;
 use photon::preview::Preview;
 
@@ -96,6 +96,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let shut = 1.0;
     let camera = Camera::new(origin, toward, up, fov, aspect, aperture, focus, open, shut);
 
+    // let mut surfaces = List::default();
     let mut surfaces = Vec::new();
 
     macro_rules! rand { () => { rand::random::<f32>() } };
@@ -151,13 +152,18 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     surfaces.push(&close);
 
     let scene = bvh::Tree::new(surfaces.as_slice(), 6, 0.0, 1.0);
+    let scene = bvh::Linear::from(scene);
     render(nx, ny, ns, tx, &camera, &scene);
+    // render(nx, ny, ns, tx, &camera, &surfaces);
 
     if cfg!(feature = "stats") {
         println!("{}", photon::stats::ARENA_MEMORY);
         println!("{}", photon::stats::LEAF_NODES);
         println!("{}", photon::stats::TOTAL_NODES);
         println!("{}", photon::stats::INTERSECTION_TESTS);
+        println!("{}", photon::stats::BOUNDING_BOX_INTERSECTION_TESTS);
+        println!("{}", photon::stats::SPHERE_INTERSECTION_TESTS);
+        println!("{}", photon::stats::LIST_INTERSECTION_TESTS);
     }
 
     handle.join().unwrap();

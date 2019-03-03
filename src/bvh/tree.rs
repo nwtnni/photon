@@ -59,11 +59,10 @@ impl<'scene> Surface<'scene> for Tree<'scene> {
 
     fn hit(&self, ray: &Ray, t_min: f32, t_max: f32, hit: &mut Hit<'scene>) -> bool {
         
-        if cfg!(feature = "stats") {
-            crate::stats::INTERSECTION_TESTS.inc();
+        if !self.bound(0.0, 0.0).hit(ray, t_min, t_max, hit) {
+            return false
         }
 
-        if !self.bound(0.0, 0.0).hit(ray, t_min, t_max, hit) { return false }
         match self {
         | Tree::Leaf { surface, .. } => surface.hit(ray, t_min, t_max, hit),
         | Tree::List { surfaces, .. } => surfaces.hit(ray, t_min, t_max, hit),

@@ -90,6 +90,7 @@ impl<'scene> Surface<'scene> for Bound {
 
         if cfg!(feature = "stats") {
             crate::stats::INTERSECTION_TESTS.inc();
+            crate::stats::BOUNDING_BOX_INTERSECTION_TESTS.inc();
         }
 
         let o = ray.o();

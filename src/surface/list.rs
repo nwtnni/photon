@@ -31,6 +31,7 @@ impl<'scene> Surface<'scene> for List<'scene> {
 
         if cfg!(feature = "stats") {
             crate::stats::INTERSECTION_TESTS.inc();
+            crate::stats::LIST_INTERSECTION_TESTS.inc();
         }
 
         let mut record = Hit::default();

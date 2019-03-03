@@ -54,6 +54,7 @@ impl<'scene> Surface<'scene> for Sphere<'scene> {
 
         if cfg!(feature = "stats") {
             crate::stats::INTERSECTION_TESTS.inc();
+            crate::stats::SPHERE_INTERSECTION_TESTS.inc();
         }
 
         let o = ray.o() - self.center(ray.t());

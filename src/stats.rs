@@ -21,6 +21,9 @@ macro_rules! memory {
 counter!(TOTAL_NODES);
 counter!(LEAF_NODES);
 counter!(INTERSECTION_TESTS);
+counter!(BOUNDING_BOX_INTERSECTION_TESTS);
+counter!(SPHERE_INTERSECTION_TESTS);
+counter!(LIST_INTERSECTION_TESTS);
 memory!(ARENA_MEMORY);
 
 #[derive(Debug)]
