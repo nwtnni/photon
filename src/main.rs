@@ -6,6 +6,7 @@ use photon::arena::{CopyArena};
 use photon::bvh;
 use photon::geometry::{Ray, Vec3};
 use photon::material::{Material, Diffuse, Metal, Dielectric};
+use photon::model::obj;
 use photon::surface::{List, Surface, Sphere, Hit};
 use photon::camera::Camera;
 use photon::preview::Preview;

@@ -10,6 +10,9 @@ pub mod camera;
 /// Scattering models
 pub mod material;
 
+/// External models
+pub mod model;
+
 /// Live rendering preview
 pub mod preview;
 

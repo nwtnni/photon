@@ -1,9 +1,11 @@
 mod bound;
 mod ray;
+mod tri;
 mod vec;
 
 pub use bound::Bound;
 pub use ray::Ray;
+pub use tri::Tri;
 pub use vec::Vec3;
 
 use rand::random;
