@@ -23,17 +23,16 @@ impl<'scene> Tree<'scene> {
     pub fn new(
         arena: &'scene CopyArena,
         surfaces: &'scene [&'scene dyn Surface<'scene>],
-        maximum: usize,
-        ts: f32,
-        tf: f32,
+        t_min: f32,
+        t_max: f32,
     ) -> &'scene Self {
         let lo = 0;
         let hi = surfaces.len();
         let mut info: Vec<Info> = surfaces.iter()
             .enumerate()
-            .map(|(i, surface)| Info::new(i, surface.bound(ts, tf)))
+            .map(|(i, surface)| Info::new(i, surface.bound(t_min, t_max)))
             .collect();
-        build(arena, surfaces, &mut info, lo, hi, maximum, ts, tf)
+        build(arena, surfaces, &mut info, lo, hi, t_min, t_max)
     }
 
     pub fn len(&self) -> usize {
@@ -53,8 +52,9 @@ impl<'scene> Surface<'scene> for Tree<'scene> {
     }
 
     fn hit(&self, ray: &mut Ray, hit: &mut Hit<'scene>) -> bool {
-        
-        if !self.bound(0.0, 0.0).hit(ray, hit) { return false }
+        if !self.bound(0.0, 0.0).hit(ray, hit) {
+            return false
+        }
         match self {
         | Tree::Leaf { surface, .. } => surface.hit(ray, hit),
         | Tree::Node { l, r, .. } => {
@@ -87,9 +87,8 @@ fn build<'scene>(
     info: &mut [Info],
     lo: usize,
     hi: usize,
-    maximum: usize,
-    ts: f32,
-    tf: f32,
+    t_min: f32,
+    t_max: f32,
 ) -> &'scene Tree<'scene> {
 
     if cfg!(feature = "stats") {
@@ -177,10 +176,10 @@ fn build<'scene>(
         ).0.len()
     };
 
-    let l = build(arena, surfaces, info, lo, mid, maximum, ts, tf);
-    let r = build(arena, surfaces, info, mid, hi, maximum, ts, tf);
+    let l = build(arena, surfaces, info, lo, mid, t_min, t_max);
+    let r = build(arena, surfaces, info, mid, hi, t_min, t_max);
     arena.alloc(Tree::Node {
-        bound: l.bound(ts, tf).union_b(&r.bound(ts, tf)),
+        bound: l.bound(t_min, t_max).union_b(&r.bound(t_min, t_max)),
         l,
         r,
     })
