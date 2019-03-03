@@ -27,17 +27,15 @@ impl<'scene> Surface<'scene> for List<'scene> {
             .fold(Bound::smallest(), |a, b| a.union_b(&b))
     }
 
-    fn hit(&self, ray: &Ray, t_min: f32, t_max: f32, hit: &mut Hit<'scene>) -> bool {
+    fn hit(&self, ray: &mut Ray, hit: &mut Hit<'scene>) -> bool {
         if cfg!(feature = "stats") {
             crate::stats::INTERSECTION_TESTS.inc();
             crate::stats::LIST_INTERSECTION_TESTS.inc();
         }
-        let mut closest = t_max;
         let mut success = false;
         for surface in &self.surfaces {
-            if surface.hit(ray, t_min, closest, hit) {
+            if surface.hit(ray, hit) {
                 success = true;
-                closest = hit.t;
             }
         }
         success

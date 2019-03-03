@@ -12,18 +12,18 @@ use photon::preview::Preview;
 
 /// Main ray tracing function.
 /// Intersects `ray` with `scene`, potentially recursing upon reflecting or refracting.
-fn color(ray: &Ray, scene: &Surface, depth: i32) -> Vec3 {
+fn color(ray: &mut Ray, scene: &Surface, depth: i32) -> Vec3 {
     let mut hit = Hit::default();
-    if scene.hit(ray, 0.001, std::f32::MAX, &mut hit) {
+    if scene.hit(ray, &mut hit) {
         let mut attenuation = Vec3::default();
         let mut scattered = Ray::default();
         if depth < 50 && hit.m.unwrap().scatter(ray, &hit, &mut attenuation, &mut scattered) {
-            color(&scattered, scene, depth + 1) * attenuation
+            color(&mut scattered, scene, depth + 1) * attenuation
         } else {
             Vec3::default()
         }
     } else {
-        let dir = ray.d().normalize();
+        let dir = ray.d.normalize();
         let t = 0.5 * (dir.y() + 1.0);
         let white = Vec3::new(1.0, 1.0, 1.0);
         let blue = Vec3::new(0.5, 0.7, 1.0);
@@ -51,8 +51,8 @@ fn render(
             for _ in 0..ns {
                 let u = (x as f32 + rand::random::<f32>()) / nx as f32;
                 let v = (y as f32 + rand::random::<f32>()) / ny as f32;
-                let r = camera.get(u, v);
-                c += color(&r, scene, 0) / ns as f32;
+                let mut r = camera.get(u, v);
+                c += color(&mut r, scene, 0) / ns as f32;
             }
             let rgb = (
                 (c[0].sqrt() * 255.99) as u8,
@@ -77,7 +77,7 @@ fn render(
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let nx = 200; // Width
     let ny = 100; // Height
-    let ns = 100;  // Samples per pixel
+    let ns = 10;  // Samples per pixel
 
     let (tx, rx) = crossbeam::channel::unbounded();
     let preview = Preview::new(nx, ny, rx);

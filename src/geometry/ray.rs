@@ -2,25 +2,18 @@ use crate::geometry::Vec3;
 
 #[derive(Copy, Clone, Debug, Default)]
 pub struct Ray {
-    o: Vec3,
-    d: Vec3,
-    t: f32,
+    pub o: Vec3,
+    pub d: Vec3,
+    pub t: f32,
+    pub min: f32,
+    pub max: f32,
 }
 
 impl Ray {
     #[inline(always)]
     pub fn new(o: Vec3, d: Vec3, t: f32) -> Self {
-        Ray { o, d, t }
+        Ray { o, d, t, min: 0.001, max: std::f32::MAX, }
     }
-
-    #[inline(always)]
-    pub fn o(&self) -> Vec3 { self.o }
-
-    #[inline(always)]
-    pub fn d(&self) -> Vec3 { self.d }
-
-    #[inline(always)]
-    pub fn t(&self) -> f32 { self.t }
 
     #[inline(always)]
     pub fn at(&self, t: f32) -> Vec3 {

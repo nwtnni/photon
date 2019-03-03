@@ -86,22 +86,22 @@ impl<'scene> Surface<'scene> for Bound {
         *self
     }
 
-    fn hit(&self, ray: &Ray, t_min: f32, t_max: f32, _: &mut Hit<'scene>) -> bool {
+    fn hit(&self, ray: &mut Ray, _: &mut Hit<'scene>) -> bool {
 
         if cfg!(feature = "stats") {
             crate::stats::INTERSECTION_TESTS.inc();
             crate::stats::BOUNDING_BOX_INTERSECTION_TESTS.inc();
         }
 
-        let o = ray.o();
-        let d = ray.d();
+        let o = ray.o;
+        let d = ray.d;
         for i in 0..3 {
             let inv_d = 1.0 / d[i];
             let mut t0 = (self.min[i] - o[i]) * inv_d;
             let mut t1 = (self.max[i] - o[i]) * inv_d;
             if inv_d < 0.0 { std::mem::swap(&mut t0, &mut t1) }
-            let t_min = if t0 > t_min { t0 } else { t_min };
-            let t_max = if t1 < t_max { t1 } else { t_max };
+            let t_min = if t0 > ray.min { t0 } else { ray.min };
+            let t_max = if t1 < ray.max { t1 } else { ray.max };
             if t_max <= t_min { return false }
         }
         true

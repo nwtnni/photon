@@ -22,30 +22,30 @@ impl Dielectric {
 impl Material for Dielectric {
     fn scatter<'scene>(&self, ray: &Ray, hit: &'scene Hit, attenuation: &mut Vec3, scattered: &mut Ray) -> bool {
         *attenuation = Vec3::new(1.0, 1.0, 1.0);
-        let reflected = reflect(ray.d(), hit.n);
-        let dot = ray.d().dot(&hit.n);
+        let reflected = reflect(ray.d, hit.n);
+        let dot = ray.d.dot(&hit.n);
         let cosine;
         let outward;
         let ni_over_nt;
 
         if dot > 0.0 {
-            cosine = self.index * dot / ray.d().len();
+            cosine = self.index * dot / ray.d.len();
             outward = -hit.n;
             ni_over_nt = self.index;
         } else {
-            cosine = -dot / ray.d().len();
+            cosine = -dot / ray.d.len();
             outward = hit.n;
             ni_over_nt = 1.0 / self.index;
         };
 
-        if let Some(refracted) = refract(ray.d(), outward, ni_over_nt) {
+        if let Some(refracted) = refract(ray.d, outward, ni_over_nt) {
             if rand::random::<f32>() >= self.shlick(cosine) {
-                *scattered = Ray::new(hit.p, refracted, ray.t());
+                *scattered = Ray::new(hit.p, refracted, ray.t);
                 return true
             }
         }
 
-        *scattered = Ray::new(hit.p, reflected, ray.t());
+        *scattered = Ray::new(hit.p, reflected, ray.t);
         true
     }
 }

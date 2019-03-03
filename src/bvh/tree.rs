@@ -57,28 +57,19 @@ impl<'scene> Surface<'scene> for Tree<'scene> {
         }
     }
 
-    fn hit(&self, ray: &Ray, t_min: f32, t_max: f32, hit: &mut Hit<'scene>) -> bool {
+    fn hit(&self, ray: &mut Ray, hit: &mut Hit<'scene>) -> bool {
         
-        if !self.bound(0.0, 0.0).hit(ray, t_min, t_max, hit) {
+        if !self.bound(0.0, 0.0).hit(ray, hit) {
             return false
         }
 
         match self {
-        | Tree::Leaf { surface, .. } => surface.hit(ray, t_min, t_max, hit),
-        | Tree::List { surfaces, .. } => surfaces.hit(ray, t_min, t_max, hit),
+        | Tree::Leaf { surface, .. } => surface.hit(ray, hit),
+        | Tree::List { surfaces, .. } => surfaces.hit(ray, hit),
         | Tree::Node { l, r, .. } => {
-            let mut record = Hit::default();
-            let mut closest = t_max;
             let mut success = false;
-            if l.hit(ray, t_min, closest, &mut record) {
-                success = true;
-                closest = record.t;
-                *hit = record;
-            }
-            if r.hit(ray, t_min, closest, &mut record) {
-                success = true;
-                *hit = record;
-            }
+            if l.hit(ray, hit) { success = true; }
+            if r.hit(ray, hit) { success = true; }
             success
         },
         }

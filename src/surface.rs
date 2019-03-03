@@ -26,5 +26,5 @@ pub struct Hit<'scene> {
 /// Represents an object that can interact with light rays.
 pub trait Surface<'scene>: std::fmt::Debug + Send + Sync {
     fn bound(&self, t0: f32, t1: f32) -> Bound;
-    fn hit(&self, ray: &Ray, t_min: f32, t_max: f32, record: &mut Hit<'scene>) -> bool;
+    fn hit(&self, ray: &mut Ray, record: &mut Hit<'scene>) -> bool;
 }

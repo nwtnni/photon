@@ -50,16 +50,16 @@ impl<'scene> Surface<'scene> for Sphere<'scene> {
         b0.union_b(&b1)
     }
 
-    fn hit(&self, ray: &Ray, t_min: f32, t_max: f32, hit: &mut Hit<'scene>) -> bool {
+    fn hit(&self, ray: &mut Ray, hit: &mut Hit<'scene>) -> bool {
 
         if cfg!(feature = "stats") {
             crate::stats::INTERSECTION_TESTS.inc();
             crate::stats::SPHERE_INTERSECTION_TESTS.inc();
         }
 
-        let o = ray.o() - self.center(ray.t());
-        let a = ray.d().len_sq() as f32;
-        let b = o.dot(&ray.d());
+        let o = ray.o - self.center(ray.t);
+        let a = ray.d.len_sq() as f32;
+        let b = o.dot(&ray.d);
         let c = o.len_sq() - self.r * self.r;
         let d = b * b - a * c;
 
@@ -68,14 +68,15 @@ impl<'scene> Surface<'scene> for Sphere<'scene> {
         let (t_a, t_b) = ((-b - d.sqrt()) / a, (-b + d.sqrt()) / a);
 
         // Get first intersection within [t_min, t_max]
-        let t = if t_a > t_min && t_a < t_max {
+        let t = if t_a > ray.min && t_a < ray.max {
             t_a
-        } else if t_b > t_min && t_a < t_max {
+        } else if t_b > ray.min && t_a < ray.max {
             t_b
         } else {
             return false;
         };
 
+        ray.max = t;
         hit.t = t;
         hit.p = ray.at(t);
         hit.n = (hit.p - self.c()) / self.r();

@@ -64,13 +64,11 @@ impl<'scene> Surface<'scene> for Linear<'scene> {
         unreachable!()
     }
 
-    fn hit(&self, ray: &Ray, t_min: f32, t_max: f32, hit: &mut Hit<'scene>) -> bool {
+    fn hit(&self, ray: &mut Ray, hit: &mut Hit<'scene>) -> bool {
 
-        let mut closest = t_max;
         let mut success = false;
 
-        let dir = ray.d();
-        let neg = [dir.x() < 0.0, dir.y() < 0.0, dir.z() < 0.0];
+        let neg = [ray.d.x() < 0.0, ray.d.y() < 0.0, ray.d.z() < 0.0];
 
         let mut next = 0;
         let mut this = 0;
@@ -90,21 +88,15 @@ impl<'scene> Surface<'scene> for Linear<'scene> {
         loop {
             let node = &self.0[this];
 
-            if !node.bound().hit(ray, t_min, t_max, hit) { pop!(); continue }
+            if !node.bound().hit(ray, hit) { pop!(); continue }
 
             match node {
             | Tree::Leaf { surface, .. } => {
-                if surface.hit(ray, t_min, closest, hit) {
-                    success = true;
-                    closest = hit.t;
-                }
+                if surface.hit(ray, hit) { success = true; }
                 pop!()
             }
             | Tree::List { surfaces, .. } => {
-                if surfaces.hit(ray, t_min, closest, hit) {
-                    success = true;
-                    closest = hit.t;
-                }
+                if surfaces.hit(ray, hit) { success = true; }
                 pop!()
             }
             | Tree::Node { axis, offset, .. } => {
