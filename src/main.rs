@@ -17,7 +17,7 @@ fn color(ray: &mut Ray, scene: &Surface, depth: i32) -> Vec3 {
     if scene.hit(ray, &mut hit) {
         let mut attenuation = Vec3::default();
         let mut scattered = Ray::default();
-        if depth < 50 && hit.m.unwrap().scatter(ray, &hit, &mut attenuation, &mut scattered) {
+        if depth < 5 && hit.m.unwrap().scatter(ray, &hit, &mut attenuation, &mut scattered) {
             color(&mut scattered, scene, depth + 1) * attenuation
         } else {
             Vec3::default()
@@ -76,7 +76,7 @@ fn render(
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let nx = 1920; // Width
     let ny = 1080; // Height
-    let ns = 1000;  // Samples per pixel
+    let ns = 1;  // Samples per pixel
 
     std::thread::spawn(move || photon::progress::run(nx * ny));
 
@@ -98,7 +98,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let floor = Sphere::new(Vec3::new(0.0, -1000.0, 0.0), 1000.0, &metal);
 
     let glass = Dielectric::new(1.5);
-    let mut scene = obj::parse("models/dragon.obj", &arena, &glass);
+    let mut scene = obj::parse("models/bunny.obj", &arena, &glass);
     scene.push(&floor);
 
     let scene = bvh::Linear::new(&arena, &scene, 0.0, 1.0);
