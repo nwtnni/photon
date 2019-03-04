@@ -40,6 +40,10 @@ since they were rendered before I switched to using [`lodepng`][5] for PNG encod
 
 ![Triangle mesh][12]
 
+### Translation
+
+![Bunnies][13]
+
 [1]: https://github.com/petershirley/raytracinginoneweekend
 [2]: https://github.com/Rust-SDL2/rust-sdl2 
 [3]: https://github.com/rayon-rs/rayon
@@ -49,6 +53,7 @@ since they were rendered before I switched to using [`lodepng`][5] for PNG encod
 [7]: renders/dielectric.png
 [8]: renders/focus.png
 [9]: renders/full.png
-[10]: src/arena/copy.rs
+[10]: src/arena.rs
 [11]: renders/motion.png
 [12]: renders/dragon.png
+[13]: renders/bunnies.png

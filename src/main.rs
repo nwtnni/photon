@@ -4,8 +4,8 @@ use rayon::prelude::*;
 
 use photon::arena::Arena;
 use photon::bvh;
-use photon::geometry::{Ray, Vec3};
-use photon::material::{Metal, Dielectric};
+use photon::geometry::{Translate, Ray, Vec3};
+use photon::material::{Metal, Diffuse};
 use photon::model::obj;
 use photon::surface::{Surface, Sphere, Hit};
 use photon::camera::Camera;
@@ -99,32 +99,37 @@ fn render(
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let nx = 500; // Width
-    let ny = 250; // Height
-    let ns = 100;  // Samples per pixel
+    let nx = 1920; // Width
+    let ny = 1080; // Height
+    let ns = 50;  // Samples per pixel
 
     let arena = Arena::new(96 * 1024 * 1024);
 
     // Camera setup
-    let origin = Vec3::new(-15.0, 7.0, -30.0);
-    let toward = Vec3::new(0.0, 3.0, 0.0);
+    let origin = Vec3::new(-2.0, 3.0, 4.0);
+    let toward = Vec3::new(0.0, 0.5, 0.0);
     let up = Vec3::new(0.0, 1.0, 0.0);
-    let fov = 25.0;
+    let fov = 45.0;
     let aspect = nx as f32 / ny as f32;
-    let focus = 34.0;
-    let aperture = 0.20;
+    let focus = 4.5;
+    let aperture = 0.0001;
     let open = 0.0;
     let shut = 1.0;
     let camera = Camera::new(origin, toward, up, fov, aspect, aperture, focus, open, shut);
 
-    let metal = Metal::new(Vec3::new(0.83, 0.68, 0.21), 0.1);
+    let metal = Metal::new(Vec3::new(0.50, 0.50, 0.60), 0.1);
     let floor = Sphere::new(Vec3::new(0.0, -1000.0, 0.0), 1000.0, &metal);
 
-    let glass = Dielectric::new(1.5);
-    let bunny = obj::parse("models/bunny.obj", &arena, &glass, 0.0, 1.0);
+    let blue = Metal::new(Vec3::new(0.60, 0.60, 0.50), 0.05);
+    let bunny = obj::parse("models/bunny.obj", &arena, &blue, 0.0, 1.0);
+    let center = Translate::new(Vec3::new(0.0, 0.925, 0.0), &bunny);
+    let left = Translate::new(Vec3::new(-1.5, 0.0, -1.5), &center);
+    let right = Translate::new(Vec3::new(1.5, 0.0, 1.5), &center);
 
     let mut scene: Vec<&dyn Surface> = Vec::new();
-    scene.push(&bunny);
+    scene.push(&center);
+    scene.push(&left);
+    scene.push(&right);
     scene.push(&floor);
 
     let scene = bvh::Linear::new(&arena, &scene, 0.0, 1.0);
