@@ -1,9 +1,15 @@
 use crate::arena::Arena;
 use crate::material::Material;
-use crate::geometry::{Tri, Vec3};
+use crate::geometry::{Mesh, Tri, Vec3};
 use crate::surface::Surface;
 
-pub fn parse<'scene, P>(obj: P, arena: &'scene Arena, material: &'scene Material) -> Vec<&'scene dyn Surface<'scene>>
+pub fn parse<'scene, P>(
+    obj: P,
+    arena: &'scene Arena,
+    material: &'scene dyn Material,
+    t_min: f32,
+    t_max: f32,
+) -> Mesh<'scene>
     where P: AsRef<std::path::Path>,
 {
     let obj = std::fs::read_to_string(obj).expect("[INTERNAL ERROR]: could not read OBJ file");
@@ -51,13 +57,11 @@ pub fn parse<'scene, P>(obj: P, arena: &'scene Arena, material: &'scene Material
         .map(|n| arena.alloc(n))
         .collect::<Vec<_>>();
 
-    fs.into_iter()
+    let ts = fs.into_iter()
         .map(|(a, b, c)| {
-            arena.alloc(Tri::new(
-                material,
-                [vs[a], vs[b], vs[c]],
-                [ns[a], ns[b], ns[c]]
-            )) as &'scene dyn Surface
+            arena.alloc(Tri::new([vs[a], vs[b], vs[c]], [ns[a], ns[b], ns[c]])) as &'scene dyn Surface
         })
-        .collect()
+        .collect::<Vec<_>>();
+
+    Mesh::new(arena, material, &ts, t_min, t_max)
 }

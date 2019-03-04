@@ -1,21 +1,15 @@
 use crate::geometry::{Bound, Ray, Vec3};
-use crate::material::Material;
 use crate::surface::{Hit, Surface};
 
 #[derive(Copy, Clone, Debug)]
 pub struct Tri<'scene> {
-    material: &'scene Material,
     vertices: [&'scene Vec3; 3],
     normals: [&'scene Vec3; 3],
 }
 
 impl<'scene> Tri<'scene> {
-    pub fn new(
-        material: &'scene Material,
-        vertices: [&'scene Vec3; 3],
-        normals: [&'scene Vec3; 3],
-    ) -> Self {
-        Tri { material, vertices, normals }
+    pub fn new(vertices: [&'scene Vec3; 3], normals: [&'scene Vec3; 3]) -> Self {
+        Tri { vertices, normals }
     }
 }
 
@@ -50,7 +44,6 @@ impl<'scene> Surface<'scene> for Tri<'scene> {
 
         ray.max = t;
         hit.t = t;
-        hit.m = Some(self.material);
         hit.p =
             self.vertices[0] * w +
             self.vertices[1] * u +

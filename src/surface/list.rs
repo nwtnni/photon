@@ -15,7 +15,7 @@ impl<'scene> List<'scene> {
     }
 
     /// Append a new surface to this list.
-    pub fn push(&mut self, surface: &'scene Surface<'scene>) {
+    pub fn push(&mut self, surface: &'scene dyn Surface<'scene>) {
         self.surfaces.push(surface);
     }
 }

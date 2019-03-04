@@ -12,7 +12,7 @@ use photon::camera::Camera;
 
 /// Main ray tracing function.
 /// Intersects `ray` with `scene`, potentially recursing upon reflecting or refracting.
-fn color(ray: &mut Ray, scene: &Surface, depth: i32) -> Vec3 {
+fn color(ray: &mut Ray, scene: &dyn Surface, depth: i32) -> Vec3 {
     let mut hit = Hit::default();
     if scene.hit(ray, &mut hit) {
         let mut attenuation = Vec3::default();
@@ -101,7 +101,7 @@ fn render(
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let nx = 500; // Width
     let ny = 250; // Height
-    let ns = 1;  // Samples per pixel
+    let ns = 100;  // Samples per pixel
 
     let arena = Arena::new(96 * 1024 * 1024);
 
@@ -121,7 +121,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let floor = Sphere::new(Vec3::new(0.0, -1000.0, 0.0), 1000.0, &metal);
 
     let glass = Dielectric::new(1.5);
-    let mut scene = obj::parse("models/bunny.obj", &arena, &glass);
+    let bunny = obj::parse("models/bunny.obj", &arena, &glass, 0.0, 1.0);
+
+    let mut scene: Vec<&dyn Surface> = Vec::new();
+    scene.push(&bunny);
     scene.push(&floor);
 
     let scene = bvh::Linear::new(&arena, &scene, 0.0, 1.0);

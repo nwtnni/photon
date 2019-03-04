@@ -32,6 +32,16 @@ impl Arena {
             &*ptr
         }
     }
+
+    pub unsafe fn alloc_slice_uninitialized<T: Copy>(&self, count: usize) -> &mut [T] {
+        let size = std::mem::size_of::<T>();
+        let len = self.len.get();
+        if len + size * count >= self.cap { panic!("[INTERNAL ERROR]: Arena ran out of memory"); }
+        self.len.set(len + size * count);
+        stats::ARENA_MEMORY.inc(size * count);
+        let ptr = self.buf.add(len) as *mut T;
+        std::slice::from_raw_parts_mut(ptr, count)
+    }
 }
 
 impl Drop for Arena {

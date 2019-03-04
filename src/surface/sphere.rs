@@ -20,7 +20,7 @@ pub struct Sphere<'scene> {
 
 impl<'scene> Sphere<'scene> {
     #[inline(always)]
-    pub fn new(c: Vec3, r: f32, m: &'scene Material) -> Self {
+    pub fn new(c: Vec3, r: f32, m: &'scene dyn Material) -> Self {
         Sphere { c, r, m, v: Vec3::default() }
     }
 
