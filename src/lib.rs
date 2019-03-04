@@ -18,6 +18,7 @@ pub mod model;
 pub mod preview;
 
 /// Progress bar
+#[cfg(feature = "progress")]
 pub mod progress;
 
 /// Geometric primitives

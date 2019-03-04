@@ -38,6 +38,15 @@ fn render(
     camera: &Camera,
     scene: &Surface
 ) {
+    #[cfg(feature = "preview")]
+    let (tx, preview) = {
+        let (tx, rx) = crossbeam::channel::unbounded();
+        let preview = std::thread::spawn(move || photon::preview::Preview::new(nx, ny, rx).run());
+        (tx, preview)
+    };
+
+    #[cfg(feature = "progress")]
+    let progress = std::thread::spawn(move || photon::progress::run(nx * ny));
 
     // Row to pixel buffer map
     let mut buffers: HashMap<usize, Vec<(u8, u8, u8)>> = HashMap::with_capacity(ny);
@@ -59,7 +68,8 @@ fn render(
                 (c[2].sqrt() * 255.99) as u8,
             );
             buffer.push(rgb);
-            photon::stats::PIXELS_RENDERED.inc();
+            #[cfg(feature = "preview")] tx.send((x, y, rgb)).ok();
+            #[cfg(feature = "progress")] photon::stats::PIXELS_RENDERED.inc();
         }
         (y, buffer)
     }));
@@ -69,16 +79,29 @@ fn render(
         .flat_map(|y| buffers.remove(&y).unwrap().into_iter())
         .collect::<Vec<_>>();
 
-    lodepng::encode24_file("out.png", &buffer, nx, ny)
-        .unwrap();
+    lodepng::encode24_file("out.png", &buffer, nx, ny).unwrap();
+
+    #[cfg(feature = "progress")] {
+        progress.join().unwrap().ok();
+    }
+    #[cfg(feature = "stats")] {
+        println!("{}", photon::stats::ARENA_MEMORY);
+        println!("{}", photon::stats::LEAF_NODES);
+        println!("{}", photon::stats::TOTAL_NODES);
+        println!("{}", photon::stats::INTERSECTION_TESTS);
+        println!("{}", photon::stats::BOUNDING_BOX_INTERSECTION_TESTS);
+        println!("{}", photon::stats::SPHERE_INTERSECTION_TESTS);
+        println!("{}", photon::stats::LIST_INTERSECTION_TESTS);
+    }
+    #[cfg(feature = "preview")] {
+        preview.join().unwrap();
+    }
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let nx = 1920; // Width
-    let ny = 1080; // Height
+    let nx = 500; // Width
+    let ny = 250; // Height
     let ns = 1;  // Samples per pixel
-
-    std::thread::spawn(move || photon::progress::run(nx * ny));
 
     let arena = Arena::new(96 * 1024 * 1024);
 
@@ -104,16 +127,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let scene = bvh::Linear::new(&arena, &scene, 0.0, 1.0);
 
     render(nx, ny, ns, &camera, &scene);
-
-    if cfg!(feature = "stats") {
-        println!("{}", photon::stats::ARENA_MEMORY);
-        println!("{}", photon::stats::LEAF_NODES);
-        println!("{}", photon::stats::TOTAL_NODES);
-        println!("{}", photon::stats::INTERSECTION_TESTS);
-        println!("{}", photon::stats::BOUNDING_BOX_INTERSECTION_TESTS);
-        println!("{}", photon::stats::SPHERE_INTERSECTION_TESTS);
-        println!("{}", photon::stats::LIST_INTERSECTION_TESTS);
-    }
 
     Ok(())
 }

@@ -39,16 +39,27 @@ pub fn run(total: usize) -> Result<(), std::io::Error> {
     let stdout = std::io::stdout();
     let mut out = stdout.lock();
     let mut spinner = Spinner::A;
-    write!(out, "{}", termion::cursor::Save)?;
-    loop {
+    let mut rendered = 0;
+
+    write!(
+        out,
+        "{}{}",
+        termion::cursor::Hide,
+        termion::cursor::Save,
+    )?;
+
+    while rendered < total {
+        spinner.rotate();
+        rendered = PIXELS_RENDERED.read();
+
         let now = std::time::Instant::now();
         let mut span = now.duration_since(start).as_secs();
         let h = span / 3600; span %= 3600;
         let m = span / 60;   span %= 60;
         let s = span;
-        let rendered = PIXELS_RENDERED.read();
         let done = rendered * BARS / total;
         let rest = BARS - done;
+
         write!(
             out,
             "{}[{}] | Elapsed: {:0>2}:{:0>2}:{:0>2} | [{}{}] | {:.2}% | {} out of {} pixels",
@@ -61,7 +72,17 @@ pub fn run(total: usize) -> Result<(), std::io::Error> {
             rendered,
             total,
         )?;
-        spinner.rotate();
-        std::thread::sleep(std::time::Duration::from_millis(100));
+
+        std::thread::sleep(
+            std::time::Duration::from_millis(10)
+        );
     }
+
+    write!(
+        out,
+        "{}\n",
+        termion::cursor::Show,
+    )?;
+
+    Ok(())
 }
