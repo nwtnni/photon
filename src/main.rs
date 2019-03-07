@@ -8,6 +8,7 @@ use photon::geometry::{Translate, Ray, Vec3};
 use photon::material::{Metal, Diffuse};
 use photon::model::obj;
 use photon::surface::{Surface, Sphere, Hit};
+use photon::texture::{Texture, Checker, Constant};
 use photon::camera::Camera;
 
 /// Main ray tracing function.
@@ -99,9 +100,9 @@ fn render(
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let nx = 1920; // Width
-    let ny = 1080; // Height
-    let ns = 50;  // Samples per pixel
+    let nx = 500; // Width
+    let ny = 250; // Height
+    let ns = 10;  // Samples per pixel
 
     let arena = Arena::new(96 * 1024 * 1024);
 
@@ -117,19 +118,22 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let shut = 1.0;
     let camera = Camera::new(origin, toward, up, fov, aspect, aperture, focus, open, shut);
 
-    let metal = Metal::new(Vec3::new(0.50, 0.50, 0.60), 0.1);
-    let floor = Sphere::new(Vec3::new(0.0, -1000.0, 0.0), 1000.0, &metal);
+    let blue = Constant::new(Vec3::new(0.50, 0.50, 0.60));
+    let white = Constant::new(Vec3::new(1.0, 1.0, 1.0));
+    let checker = Checker::new(0.05, &blue, &white);
+    let material = Diffuse::new(&checker);
+    let floor = Sphere::new(Vec3::new(0.0, -1000.0, 0.0), 1000.0, &material);
 
     let blue = Metal::new(Vec3::new(0.60, 0.60, 0.50), 0.05);
     let bunny = obj::parse("models/bunny.obj", &arena, &blue, 0.0, 1.0);
     let center = Translate::new(Vec3::new(0.0, 0.925, 0.0), &bunny);
-    let left = Translate::new(Vec3::new(-1.5, 0.0, -1.5), &center);
-    let right = Translate::new(Vec3::new(1.5, 0.0, 1.5), &center);
+    // let left = Translate::new(Vec3::new(-1.5, 0.0, -1.5), &center);
+    // let right = Translate::new(Vec3::new(1.5, 0.0, 1.5), &center);
 
     let mut scene: Vec<&dyn Surface> = Vec::new();
     scene.push(&center);
-    scene.push(&left);
-    scene.push(&right);
+    // scene.push(&left);
+    // scene.push(&right);
     scene.push(&floor);
 
     let scene = bvh::Linear::new(&arena, &scene, 0.0, 1.0);

@@ -29,3 +29,6 @@ pub mod surface;
 
 /// Statistic tracking
 pub mod stats;
+
+/// Coloring textures
+pub mod texture;

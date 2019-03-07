@@ -6,14 +6,14 @@ use crate::surface::{Surface, Hit};
 
 #[derive(Clone, Debug)]
 pub struct Mesh<'scene> {
-    material: &'scene dyn Material,
+    material: &'scene dyn Material<'scene>,
     internal: bvh::Linear<'scene>,
 }
 
 impl<'scene> Mesh<'scene> {
     pub fn new(
         arena: &'scene Arena,
-        material: &'scene dyn Material,
+        material: &'scene dyn Material<'scene>,
         triangles: &[&'scene dyn Surface<'scene>],
         t_min: f32,
         t_max: f32,

@@ -13,6 +13,12 @@ pub struct Hit<'scene> {
     /// Hit time
     pub t: f32,
 
+    /// Texture coordinate
+    pub u: f32,
+
+    /// Texture coordinate
+    pub v: f32,
+
     /// Hit point
     pub p: Vec3,
 
@@ -20,7 +26,7 @@ pub struct Hit<'scene> {
     pub n: Vec3,
 
     /// Material at hit point
-    pub m: Option<&'scene dyn Material>,
+    pub m: Option<&'scene dyn Material<'scene>>,
 }
 
 /// Represents an object that can interact with light rays.

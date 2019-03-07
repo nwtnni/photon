@@ -15,8 +15,8 @@ impl Metal {
     }
 }
 
-impl Material for Metal {
-    fn scatter(&self, ray: &Ray, hit: &Hit, attenuation: &mut Vec3, scattered: &mut Ray) -> bool {
+impl<'scene> Material<'scene> for Metal {
+    fn scatter(&self, ray: &Ray, hit: &Hit<'scene>, attenuation: &mut Vec3, scattered: &mut Ray) -> bool {
         let d = ray.d.normalize();
         *attenuation = self.albedo;
         *scattered = Ray::new(

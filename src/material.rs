@@ -10,8 +10,8 @@ pub use dielectric::Dielectric;
 pub use metal::Metal;
 
 /// Represents a material that can scatter light.
-pub trait Material: std::fmt::Debug + Send + Sync {
-    fn scatter<'scene>(&self, ray: &Ray, hit: &'scene Hit, attenuation: &mut Vec3, scattered: &mut Ray) -> bool;
+pub trait Material<'scene>: std::fmt::Debug + Send + Sync {
+    fn scatter(&self, ray: &Ray, hit: &Hit<'scene>, attenuation: &mut Vec3, scattered: &mut Ray) -> bool;
 }
 
 /// Reflects vector `v` over normal vector `n`.

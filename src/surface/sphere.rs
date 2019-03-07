@@ -15,12 +15,12 @@ pub struct Sphere<'scene> {
     r: f32,
 
     /// Material
-    m: &'scene dyn Material,
+    m: &'scene dyn Material<'scene>,
 }
 
 impl<'scene> Sphere<'scene> {
     #[inline(always)]
-    pub fn new(c: Vec3, r: f32, m: &'scene dyn Material) -> Self {
+    pub fn new(c: Vec3, r: f32, m: &'scene dyn Material<'scene>) -> Self {
         Sphere { c, r, m, v: Vec3::default() }
     }
 
@@ -81,6 +81,10 @@ impl<'scene> Surface<'scene> for Sphere<'scene> {
         hit.p = ray.at(t);
         hit.n = (hit.p - self.c()) / self.r();
         hit.m = Some(self.m);
+        let phi = hit.p.z().atan2(hit.p.x());
+        let theta = hit.p.y().asin();
+        hit.u = 1.0 - (phi + std::f32::consts::PI) / (2.0 * std::f32::consts::PI);
+        hit.v = (theta + std::f32::consts::FRAC_PI_2) / std::f32::consts::PI;
         true
     }
 }

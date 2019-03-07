@@ -19,8 +19,8 @@ impl Dielectric {
     }
 }
 
-impl Material for Dielectric {
-    fn scatter<'scene>(&self, ray: &Ray, hit: &'scene Hit, attenuation: &mut Vec3, scattered: &mut Ray) -> bool {
+impl<'scene> Material<'scene> for Dielectric {
+    fn scatter(&self, ray: &Ray, hit: &Hit<'scene>, attenuation: &mut Vec3, scattered: &mut Ray) -> bool {
         *attenuation = Vec3::new(1.0, 1.0, 1.0);
         let reflected = reflect(ray.d, hit.n);
         let dot = ray.d.dot(&hit.n);

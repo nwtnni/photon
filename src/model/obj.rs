@@ -6,7 +6,7 @@ use crate::surface::Surface;
 pub fn parse<'scene, P>(
     obj: P,
     arena: &'scene Arena,
-    material: &'scene dyn Material,
+    material: &'scene dyn Material<'scene>,
     t_min: f32,
     t_max: f32,
 ) -> Mesh<'scene>
