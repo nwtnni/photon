@@ -100,9 +100,9 @@ fn render(
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let nx = 500; // Width
-    let ny = 250; // Height
-    let ns = 10;  // Samples per pixel
+    let nx = 1920; // Width
+    let ny = 1080; // Height
+    let ns = 3;  // Samples per pixel
 
     let arena = Arena::new(96 * 1024 * 1024);
 
