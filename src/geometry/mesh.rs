@@ -36,4 +36,8 @@ impl<'scene> Surface<'scene> for Mesh<'scene> {
             false
         }
     }
+
+    fn hit_any(&self, ray: &Ray) -> bool {
+        self.internal.hit_any(ray)
+    }
 }

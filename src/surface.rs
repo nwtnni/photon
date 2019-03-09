@@ -33,4 +33,5 @@ pub struct Hit<'scene> {
 pub trait Surface<'scene>: std::fmt::Debug + Send + Sync {
     fn bound(&self, t0: f32, t1: f32) -> Bound;
     fn hit(&self, ray: &mut Ray, record: &mut Hit<'scene>) -> bool;
+    fn hit_any(&self, ray: &Ray) -> bool;
 }

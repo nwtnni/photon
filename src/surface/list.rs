@@ -40,4 +40,15 @@ impl<'scene> Surface<'scene> for List<'scene> {
         }
         success
     }
+
+    fn hit_any(&self, ray: &Ray) -> bool {
+        if cfg!(feature = "stats") {
+            crate::stats::INTERSECTION_TESTS.inc();
+            crate::stats::LIST_INTERSECTION_TESTS.inc();
+        }
+        for surface in &self.surfaces {
+            if surface.hit_any(ray) { return true }
+        }
+        false
+    }
 }

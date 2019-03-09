@@ -61,6 +61,16 @@ impl<'scene> Surface<'scene> for Tree<'scene> {
         },
         }
     }
+
+    fn hit_any(&self, ray: &Ray) -> bool {
+        if !self.bound(0.0, 0.0).hit_any(ray) { return false }
+        match self {
+        | Tree::Leaf { surface, .. } => surface.hit_any(ray),
+        | Tree::Node { l, r, .. } => {
+            l.hit_any(ray) || r.hit_any(ray)
+        },
+        }
+    }
 }
 
 #[derive(Clone, Debug)]

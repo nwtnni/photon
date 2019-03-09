@@ -104,4 +104,39 @@ impl<'scene> Surface<'scene> for Linear<'scene> {
             }
         }
     }
+
+    fn hit_any(&self, ray: &Ray) -> bool {
+        let mut next = 0;
+        let mut this = 0;
+        let mut visit = [0; 32];
+
+        macro_rules! push { ($i:expr) => {{
+            visit[next] = $i; 
+            next += 1;
+        }}}
+
+        macro_rules! pop { () => {{
+            if next == 0 { return false }
+            next -= 1;
+            this = visit[next];
+        }}}
+
+        loop {
+            let node = &self.0[this];
+
+            if !node.bound().hit_any(ray) { pop!(); continue }
+
+            match node {
+            | Tree::Leaf { surface, .. } => {
+                if surface.hit_any(ray) { return true }
+                pop!()
+            }
+            | Tree::Node { offset, .. } => {
+                push!(this + *offset);
+                this += 1;
+            }
+            }
+        }
+
+    }
 }

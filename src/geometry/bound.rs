@@ -89,7 +89,10 @@ impl<'scene> Surface<'scene> for Bound {
     }
 
     fn hit(&self, ray: &mut Ray, _: &mut Hit<'scene>) -> bool {
+        self.hit_any(&*ray)
+    }
 
+    fn hit_any(&self, ray: &Ray) -> bool {
         if cfg!(feature = "stats") {
             crate::stats::INTERSECTION_TESTS.inc();
             crate::stats::BOUNDING_BOX_INTERSECTION_TESTS.inc();

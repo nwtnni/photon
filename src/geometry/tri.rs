@@ -55,4 +55,27 @@ impl<'scene> Surface<'scene> for Tri<'scene> {
         ).normalize();
         true
     }
+
+    fn hit_any(&self, ray: &Ray) -> bool {
+        const EPSILON: f32 = 0.0000001;
+
+        let edge_a = self.vertices[1] - self.vertices[0];
+        let edge_b = self.vertices[2] - self.vertices[0];
+        let h = ray.d.cross(&edge_b);
+        let det = edge_a.dot(&h);
+
+        if det > -EPSILON && det < EPSILON { return false }
+
+        let inv = 1.0 / det;
+        let s = ray.o - self.vertices[0];
+        let u = inv * s.dot(&h);
+        if u < 0.0 || u > 1.0 { return false }
+
+        let q = s.cross(&edge_a);
+        let v = inv * ray.d.dot(&q);
+        if v < 0.0 || u + v > 1.0 { return false }
+
+        let t = inv * edge_b.dot(&q);
+        t >= ray.min && t <= ray.max
+    }
 }

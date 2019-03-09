@@ -32,4 +32,9 @@ impl<'scene> Surface<'scene> for Translate<'scene> {
             false
         }
     }
+
+    fn hit_any(&self, ray: &Ray) -> bool {
+        let offset = Ray { o: ray.o - self.offset, .. *ray };
+        self.surface.hit_any(&offset)
+    }
 }

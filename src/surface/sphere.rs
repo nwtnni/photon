@@ -70,7 +70,7 @@ impl<'scene> Surface<'scene> for Sphere<'scene> {
         // Get first intersection within [t_min, t_max]
         let t = if t_a > ray.min && t_a < ray.max {
             t_a
-        } else if t_b > ray.min && t_a < ray.max {
+        } else if t_b > ray.min && t_b < ray.max {
             t_b
         } else {
             return false;
@@ -86,5 +86,20 @@ impl<'scene> Surface<'scene> for Sphere<'scene> {
         hit.u = 1.0 - (phi + std::f32::consts::PI) / (2.0 * std::f32::consts::PI);
         hit.v = (theta + std::f32::consts::FRAC_PI_2) / std::f32::consts::PI;
         true
+    }
+
+    fn hit_any(&self, ray: &Ray) -> bool {
+        if cfg!(feature = "stats") {
+            crate::stats::INTERSECTION_TESTS.inc();
+            crate::stats::SPHERE_INTERSECTION_TESTS.inc();
+        }
+        let o = ray.o - self.center(ray.t);
+        let a = ray.d.len_sq() as f32;
+        let b = o.dot(&ray.d);
+        let c = o.len_sq() - self.r * self.r;
+        let d = b * b - a * c;
+        if d < 0.0 { return false }
+        let (t_a, t_b) = ((-b - d.sqrt()) / a, (-b + d.sqrt()) / a);
+        t_a > ray.min && t_a < ray.max || t_b > ray.min && t_a < ray.max
     }
 }
