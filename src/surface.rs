@@ -3,9 +3,15 @@ use crate::material::Material;
 
 mod sphere;
 mod list;
+mod mesh;
+mod tri;
+mod translate;
 
 pub use list::List;
 pub use sphere::Sphere;
+pub use mesh::Mesh;
+pub use translate::Translate;
+pub use tri::Tri;
 
 /// Carries information about surface intersections.
 #[derive(Copy, Clone, Debug, Default)]

@@ -1,15 +1,9 @@
 mod bound;
-mod mesh;
 mod ray;
-mod tri;
-mod translate;
 mod vec;
 
 pub use bound::Bound;
-pub use mesh::Mesh;
 pub use ray::Ray;
-pub use tri::Tri;
-pub use translate::Translate;
 pub use vec::Vec3;
 
 use rand::random;

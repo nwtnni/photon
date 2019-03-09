@@ -1,7 +1,7 @@
 use crate::arena::Arena;
 use crate::material::Material;
-use crate::geometry::{Mesh, Tri, Vec3};
-use crate::surface::Surface;
+use crate::geometry::Vec3;
+use crate::surface::{Surface, Mesh, Tri};
 
 pub fn parse<'scene, P>(
     obj: P,

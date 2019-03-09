@@ -4,10 +4,10 @@ use rayon::prelude::*;
 
 use photon::arena::Arena;
 use photon::bvh;
-use photon::geometry::{Translate, Ray, Vec3};
+use photon::geometry::{Ray, Vec3};
 use photon::material::{Metal, Diffuse};
 use photon::model::obj;
-use photon::surface::{Surface, Sphere, Hit};
+use photon::surface::{Surface, Sphere, Translate, Hit};
 use photon::texture::{Texture, Checker, Constant};
 use photon::camera::Camera;
 
