@@ -7,6 +7,9 @@ pub mod bvh;
 /// Camera model
 pub mod camera;
 
+/// Lighting primitives
+pub mod light;
+
 /// Scattering models
 pub mod material;
 
