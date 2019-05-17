@@ -20,6 +20,12 @@ impl<'scene> Surface<'scene> for Tri<'scene> {
     }
 
     fn hit(&self, ray: &mut Ray, hit: &mut Hit<'scene>) -> bool {
+
+        if cfg!(feature = "stats") {
+            crate::stats::INTERSECTION_TESTS.inc();
+            crate::stats::TRI_INTERSECTION_TESTS.inc();
+        }
+
         const EPSILON: f32 = 0.0000001;
 
         let edge_a = self.vertices[1] - self.vertices[0];
@@ -57,6 +63,12 @@ impl<'scene> Surface<'scene> for Tri<'scene> {
     }
 
     fn hit_any(&self, ray: &Ray) -> bool {
+
+        if cfg!(feature = "stats") {
+            crate::stats::INTERSECTION_TESTS.inc();
+            crate::stats::TRI_INTERSECTION_TESTS.inc();
+        }
+
         const EPSILON: f32 = 0.0000001;
 
         let edge_a = self.vertices[1] - self.vertices[0];

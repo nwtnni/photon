@@ -8,6 +8,12 @@ pub struct List<'scene> {
     surfaces: Vec<&'scene dyn Surface<'scene>>,
 }
 
+impl<'scene> From<Vec<&'scene dyn Surface<'scene>>> for List<'scene> {
+    fn from(surfaces: Vec<&'scene dyn Surface<'scene>>) -> Self {
+        List { surfaces }
+    }
+}
+
 impl<'scene> List<'scene> {
     /// Construct a list with the provided capacity.
     pub fn with_capacity(capacity: usize) -> Self {

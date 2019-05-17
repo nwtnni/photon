@@ -92,6 +92,7 @@ fn render(
         println!("{}", photon::stats::INTERSECTION_TESTS);
         println!("{}", photon::stats::BOUNDING_BOX_INTERSECTION_TESTS);
         println!("{}", photon::stats::SPHERE_INTERSECTION_TESTS);
+        println!("{}", photon::stats::TRI_INTERSECTION_TESTS);
         println!("{}", photon::stats::LIST_INTERSECTION_TESTS);
     }
     #[cfg(feature = "preview")] {
@@ -100,9 +101,9 @@ fn render(
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let nx = 1920; // Width
-    let ny = 1080; // Height
-    let ns = 3;  // Samples per pixel
+    let nx = 200; // Width
+    let ny = 100; // Height
+    let ns = 1;  // Samples per pixel
 
     let arena = Arena::new(96 * 1024 * 1024);
 
@@ -136,7 +137,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // scene.push(&right);
     scene.push(&floor);
 
-    let scene = bvh::Linear::new(&arena, &scene, 0.0, 1.0);
+    // let scene = bvh::Linear::new(&arena, &scene, 0.0, 1.0);
+    let scene = photon::surface::List::from(scene);
 
     render(nx, ny, ns, &camera, &scene);
 
