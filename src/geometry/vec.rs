@@ -22,6 +22,11 @@ impl Vec3 {
     }
 
     #[inline(always)]
+    pub fn broadcast(x: f32) -> Self {
+        Vec3([x, x, x])
+    }
+
+    #[inline(always)]
     pub fn set<V: Into<Vec3>>(&mut self, v: V) {
         *self = v.into()
     }

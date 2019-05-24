@@ -14,8 +14,8 @@ impl<'scene> Translate<'scene> {
 }
 
 impl<'scene> Surface<'scene> for Translate<'scene> {
-    fn bound(&self, t_min: f32, t_max: f32) -> Bound {
-        let bound = self.surface.bound(t_min, t_max);
+    fn bound(&self) -> Bound {
+        let bound = self.surface.bound();
         Bound::new(
             bound.min() + self.offset,
             bound.max() + self.offset,

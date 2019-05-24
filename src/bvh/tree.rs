@@ -26,7 +26,7 @@ impl<'scene> Tree<'scene> {
         let hi = surfaces.len();
         let mut info: Vec<Info> = surfaces.iter()
             .enumerate()
-            .map(|(i, surface)| Info::new(i, surface.bound(t_min, t_max)))
+            .map(|(i, surface)| Info::new(i, surface.bound()))
             .collect();
         build(surfaces, &mut info, lo, hi, t_min, t_max)
     }
@@ -40,15 +40,15 @@ impl<'scene> Tree<'scene> {
 }
 
 impl<'scene> Surface<'scene> for Tree<'scene> {
-    fn bound(&self, t_min: f32, t_max: f32) -> Bound {
+    fn bound(&self) -> Bound {
         match self {
-        | Tree::Leaf(surface) => surface.bound(t_min, t_max),
+        | Tree::Leaf(surface) => surface.bound(),
         | Tree::Node { bound, .. } => *bound,
         }
     }
 
     fn hit(&self, ray: &mut Ray, hit: &mut Hit<'scene>) -> bool {
-        if !self.bound(0.0, 0.0).hit(ray, hit) { return false }
+        if !self.bound().hit(ray, hit) { return false }
         match self {
         | Tree::Leaf(surface) => surface.hit(ray, hit),
         | Tree::Node { l, r, .. } => {
@@ -172,7 +172,7 @@ fn build<'scene>(
     let r = build(surfaces, info, mid, hi, t_min, t_max);
     Tree::Node {
         axis: dim,
-        bound: l.bound(t_min, t_max).union_b(&r.bound(t_min, t_max)),
+        bound: l.bound().union_b(&r.bound()),
         l: Box::new(l),
         r: Box::new(r),
     }

@@ -27,9 +27,9 @@ impl<'scene> List<'scene> {
 }
 
 impl<'scene> Surface<'scene> for List<'scene> {
-    fn bound(&self, t0: f32, t1: f32) -> Bound {
+    fn bound(&self) -> Bound {
         self.surfaces.iter()
-            .map(|surface| surface.bound(t0, t1))
+            .map(|s| s.bound())
             .fold(Bound::smallest(), |a, b| a.union_b(&b))
     }
 

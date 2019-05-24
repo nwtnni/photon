@@ -102,7 +102,7 @@ impl Default for Bound {
 }
 
 impl<'scene> Surface<'scene> for Bound {
-    fn bound(&self, _: f32, _: f32) -> Bound {
+    fn bound(&self) -> Bound {
         *self
     }
 

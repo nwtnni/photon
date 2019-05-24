@@ -29,8 +29,8 @@ impl<'scene> Mesh<'scene> {
 }
 
 impl<'scene> Surface<'scene> for Mesh<'scene> {
-    fn bound(&self, t_min: f32, t_max: f32) -> Bound {
-        self.internal.bound(t_min, t_max)
+    fn bound(&self) -> Bound {
+        self.internal.bound()
     }
 
     fn hit(&self, ray: &mut Ray, hit: &mut Hit<'scene>) -> bool {

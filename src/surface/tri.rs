@@ -14,9 +14,8 @@ impl<'scene> Tri<'scene> {
 }
 
 impl<'scene> Surface<'scene> for Tri<'scene> {
-    fn bound(&self, _: f32, _: f32) -> Bound {
-        Bound::new(*self.vertices[0], *self.vertices[1])
-            .union_v(self.vertices[2])
+    fn bound(&self) -> Bound {
+        Bound::new(*self.vertices[0], *self.vertices[1]).union_v(self.vertices[2])
     }
 
     fn hit(&self, ray: &mut Ray, hit: &mut Hit<'scene>) -> bool {

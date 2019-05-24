@@ -51,9 +51,9 @@ impl<'scene> bvh::Tree<'scene> {
 }
 
 impl<'scene> Surface<'scene> for Linear<'scene> {
-    fn bound(&self, t_min: f32, t_max: f32) -> Bound {
+    fn bound(&self) -> Bound {
         match self.0[0] {
-        | Tree::Leaf(surface) => surface.bound(t_min, t_max),
+        | Tree::Leaf(surface) => surface.bound(),
         | Tree::Node { bound, .. } => bound,
         }
     }
