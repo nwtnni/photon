@@ -19,8 +19,6 @@ macro_rules! memory {
 }
 
 counter!(PIXELS_RENDERED);
-counter!(TOTAL_NODES);
-counter!(LEAF_NODES);
 counter!(INTERSECTION_TESTS);
 counter!(BOUNDING_BOX_INTERSECTION_TESTS);
 counter!(SPHERE_INTERSECTION_TESTS);

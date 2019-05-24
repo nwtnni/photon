@@ -93,19 +93,12 @@ fn build<'scene>(
     t_max: f32,
 ) -> Tree<'scene> {
 
-    if cfg!(feature = "stats") {
-        crate::stats::TOTAL_NODES.inc();
-    }
-
     let count = hi - lo;
     let bound = info[lo..hi].iter()
         .map(|info| info.bound)
         .fold(Bound::smallest(), |a, b| a.union_b(&b));
 
     if count == 1 {
-        if cfg!(feature = "stats") {
-            crate::stats::LEAF_NODES.inc();
-        }
         return Tree::Leaf(surfaces[info[lo].index])
     }
 
