@@ -87,8 +87,6 @@ fn render(
     }
     #[cfg(feature = "stats")] {
         println!("{}", photon::stats::ARENA_MEMORY);
-        println!("{}", photon::stats::LEAF_NODES);
-        println!("{}", photon::stats::TOTAL_NODES);
         println!("{}", photon::stats::INTERSECTION_TESTS);
         println!("{}", photon::stats::BOUNDING_BOX_INTERSECTION_TESTS);
         println!("{}", photon::stats::SPHERE_INTERSECTION_TESTS);

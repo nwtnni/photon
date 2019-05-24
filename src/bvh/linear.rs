@@ -2,6 +2,7 @@ use crate::bvh;
 use crate::arena::Arena;
 use crate::geometry::{Axis, Ray, Bound};
 use crate::surface::{Hit, Surface};
+use crate::bvh::Leaf;
 
 #[derive(Clone, Debug)]
 pub struct Linear<'scene>(&'scene [Tree<'scene>]);
@@ -24,8 +25,8 @@ impl<'scene> Linear<'scene> {
 }
 
 #[derive(Copy, Clone, Debug)]
-enum Tree<'scene> {
-    Leaf(&'scene dyn Surface<'scene>),
+pub enum Tree<'scene> {
+    Leaf(Leaf<'scene>),
     Node {
         axis: Axis,
         bound: Bound,
@@ -36,8 +37,8 @@ enum Tree<'scene> {
 impl<'scene> bvh::Tree<'scene> {
     fn flatten(self, nodes: &mut [Tree<'scene>], index: &mut usize) {
         match self {
-        | bvh::Tree::Leaf(surface) => {
-            nodes[*index] = Tree::Leaf(surface);
+        | bvh::Tree::Leaf(surfaces) => {
+            nodes[*index] = Tree::Leaf(surfaces);
             *index += 1;
         }
         | bvh::Tree::Node { bound, axis, l, r } => {
@@ -80,8 +81,8 @@ impl<'scene> Surface<'scene> for Linear<'scene> {
 
         loop {
             match &self.0[this] {
-            | Tree::Leaf(surface) => {
-                if surface.hit(ray, hit) { success = true; }
+            | Tree::Leaf(surfaces) => {
+                if surfaces.hit(ray, hit) { success = true; }
                 pop!();
             }
             | Tree::Node { bound, offset, axis, .. } => {
@@ -119,8 +120,8 @@ impl<'scene> Surface<'scene> for Linear<'scene> {
 
         loop {
             match &self.0[this] {
-            | Tree::Leaf(surface) => {
-                if surface.hit_any(ray) { return true }
+            | Tree::Leaf(surfaces) => {
+                if surfaces.hit_any(ray) { return true }
                 pop!();
             }
             | Tree::Node { axis, bound, offset, .. } => {

@@ -2,12 +2,13 @@ use std::collections::HashMap;
 
 use crate::geometry::{Axis, Bound, Ray, Vec3};
 use crate::surface::{Hit, Surface};
+use crate::bvh::{Leaf, LEAF_SIZE};
 
 const BUCKETS: usize = 12;
 
 #[derive(Clone, Debug)]
 pub enum Tree<'scene> {
-    Leaf(&'scene dyn Surface<'scene>),
+    Leaf(Leaf<'scene>),
     Node {
         bound: Bound,
         axis: Axis,
@@ -42,16 +43,16 @@ impl<'scene> Tree<'scene> {
 impl<'scene> Surface<'scene> for Tree<'scene> {
     fn bound(&self) -> Bound {
         match self {
-        | Tree::Leaf(surface) => surface.bound(),
+        | Tree::Leaf(surfaces) => surfaces.bound(),
         | Tree::Node { bound, .. } => *bound,
         }
     }
 
     fn hit(&self, ray: &mut Ray, hit: &mut Hit<'scene>) -> bool {
-        if !self.bound().hit(ray, hit) { return false }
         match self {
-        | Tree::Leaf(surface) => surface.hit(ray, hit),
-        | Tree::Node { l, r, .. } => {
+        | Tree::Leaf(surfaces) => surfaces.hit(ray, hit),
+        | Tree::Node { bound, l, r, .. } => {
+            if !bound.hit(ray, hit) { return false }
             let mut success = false;
             if l.hit(ray, hit) { success = true; }
             if r.hit(ray, hit) { success = true; }
@@ -62,7 +63,7 @@ impl<'scene> Surface<'scene> for Tree<'scene> {
 
     fn hit_any(&self, ray: &Ray) -> bool {
         match self {
-        | Tree::Leaf(surface) => surface.hit_any(ray),
+        | Tree::Leaf(surfaces) => surfaces.hit_any(ray),
         | Tree::Node { bound, l, r, .. } => {
             bound.hit_any(ray) && (l.hit_any(ray) || r.hit_any(ray))
         },
@@ -98,8 +99,12 @@ fn build<'scene>(
         .map(|info| info.bound)
         .fold(Bound::smallest(), |a, b| a.union_b(&b));
 
-    if count == 1 {
-        return Tree::Leaf(surfaces[info[lo].index])
+    if count <= LEAF_SIZE {
+        let mut leaf = Leaf::default();
+        for (i, j) in (lo..hi).enumerate() {
+            leaf.set(i, surfaces[info[j].index]);
+        }
+        return Tree::Leaf(leaf)
     }
 
     let centroid_bound = info[lo..hi].iter()
