@@ -8,6 +8,8 @@ use crate::surface::{Surface, Hit};
 pub struct Mesh<'scene> {
     material: &'scene dyn Material<'scene>,
     internal: bvh::Linear<'scene>,
+    // internal: bvh::Tree<'scene>,
+    // internal: crate::surface::List<'scene>,
 }
 
 impl<'scene> Mesh<'scene> {
@@ -19,6 +21,9 @@ impl<'scene> Mesh<'scene> {
         t_max: f32,
     ) -> Self {
         let internal = bvh::Linear::new(arena, &triangles, t_min, t_max);
+        // let internal = bvh::Tree::new(&triangles, t_min, t_max);
+        // let mut internal = crate::surface::List::with_capacity(triangles.len());
+        // for triangle in triangles { internal.push(*triangle); }
         Mesh { material, internal }
     }
 }

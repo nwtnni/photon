@@ -1,18 +1,16 @@
 use std::collections::HashMap;
 
-use crate::geometry::{Bound, Ray, Vec3};
+use crate::geometry::{Axis, Bound, Ray, Vec3};
 use crate::surface::{Hit, Surface};
 
 const BUCKETS: usize = 12;
 
 #[derive(Clone, Debug)]
 pub enum Tree<'scene> {
-    Leaf {
-        bound: Bound,
-        surface: &'scene dyn Surface<'scene>,
-    },
+    Leaf(&'scene dyn Surface<'scene>),
     Node {
         bound: Bound,
+        axis: Axis,
         l: Box<Tree<'scene>>,
         r: Box<Tree<'scene>>,
     },
@@ -35,16 +33,16 @@ impl<'scene> Tree<'scene> {
 
     pub fn len(&self) -> usize {
         match self {
-        | Tree::Leaf { .. } => 1,
+        | Tree::Leaf(_) => 1,
         | Tree::Node { l, r, .. } => 1 + l.len() + r.len(),
         }
     }
 }
 
 impl<'scene> Surface<'scene> for Tree<'scene> {
-    fn bound(&self, _: f32, _: f32) -> Bound {
+    fn bound(&self, t_min: f32, t_max: f32) -> Bound {
         match self {
-        | Tree::Leaf { bound, .. }
+        | Tree::Leaf(surface) => surface.bound(t_min, t_max),
         | Tree::Node { bound, .. } => *bound,
         }
     }
@@ -52,7 +50,7 @@ impl<'scene> Surface<'scene> for Tree<'scene> {
     fn hit(&self, ray: &mut Ray, hit: &mut Hit<'scene>) -> bool {
         if !self.bound(0.0, 0.0).hit(ray, hit) { return false }
         match self {
-        | Tree::Leaf { surface, .. } => surface.hit(ray, hit),
+        | Tree::Leaf(surface) => surface.hit(ray, hit),
         | Tree::Node { l, r, .. } => {
             let mut success = false;
             if l.hit(ray, hit) { success = true; }
@@ -63,11 +61,10 @@ impl<'scene> Surface<'scene> for Tree<'scene> {
     }
 
     fn hit_any(&self, ray: &Ray) -> bool {
-        if !self.bound(0.0, 0.0).hit_any(ray) { return false }
         match self {
-        | Tree::Leaf { surface, .. } => surface.hit_any(ray),
-        | Tree::Node { l, r, .. } => {
-            l.hit_any(ray) || r.hit_any(ray)
+        | Tree::Leaf(surface) => surface.hit_any(ray),
+        | Tree::Node { bound, l, r, .. } => {
+            bound.hit_any(ray) && (l.hit_any(ray) || r.hit_any(ray))
         },
         }
     }
@@ -109,10 +106,7 @@ fn build<'scene>(
         if cfg!(feature = "stats") {
             crate::stats::LEAF_NODES.inc();
         }
-        return Tree::Leaf {
-            bound,
-            surface: surfaces[info[lo].index],
-        }
+        return Tree::Leaf(surfaces[info[lo].index])
     }
 
     let centroid_bound = info[lo..hi].iter()
@@ -184,6 +178,7 @@ fn build<'scene>(
     let l = build(surfaces, info, lo, mid, t_min, t_max);
     let r = build(surfaces, info, mid, hi, t_min, t_max);
     Tree::Node {
+        axis: dim,
         bound: l.bound(t_min, t_max).union_b(&r.bound(t_min, t_max)),
         l: Box::new(l),
         r: Box::new(r),

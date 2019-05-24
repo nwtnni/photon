@@ -1,6 +1,6 @@
 use crate::bvh;
 use crate::arena::Arena;
-use crate::geometry::{Ray, Bound};
+use crate::geometry::{Axis, Ray, Bound};
 use crate::surface::{Hit, Surface};
 
 #[derive(Clone, Debug)]
@@ -25,34 +25,23 @@ impl<'scene> Linear<'scene> {
 
 #[derive(Copy, Clone, Debug)]
 enum Tree<'scene> {
-    Leaf {
-        bound: Bound,
-        surface: &'scene dyn Surface<'scene>,
-    },
+    Leaf(&'scene dyn Surface<'scene>),
     Node {
+        axis: Axis,
         bound: Bound,
-        offset: usize,
+        offset: u32,
     },
-}
-
-impl<'scene> Tree<'scene> {
-    fn bound(&self) -> Bound {
-        match self {
-        | Tree::Leaf { bound, .. }
-        | Tree::Node { bound, .. } => *bound,
-        }
-    }
 }
 
 impl<'scene> bvh::Tree<'scene> {
     fn flatten(self, nodes: &mut [Tree<'scene>], index: &mut usize) {
         match self {
-        | bvh::Tree::Leaf { bound, surface } => {
-            nodes[*index] = Tree::Leaf { bound, surface };
+        | bvh::Tree::Leaf(surface) => {
+            nodes[*index] = Tree::Leaf(surface);
             *index += 1;
         }
-        | bvh::Tree::Node { bound, l, r } => {
-            nodes[*index] = Tree::Node { bound, offset: l.len() + 1, };
+        | bvh::Tree::Node { bound, axis, l, r } => {
+            nodes[*index] = Tree::Node { axis, bound, offset: l.len() as u32 + 1, };
             *index += 1;
             l.flatten(nodes, index);
             r.flatten(nodes, index);
@@ -62,9 +51,9 @@ impl<'scene> bvh::Tree<'scene> {
 }
 
 impl<'scene> Surface<'scene> for Linear<'scene> {
-    fn bound(&self, _: f32, _: f32) -> Bound {
+    fn bound(&self, t_min: f32, t_max: f32) -> Bound {
         match self.0[0] {
-        | Tree::Leaf { bound, .. }
+        | Tree::Leaf(surface) => surface.bound(t_min, t_max),
         | Tree::Node { bound, .. } => bound,
         }
     }
@@ -75,6 +64,8 @@ impl<'scene> Surface<'scene> for Linear<'scene> {
         let mut this = 0;
         let mut visit = [0; 32];
         let mut success = false;
+        let inv = [1.0 / ray.d.x(), 1.0 / ray.d.y(), 1.0 / ray.d.z()];
+        let neg = [ray.d.x() < 0.0, ray.d.y() < 0.0, ray.d.z() < 0.0];
 
         macro_rules! push { ($i:expr) => {{
             visit[next] = $i; 
@@ -88,18 +79,21 @@ impl<'scene> Surface<'scene> for Linear<'scene> {
         }}}
 
         loop {
-            let node = &self.0[this];
-
-            if !node.bound().hit(ray, hit) { pop!(); continue }
-
-            match node {
-            | Tree::Leaf { surface, .. } => {
+            match &self.0[this] {
+            | Tree::Leaf(surface) => {
                 if surface.hit(ray, hit) { success = true; }
-                pop!()
+                pop!();
             }
-            | Tree::Node { offset, .. } => {
-                push!(this + *offset);
-                this += 1;
+            | Tree::Node { bound, offset, axis, .. } => {
+                if !bound.hit_inv(ray, &inv) {
+                    pop!();
+                } else if neg[*axis as usize] {
+                    push!(this + 1);
+                    this += *offset as usize;
+                } else {
+                    push!(this + *offset as usize);
+                    this += 1;
+                }
             }
             }
         }
@@ -109,6 +103,8 @@ impl<'scene> Surface<'scene> for Linear<'scene> {
         let mut next = 0;
         let mut this = 0;
         let mut visit = [0; 32];
+        let inv = [1.0 / ray.d.x(), 1.0 / ray.d.y(), 1.0 / ray.d.z()];
+        let neg = [ray.d.x() < 0.0, ray.d.y() < 0.0, ray.d.z() < 0.0];
 
         macro_rules! push { ($i:expr) => {{
             visit[next] = $i; 
@@ -122,18 +118,21 @@ impl<'scene> Surface<'scene> for Linear<'scene> {
         }}}
 
         loop {
-            let node = &self.0[this];
-
-            if !node.bound().hit_any(ray) { pop!(); continue }
-
-            match node {
-            | Tree::Leaf { surface, .. } => {
+            match &self.0[this] {
+            | Tree::Leaf(surface) => {
                 if surface.hit_any(ray) { return true }
-                pop!()
+                pop!();
             }
-            | Tree::Node { offset, .. } => {
-                push!(this + *offset);
-                this += 1;
+            | Tree::Node { axis, bound, offset, .. } => {
+                if !bound.hit_inv(ray, &inv) {
+                    pop!();
+                } else if neg[*axis as usize] {
+                    push!(this + 1);
+                    this += *offset as usize;
+                } else {
+                    push!(this + *offset as usize);
+                    this += 1;
+                }
             }
             }
         }
