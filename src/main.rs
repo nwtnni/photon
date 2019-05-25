@@ -124,7 +124,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let floor = Sphere::new(Vec3::new(0.0, -1000.0, 0.0), 1000.0, &material);
 
     let blue = Metal::new(Vec3::new(0.60, 0.60, 0.50), 0.05);
-    let bunny = obj::parse("models/bunny.obj", &arena, &blue, 0.0, 1.0);
+    let bunny = obj::parse("models/bunny.obj", &arena, &blue);
     let center = Translate::new(Vec3::new(0.0, 0.925, 0.0), &bunny);
     
     // let teapot = obj::parse("models/teapot.obj", &arena, &blue, 0.0, 1.0);
@@ -141,7 +141,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // scene.push(&right);
     scene.push(&floor);
 
-    let scene = bvh::Linear::new(&arena, &scene, 0.0, 1.0);
+    let scene = bvh::Linear::new(&arena, &scene);
 
     render(nx, ny, ns, &camera, &scene);
 

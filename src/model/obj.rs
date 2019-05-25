@@ -7,8 +7,6 @@ pub fn parse<'scene, P>(
     obj: P,
     arena: &'scene Arena,
     material: &'scene dyn Material<'scene>,
-    t_min: f32,
-    t_max: f32,
 ) -> Mesh<'scene>
     where P: AsRef<std::path::Path>,
 {
@@ -63,5 +61,5 @@ pub fn parse<'scene, P>(
         })
         .collect::<Vec<_>>();
 
-    Mesh::new(arena, material, &ts, t_min, t_max)
+    Mesh::new(arena, material, &ts)
 }

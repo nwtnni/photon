@@ -8,14 +8,9 @@ use crate::bvh::Leaf;
 pub struct Linear<'scene>(&'scene [Tree<'scene>]);
 
 impl<'scene> Linear<'scene> {
-    pub fn new(
-        arena: &'scene Arena,
-        surfaces: &[&'scene dyn Surface<'scene>],
-        t_min: f32,
-        t_max: f32,
-    ) -> Self {
+    pub fn new(arena: &'scene Arena, surfaces: &[&'scene dyn Surface<'scene>]) -> Self {
         unsafe {
-            let tree = bvh::Tree::new(surfaces, t_min, t_max);
+            let tree = bvh::Tree::new(surfaces);
             let mut nodes = arena.alloc_slice_uninitialized(tree.len());
             let mut index = 0;
             tree.flatten(&mut nodes, &mut index);

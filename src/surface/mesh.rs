@@ -15,10 +15,8 @@ impl<'scene> Mesh<'scene> {
         arena: &'scene Arena,
         material: &'scene dyn Material<'scene>,
         triangles: &[&'scene dyn Surface<'scene>],
-        t_min: f32,
-        t_max: f32,
     ) -> Self {
-        let internal = bvh::Linear::new(arena, &triangles, t_min, t_max);
+        let internal = bvh::Linear::new(arena, &triangles);
         Mesh { material, internal }
     }
 }

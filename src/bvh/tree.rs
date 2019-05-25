@@ -18,18 +18,14 @@ pub enum Tree<'scene> {
 }
 
 impl<'scene> Tree<'scene> {
-    pub fn new(
-        surfaces: &[&'scene dyn Surface<'scene>],
-        t_min: f32,
-        t_max: f32,
-    ) -> Self {
+    pub fn new(surfaces: &[&'scene dyn Surface<'scene>]) -> Self {
         let lo = 0;
         let hi = surfaces.len();
         let mut info: Vec<Info> = surfaces.iter()
             .enumerate()
             .map(|(i, surface)| Info::new(i, surface.bound()))
             .collect();
-        build(surfaces, &mut info, lo, hi, t_min, t_max)
+        build(surfaces, &mut info, lo, hi)
     }
 
     pub fn len(&self) -> usize {
@@ -89,9 +85,7 @@ fn build<'scene>(
     surfaces: &[&'scene dyn Surface<'scene>],
     info: &mut [Info],
     lo: usize,
-    hi: usize,
-    t_min: f32,
-    t_max: f32,
+    hi: usize
 ) -> Tree<'scene> {
 
     let count = hi - lo;
@@ -173,8 +167,8 @@ fn build<'scene>(
         ).0.len()
     };
 
-    let l = build(surfaces, info, lo, mid, t_min, t_max);
-    let r = build(surfaces, info, mid, hi, t_min, t_max);
+    let l = build(surfaces, info, lo, mid);
+    let r = build(surfaces, info, mid, hi);
     Tree::Node {
         axis: dim,
         bound: l.bound().union_b(&r.bound()),
