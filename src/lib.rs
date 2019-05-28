@@ -27,6 +27,9 @@ pub mod progress;
 /// Geometric primitives
 pub mod geometry;
 
+/// Full scene information
+pub mod scene;
+
 /// Intersection and shape models
 pub mod surface;
 
