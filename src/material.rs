@@ -4,10 +4,12 @@ use crate::surface::Hit;
 mod diffuse;
 mod dielectric;
 mod metal;
+mod normal;
 
 pub use diffuse::Diffuse;
 pub use dielectric::Dielectric;
 pub use metal::Metal;
+pub use normal::Normal;
 
 /// Represents a material that can scatter light.
 pub trait Material<'scene>: std::fmt::Debug + Send + Sync {
