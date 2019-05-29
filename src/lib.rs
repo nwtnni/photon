@@ -7,6 +7,9 @@ pub mod bvh;
 /// Camera model
 pub mod camera;
 
+/// Algorithms for shading surfaces
+pub mod integrator;
+
 /// Lighting primitives
 pub mod light;
 
