@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::geometry::{Axis, Bound, Ray, Vec3};
+use crate::geom::{Axis, Bound, Ray, Vec3};
 use crate::surface::{Hit, Surface};
 use crate::bvh::{Leaf, LEAF_SIZE};
 

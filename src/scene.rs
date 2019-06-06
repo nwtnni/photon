@@ -1,7 +1,7 @@
 use crate::arena;
 use crate::bvh;
 use crate::camera;
-use crate::geometry::{Bound, Ray};
+use crate::geom::{Bound, Ray};
 use crate::light;
 use crate::surface;
 

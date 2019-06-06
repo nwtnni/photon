@@ -29,7 +29,7 @@ pub mod preview;
 pub mod progress;
 
 /// Geometric primitives
-pub mod geometry;
+pub mod geom;
 
 /// Full scene information
 pub mod scene;

@@ -1,4 +1,4 @@
-use crate::geometry::{Ray, Vec3};
+use crate::geom::{Ray, Vec3};
 use crate::integrator;
 use crate::scene;
 use crate::surface::Hit;

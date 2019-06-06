@@ -1,4 +1,4 @@
-use crate::geometry::{Bound, Ray};
+use crate::geom::{Bound, Ray};
 use crate::surface::{Hit, Surface};
 
 pub const LEAF_SIZE: usize = 16;

@@ -1,4 +1,4 @@
-use crate::geometry::{Ray, Vec3, uniform_sphere};
+use crate::geom::{Ray, Vec3, uniform_sphere};
 use crate::material::{Material, reflect};
 use crate::surface::Hit;
 

@@ -4,7 +4,7 @@ use rayon::prelude::*;
 
 use photon::arena::Arena;
 use photon::bvh;
-use photon::geometry::{Ray, Vec3};
+use photon::geom::{Ray, Vec3};
 use photon::material::{Metal, Diffuse};
 use photon::model::obj;
 use photon::surface::{Surface, Sphere, Translate, Hit};

@@ -1,6 +1,6 @@
 use crate::bvh;
 use crate::arena::Arena;
-use crate::geometry::{Axis, Ray, Bound};
+use crate::geom::{Axis, Ray, Bound};
 use crate::surface::{Hit, Surface};
 use crate::bvh::Leaf;
 
