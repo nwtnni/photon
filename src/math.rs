@@ -1,10 +1,8 @@
 mod axis;
-mod bound;
 mod ray;
 mod vec;
 
 pub use axis::Axis;
-pub use bound::Bound;
 pub use ray::Ray;
 pub use vec::Vec3;
 

@@ -1,11 +1,13 @@
-use crate::math::{Bound, Ray, Vec3};
+use crate::math::{Ray, Vec3};
 use crate::material::Material;
 
+mod bound;
 mod sphere;
 mod mesh;
 mod tri;
 mod translate;
 
+pub use bound::Bound;
 pub use sphere::Sphere;
 pub use mesh::Mesh;
 pub use translate::Translate;

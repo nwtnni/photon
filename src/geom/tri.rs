@@ -1,4 +1,4 @@
-use crate::math::{Bound, Ray, Vec3};
+use crate::math::{Ray, Vec3};
 use crate::geom;
 
 #[derive(Copy, Clone, Debug)]
@@ -14,8 +14,9 @@ impl<'scene> Tri<'scene> {
 }
 
 impl<'scene> geom::Surface<'scene> for Tri<'scene> {
-    fn bound(&self) -> Bound {
-        Bound::new(*self.vertices[0], *self.vertices[1]).union_v(self.vertices[2])
+    fn bound(&self) -> geom::Bound {
+        geom::Bound::new(*self.vertices[0], *self.vertices[1])
+            .union_v(self.vertices[2])
     }
 
     fn hit(&self, ray: &mut Ray, hit: &mut geom::Record<'scene>) -> bool {

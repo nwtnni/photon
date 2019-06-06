@@ -1,4 +1,4 @@
-use crate::math::{Bound, Ray, Vec3};
+use crate::math::{Ray, Vec3};
 use crate::material::Material;
 use crate::geom;
 
@@ -29,9 +29,9 @@ impl<'scene> Sphere<'scene> {
 }
 
 impl<'scene> geom::Surface<'scene> for Sphere<'scene> {
-    fn bound(&self) -> Bound {
+    fn bound(&self) -> geom::Bound {
         let r = Vec3::broadcast(self.r);
-        Bound::new(self.c - r, self.c + r)
+        geom::Bound::new(self.c - r, self.c + r)
     }
 
     fn hit(&self, ray: &mut Ray, hit: &mut geom::Record<'scene>) -> bool {

@@ -1,15 +1,14 @@
 use crate::prelude::*;
+use crate::arena;
 use crate::bvh;
-use crate::arena::Arena;
-use crate::math::{Axis, Ray, Bound};
-use crate::bvh::Leaf;
 use crate::geom;
+use crate::math;
 
 #[derive(Clone, Debug)]
 pub struct Linear<'scene>(&'scene [Tree<'scene>]);
 
 impl<'scene> Linear<'scene> {
-    pub fn new(arena: &'scene Arena, surfaces: &[&'scene dyn Surface<'scene>]) -> Self {
+    pub fn new(arena: &'scene arena::Arena, surfaces: &[&'scene dyn Surface<'scene>]) -> Self {
         unsafe {
             let tree = bvh::Tree::new(surfaces);
             let mut nodes = arena.alloc_slice_uninitialized(tree.len());
@@ -22,10 +21,10 @@ impl<'scene> Linear<'scene> {
 
 #[derive(Copy, Clone, Debug)]
 pub enum Tree<'scene> {
-    Leaf(Leaf<'scene>),
+    Leaf(bvh::Leaf<'scene>),
     Node {
-        axis: Axis,
-        bound: Bound,
+        axis: math::Axis,
+        bound: geom::Bound,
         offset: u32,
     },
 }
@@ -48,14 +47,14 @@ impl<'scene> bvh::Tree<'scene> {
 }
 
 impl<'scene> Surface<'scene> for Linear<'scene> {
-    fn bound(&self) -> Bound {
+    fn bound(&self) -> geom::Bound {
         match self.0[0] {
         | Tree::Leaf(surface) => surface.bound(),
         | Tree::Node { bound, .. } => bound,
         }
     }
 
-    fn hit(&self, ray: &mut Ray, hit: &mut geom::Record<'scene>) -> bool {
+    fn hit(&self, ray: &mut math::Ray, hit: &mut geom::Record<'scene>) -> bool {
 
         let mut next = 0;
         let mut this = 0;
@@ -96,7 +95,7 @@ impl<'scene> Surface<'scene> for Linear<'scene> {
         }
     }
 
-    fn hit_any(&self, ray: &Ray) -> bool {
+    fn hit_any(&self, ray: &math::Ray) -> bool {
         let mut next = 0;
         let mut this = 0;
         let mut visit = [0; 32];

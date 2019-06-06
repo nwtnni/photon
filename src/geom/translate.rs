@@ -1,4 +1,4 @@
-use crate::math::{Bound, Ray, Vec3};
+use crate::math::{Ray, Vec3};
 use crate::geom;
 
 #[derive(Copy, Clone, Debug)]
@@ -14,9 +14,9 @@ impl<'scene> Translate<'scene> {
 }
 
 impl<'scene> geom::Surface<'scene> for Translate<'scene> {
-    fn bound(&self) -> Bound {
+    fn bound(&self) -> geom::Bound {
         let bound = self.surface.bound();
-        Bound::new(
+        geom::Bound::new(
             bound.min() + self.offset,
             bound.max() + self.offset,
         )

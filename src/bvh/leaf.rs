@@ -1,5 +1,5 @@
 use crate::prelude::*;
-use crate::math::{Bound, Ray};
+use crate::math;
 use crate::geom;
 
 pub const LEAF_SIZE: usize = 16;
@@ -20,13 +20,13 @@ impl<'scene> Leaf<'scene> {
 }
 
 impl<'scene> Surface<'scene> for Leaf<'scene> {
-    fn bound(&self) -> Bound {
+    fn bound(&self) -> geom::Bound {
         self.0.into_iter()
             .filter_map(|surface| *surface)
-            .fold(Bound::smallest(), |a, b| a.union_b(&b.bound()))
+            .fold(geom::Bound::smallest(), |a, b| a.union_b(&b.bound()))
     }
 
-    fn hit(&self, ray: &mut Ray, hit: &mut geom::Record<'scene>) -> bool {
+    fn hit(&self, ray: &mut math::Ray, hit: &mut geom::Record<'scene>) -> bool {
         let mut success = false;
         for i in 0..LEAF_SIZE {
             if let Some(surface) = self.0[i] {
@@ -38,7 +38,7 @@ impl<'scene> Surface<'scene> for Leaf<'scene> {
         success
     }
 
-    fn hit_any(&self, ray: &Ray) -> bool {
+    fn hit_any(&self, ray: &math::Ray) -> bool {
         self.0.into_iter()
             .filter_map(|surface| *surface)
             .any(|surface| surface.hit_any(ray))
