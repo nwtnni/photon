@@ -42,3 +42,5 @@ pub mod stats;
 
 /// Coloring textures
 pub mod texture;
+
+pub mod prelude;
