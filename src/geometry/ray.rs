@@ -4,15 +4,14 @@ use crate::geometry::Vec3;
 pub struct Ray {
     pub o: Vec3,
     pub d: Vec3,
-    pub t: f32,
     pub min: f32,
     pub max: f32,
 }
 
 impl Ray {
     #[inline(always)]
-    pub fn new(o: Vec3, d: Vec3, t: f32) -> Self {
-        Ray { o, d: d.normalize(), t, min: 0.001, max: std::f32::MAX, }
+    pub fn new(o: Vec3, d: Vec3) -> Self {
+        Ray { o, d: d.normalize(), min: 0.001, max: std::f32::MAX, }
     }
 
     #[inline(always)]

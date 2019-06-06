@@ -17,7 +17,7 @@ impl<'scene> Diffuse<'scene> {
 impl<'scene> Material<'scene> for Diffuse<'scene> {
     fn scatter(&self, ray: &Ray, hit: &Hit<'scene>, attenuation: &mut Vec3, scattered: &mut Ray) -> bool {
         let target = hit.p + hit.n + uniform_sphere();
-        *scattered = Ray::new(hit.p, target - hit.p, ray.t);
+        *scattered = Ray::new(hit.p, target - hit.p);
         *attenuation = self.albedo.evaluate(hit.u, hit.v);
         true
     }

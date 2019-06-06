@@ -23,12 +23,6 @@ pub struct Camera {
 
     /// Lens radius
     lens: f32,
-
-    /// Shutter open time
-    open: f32,
-
-    /// Shutter shut time
-    shut: f32,
 }
 
 impl Camera {
@@ -40,8 +34,6 @@ impl Camera {
         aspect: f32,
         aperture: f32,
         focus: f32,
-        open: f32,
-        shut: f32,
     ) -> Self {
         let theta = fov * std::f32::consts::PI / 180.0;
         let height = (theta / 2.0).tan();
@@ -60,8 +52,6 @@ impl Camera {
             u,
             v,
             lens: aperture / 2.0,
-            open,
-            shut,
         }
     }
 
@@ -82,7 +72,6 @@ impl Camera {
                         + self.vertical * v
                         - self.origin
                         - offset,
-            self.open + rand::random::<f32>() * (self.shut - self.open),
         )
     }
 }

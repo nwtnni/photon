@@ -113,9 +113,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let aspect = nx as f32 / ny as f32;
     let focus = 4.5;
     let aperture = 0.0001;
-    let open = 0.0;
-    let shut = 1.0;
-    let camera = Camera::new(origin, toward, up, fov, aspect, aperture, focus, open, shut);
+    let camera = Camera::new(origin, toward, up, fov, aspect, aperture, focus);
 
     let blue = Constant::new(Vec3::new(0.50, 0.50, 0.60));
     let white = Constant::new(Vec3::new(1.0, 1.0, 1.0));

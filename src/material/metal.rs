@@ -22,7 +22,6 @@ impl<'scene> Material<'scene> for Metal {
         *scattered = Ray::new(
             hit.p,
             reflect(d, hit.n) + uniform_sphere() * self.fuzz,
-            ray.t,
         );
         scattered.d.dot(&hit.n) > 0.0
     }
