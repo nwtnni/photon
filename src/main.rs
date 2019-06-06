@@ -7,14 +7,14 @@ use photon::bvh;
 use photon::geom::{Ray, Vec3};
 use photon::material::{Metal, Diffuse};
 use photon::model::obj;
-use photon::surface::{Surface, Sphere, Translate, Hit};
+use photon::surface::{Surface, Sphere, Translate, Record};
 use photon::texture::{Texture, Checker, Constant};
 use photon::camera::Camera;
 
 /// Main ray tracing function.
 /// Intersects `ray` with `scene`, potentially recursing upon reflecting or refracting.
 fn color(ray: &mut Ray, scene: &dyn Surface, depth: i32) -> Vec3 {
-    let mut hit = Hit::default();
+    let mut hit = Record::default();
     if scene.hit(ray, &mut hit) {
         let mut attenuation = Vec3::default();
         let mut scattered = Ray::default();

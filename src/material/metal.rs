@@ -1,6 +1,6 @@
 use crate::geom::{Ray, Vec3, uniform_sphere};
 use crate::material::{Material, reflect};
-use crate::surface::Hit;
+use crate::surface;
 
 #[derive(Copy, Clone, Debug, Default)]
 pub struct Metal {
@@ -16,7 +16,7 @@ impl Metal {
 }
 
 impl<'scene> Material<'scene> for Metal {
-    fn scatter(&self, ray: &Ray, hit: &Hit<'scene>, attenuation: &mut Vec3, scattered: &mut Ray) -> bool {
+    fn scatter(&self, ray: &Ray, hit: &surface::Record<'scene>, attenuation: &mut Vec3, scattered: &mut Ray) -> bool {
         let d = ray.d.normalize();
         *attenuation = self.albedo;
         *scattered = Ray::new(

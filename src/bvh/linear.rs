@@ -1,8 +1,9 @@
+use crate::prelude::*;
 use crate::bvh;
 use crate::arena::Arena;
 use crate::geom::{Axis, Ray, Bound};
-use crate::surface::{Hit, Surface};
 use crate::bvh::Leaf;
+use crate::surface;
 
 #[derive(Clone, Debug)]
 pub struct Linear<'scene>(&'scene [Tree<'scene>]);
@@ -54,7 +55,7 @@ impl<'scene> Surface<'scene> for Linear<'scene> {
         }
     }
 
-    fn hit(&self, ray: &mut Ray, hit: &mut Hit<'scene>) -> bool {
+    fn hit(&self, ray: &mut Ray, hit: &mut surface::Record<'scene>) -> bool {
 
         let mut next = 0;
         let mut this = 0;

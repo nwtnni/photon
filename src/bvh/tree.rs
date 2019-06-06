@@ -1,8 +1,9 @@
 use std::collections::HashMap;
 
+use crate::prelude::*;
 use crate::geom::{Axis, Bound, Ray, Vec3};
-use crate::surface::{Hit, Surface};
 use crate::bvh::{Leaf, LEAF_SIZE};
+use crate::surface;
 
 const BUCKETS: usize = 12;
 
@@ -44,7 +45,7 @@ impl<'scene> Surface<'scene> for Tree<'scene> {
         }
     }
 
-    fn hit(&self, ray: &mut Ray, hit: &mut Hit<'scene>) -> bool {
+    fn hit(&self, ray: &mut Ray, hit: &mut surface::Record<'scene>) -> bool {
         match self {
         | Tree::Leaf(surfaces) => surfaces.hit(ray, hit),
         | Tree::Node { bound, l, r, .. } => {

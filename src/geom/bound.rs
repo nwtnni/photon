@@ -1,5 +1,5 @@
 use crate::geom::{Axis, Ray, Vec3};
-use crate::surface::{Hit, Surface};
+use crate::surface;
 
 #[derive(Copy, Clone, Debug)]
 pub struct Bound {
@@ -101,12 +101,12 @@ impl Default for Bound {
 
 }
 
-impl<'scene> Surface<'scene> for Bound {
+impl<'scene> surface::Surface<'scene> for Bound {
     fn bound(&self) -> Bound {
         *self
     }
 
-    fn hit(&self, ray: &mut Ray, _: &mut Hit<'scene>) -> bool {
+    fn hit(&self, ray: &mut Ray, _: &mut surface::Record<'scene>) -> bool {
         self.hit_any(&*ray)
     }
 

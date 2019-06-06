@@ -1,6 +1,6 @@
 use crate::geom::{Ray, Vec3};
 use crate::material::{Material, reflect, refract};
-use crate::surface::Hit;
+use crate::surface;
 
 #[derive(Copy, Clone, Debug, Default)]
 pub struct Dielectric {
@@ -20,7 +20,7 @@ impl Dielectric {
 }
 
 impl<'scene> Material<'scene> for Dielectric {
-    fn scatter(&self, ray: &Ray, hit: &Hit<'scene>, attenuation: &mut Vec3, scattered: &mut Ray) -> bool {
+    fn scatter(&self, ray: &Ray, hit: &surface::Record<'scene>, attenuation: &mut Vec3, scattered: &mut Ray) -> bool {
         *attenuation = Vec3::new(1.0, 1.0, 1.0);
         let reflected = reflect(ray.d, hit.n);
         let dot = ray.d.dot(&hit.n);

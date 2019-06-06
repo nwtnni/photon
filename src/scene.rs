@@ -23,8 +23,8 @@ impl<'scene> surface::Surface<'scene> for Scene<'scene> {
         self.surfaces.bound()
     }
 
-    fn hit(&self, ray: &mut Ray, record: &mut surface::Hit<'scene>) -> bool {
-        self.surfaces.hit(ray, record)
+    fn hit(&self, ray: &mut Ray, hit: &mut surface::Record<'scene>) -> bool {
+        self.surfaces.hit(ray, hit)
     }
 
     fn hit_any(&self, ray: &Ray) -> bool {
