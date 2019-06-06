@@ -7,7 +7,7 @@ use photon::bvh;
 use photon::math::{Ray, Vec3};
 use photon::material::{Metal, Diffuse};
 use photon::model::obj;
-use photon::surface::{Surface, Sphere, Translate, Record};
+use photon::geom::{Surface, Sphere, Translate, Record};
 use photon::texture::{Texture, Checker, Constant};
 use photon::camera::Camera;
 

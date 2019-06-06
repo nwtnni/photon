@@ -3,7 +3,7 @@ use crate::bvh;
 use crate::camera;
 use crate::math::{Bound, Ray};
 use crate::light;
-use crate::surface;
+use crate::geom;
 
 #[derive(Debug)]
 pub struct Scene<'scene> {
@@ -18,12 +18,12 @@ impl<'scene> Scene<'scene> {
     }
 }
 
-impl<'scene> surface::Surface<'scene> for Scene<'scene> {
+impl<'scene> geom::Surface<'scene> for Scene<'scene> {
     fn bound(&self) -> Bound {
         self.surfaces.bound()
     }
 
-    fn hit(&self, ray: &mut Ray, hit: &mut surface::Record<'scene>) -> bool {
+    fn hit(&self, ray: &mut Ray, hit: &mut geom::Record<'scene>) -> bool {
         self.surfaces.hit(ray, hit)
     }
 

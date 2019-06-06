@@ -1,6 +1,6 @@
 use crate::math::{Bound, Ray, Vec3};
 use crate::material::Material;
-use crate::surface;
+use crate::geom;
 
 /// Basic sphere.
 #[derive(Copy, Clone, Debug)]
@@ -28,13 +28,13 @@ impl<'scene> Sphere<'scene> {
     pub fn r(&self) -> f32 { self.r }
 }
 
-impl<'scene> surface::Surface<'scene> for Sphere<'scene> {
+impl<'scene> geom::Surface<'scene> for Sphere<'scene> {
     fn bound(&self) -> Bound {
         let r = Vec3::broadcast(self.r);
         Bound::new(self.c - r, self.c + r)
     }
 
-    fn hit(&self, ray: &mut Ray, hit: &mut surface::Record<'scene>) -> bool {
+    fn hit(&self, ray: &mut Ray, hit: &mut geom::Record<'scene>) -> bool {
 
         if cfg!(feature = "stats") {
             crate::stats::INTERSECTION_TESTS.inc();

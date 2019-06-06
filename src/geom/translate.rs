@@ -1,19 +1,19 @@
 use crate::math::{Bound, Ray, Vec3};
-use crate::surface;
+use crate::geom;
 
 #[derive(Copy, Clone, Debug)]
 pub struct Translate<'scene> {
     offset: Vec3,
-    surface: &'scene dyn surface::Surface<'scene>,
+    surface: &'scene dyn geom::Surface<'scene>,
 }
 
 impl<'scene> Translate<'scene> {
-    pub fn new(offset: Vec3, surface: &'scene dyn surface::Surface<'scene>) -> Self {
+    pub fn new(offset: Vec3, surface: &'scene dyn geom::Surface<'scene>) -> Self {
         Translate { offset, surface }
     }
 }
 
-impl<'scene> surface::Surface<'scene> for Translate<'scene> {
+impl<'scene> geom::Surface<'scene> for Translate<'scene> {
     fn bound(&self) -> Bound {
         let bound = self.surface.bound();
         Bound::new(
@@ -22,7 +22,7 @@ impl<'scene> surface::Surface<'scene> for Translate<'scene> {
         )
     }
 
-    fn hit(&self, ray: &mut Ray, hit: &mut surface::Record<'scene>) -> bool {
+    fn hit(&self, ray: &mut Ray, hit: &mut geom::Record<'scene>) -> bool {
         let mut offset = Ray { o: ray.o - self.offset, .. *ray };
         if self.surface.hit(&mut offset, hit) {
             hit.p += self.offset;

@@ -1,5 +1,5 @@
 use crate::math::{Ray, Vec3};
-use crate::surface;
+use crate::geom;
 
 mod diffuse;
 mod dielectric;
@@ -13,7 +13,7 @@ pub use normal::Normal;
 
 /// Represents a material that can scatter light.
 pub trait Material<'scene>: std::fmt::Debug + Send + Sync {
-    fn scatter(&self, ray: &Ray, hit: &surface::Record<'scene>, attenuation: &mut Vec3, scattered: &mut Ray) -> bool;
+    fn scatter(&self, ray: &Ray, hit: &geom::Record<'scene>, attenuation: &mut Vec3, scattered: &mut Ray) -> bool;
 }
 
 /// Reflects vector `v` over normal vector `n`.

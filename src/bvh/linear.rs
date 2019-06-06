@@ -3,7 +3,7 @@ use crate::bvh;
 use crate::arena::Arena;
 use crate::math::{Axis, Ray, Bound};
 use crate::bvh::Leaf;
-use crate::surface;
+use crate::geom;
 
 #[derive(Clone, Debug)]
 pub struct Linear<'scene>(&'scene [Tree<'scene>]);
@@ -55,7 +55,7 @@ impl<'scene> Surface<'scene> for Linear<'scene> {
         }
     }
 
-    fn hit(&self, ray: &mut Ray, hit: &mut surface::Record<'scene>) -> bool {
+    fn hit(&self, ray: &mut Ray, hit: &mut geom::Record<'scene>) -> bool {
 
         let mut next = 0;
         let mut this = 0;

@@ -35,7 +35,7 @@ pub mod math;
 pub mod scene;
 
 /// Intersection and shape models
-pub mod surface;
+pub mod geom;
 
 /// Statistic tracking
 pub mod stats;

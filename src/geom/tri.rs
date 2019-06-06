@@ -1,5 +1,5 @@
 use crate::math::{Bound, Ray, Vec3};
-use crate::surface;
+use crate::geom;
 
 #[derive(Copy, Clone, Debug)]
 pub struct Tri<'scene> {
@@ -13,12 +13,12 @@ impl<'scene> Tri<'scene> {
     }
 }
 
-impl<'scene> surface::Surface<'scene> for Tri<'scene> {
+impl<'scene> geom::Surface<'scene> for Tri<'scene> {
     fn bound(&self) -> Bound {
         Bound::new(*self.vertices[0], *self.vertices[1]).union_v(self.vertices[2])
     }
 
-    fn hit(&self, ray: &mut Ray, hit: &mut surface::Record<'scene>) -> bool {
+    fn hit(&self, ray: &mut Ray, hit: &mut geom::Record<'scene>) -> bool {
 
         if cfg!(feature = "stats") {
             crate::stats::INTERSECTION_TESTS.inc();
