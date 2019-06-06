@@ -16,7 +16,7 @@ impl bxdf::BXDF for Lambertian {
         };
     }
 
-    fn sample(&self, wi: &Vec3, sample: &mut bxdf::Sample, out: &mut Vec3) -> f32 {
+    fn sample(&self, sample: &mut bxdf::Record, out: &mut Vec3) -> f32 {
         let local = cosine_sphere();  
         let (u, v) = basis(&sample.n);
         sample.wo = sample.n * local.z();
@@ -26,7 +26,7 @@ impl bxdf::BXDF for Lambertian {
         sample.wo.dot(&sample.n) / geom::PI
     }
 
-    fn pdf(&self, wi: &Vec3, wo: &Vec3, n: &Vec3) -> f32 {
+    fn pdf(&self, _: &Vec3, wo: &Vec3, n: &Vec3) -> f32 {
         if wo.dot(n) >= 0.0 { wo.dot(n) / geom::PI } else { 0.0 }
     }
 }
