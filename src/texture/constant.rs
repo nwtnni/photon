@@ -1,4 +1,4 @@
-use crate::geom::Vec3;
+use crate::math::Vec3;
 use crate::texture::Texture;
 
 #[derive(Copy, Clone, Debug)]

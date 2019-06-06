@@ -1,6 +1,6 @@
 use crate::bxdf;
-use crate::geom;
-use crate::geom::{basis, cosine_sphere, Vec3};
+use crate::math;
+use crate::math::{basis, cosine_sphere, Vec3};
 
 #[derive(Copy, Clone, Debug)]
 pub struct Lambertian {
@@ -10,7 +10,7 @@ pub struct Lambertian {
 impl bxdf::BXDF for Lambertian {
     fn eval(&self, wi: &Vec3, wo: &Vec3, n: &Vec3, out: &mut Vec3) {
         *out = if wi.dot(n) >= 0.0 && wo.dot(n) >= 0.0 {
-            self.color / geom::PI
+            self.color / math::PI
         } else {
             Vec3::default()
         };
@@ -22,11 +22,11 @@ impl bxdf::BXDF for Lambertian {
         sample.wo = sample.n * local.z();
         sample.wo += u * local.x();
         sample.wo += v * local.y();
-        *out = self.color / geom::PI;
-        sample.wo.dot(&sample.n) / geom::PI
+        *out = self.color / math::PI;
+        sample.wo.dot(&sample.n) / math::PI
     }
 
     fn pdf(&self, _: &Vec3, wo: &Vec3, n: &Vec3) -> f32 {
-        if wo.dot(n) >= 0.0 { wo.dot(n) / geom::PI } else { 0.0 }
+        if wo.dot(n) >= 0.0 { wo.dot(n) / math::PI } else { 0.0 }
     }
 }

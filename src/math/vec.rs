@@ -7,7 +7,7 @@ use std::ops::{
     Neg
 };
 
-use crate::geom::{min, max};
+use crate::math::{min, max};
 
 pub const ONES_3D: Vec3 = Vec3([1.0, 1.0, 1.0]);
 pub const ONES_2D: Vec3 = Vec3([1.0, 1.0, 0.0]);

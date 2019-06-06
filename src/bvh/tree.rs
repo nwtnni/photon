@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use crate::prelude::*;
-use crate::geom::{Axis, Bound, Ray, Vec3};
+use crate::math::{Axis, Bound, Ray, Vec3};
 use crate::bvh::{Leaf, LEAF_SIZE};
 use crate::surface;
 

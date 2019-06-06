@@ -1,4 +1,4 @@
-use crate::geom::{Bound, Ray, Vec3};
+use crate::math::{Bound, Ray, Vec3};
 use crate::material::Material;
 
 mod sphere;

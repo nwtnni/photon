@@ -1,4 +1,4 @@
-use crate::geom::{Axis, Ray, Vec3};
+use crate::math::{Axis, Ray, Vec3};
 use crate::surface;
 
 #[derive(Copy, Clone, Debug)]

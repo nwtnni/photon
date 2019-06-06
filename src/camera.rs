@@ -1,4 +1,4 @@
-use crate::geom::{Ray, Vec3, uniform_disk};
+use crate::math::{Ray, Vec3, uniform_disk};
 
 /// Source of light rays.
 #[derive(Copy, Clone, Debug)]

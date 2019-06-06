@@ -1,5 +1,5 @@
 use crate::material::Material;
-use crate::geom::{Vec3, Ray, uniform_sphere};
+use crate::math::{Vec3, Ray, uniform_sphere};
 use crate::surface;
 
 #[derive(Copy, Clone, Debug)]

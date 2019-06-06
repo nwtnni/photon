@@ -1,5 +1,5 @@
 use crate::prelude::*;
-use crate::geom::{Bound, Ray};
+use crate::math::{Bound, Ray};
 use crate::surface;
 
 pub const LEAF_SIZE: usize = 16;

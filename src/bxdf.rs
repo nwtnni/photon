@@ -1,4 +1,4 @@
-use crate::geom::Vec3;
+use crate::math::Vec3;
 
 mod lambertian;
 

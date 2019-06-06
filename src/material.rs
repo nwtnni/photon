@@ -1,4 +1,4 @@
-use crate::geom::{Ray, Vec3};
+use crate::math::{Ray, Vec3};
 use crate::surface;
 
 mod diffuse;

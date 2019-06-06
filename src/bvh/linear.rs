@@ -1,7 +1,7 @@
 use crate::prelude::*;
 use crate::bvh;
 use crate::arena::Arena;
-use crate::geom::{Axis, Ray, Bound};
+use crate::math::{Axis, Ray, Bound};
 use crate::bvh::Leaf;
 use crate::surface;
 
