@@ -1,6 +1,7 @@
 use crate::geometry::{Ray, Vec3, uniform_disk};
 
 /// Source of light rays.
+#[derive(Copy, Clone, Debug)]
 pub struct Camera {
     /// Lower left corner
     corner: Vec3,
