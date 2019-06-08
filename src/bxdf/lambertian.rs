@@ -1,6 +1,6 @@
 use crate::bxdf;
 use crate::math;
-use crate::math::{basis, cosine_sphere, Vec3};
+use crate::math::Vec3;
 
 #[derive(Copy, Clone, Debug)]
 pub struct Lambertian {
@@ -17,8 +17,8 @@ impl bxdf::BXDF for Lambertian {
     }
 
     fn sample(&self, sample: &mut bxdf::Record, out: &mut Vec3) -> f32 {
-        let local = cosine_sphere();  
-        let (u, v) = basis(&sample.n);
+        let local = math::cosine_sphere();  
+        let (u, v) = math::basis(&sample.n);
         sample.wo = sample.n * local.z();
         sample.wo += u * local.x();
         sample.wo += v * local.y();

@@ -16,6 +16,10 @@ impl<'scene> Scene<'scene> {
     pub fn new(arena: &arena::Arena) -> Self {
         unimplemented!()
     }
+
+    pub fn lights(&self) -> &[&'scene dyn light::Light] {
+        &self.lights
+    }
 }
 
 impl<'scene> geom::Surface<'scene> for Scene<'scene> {
