@@ -29,9 +29,9 @@ impl<'scene> Sphere<'scene> {
 }
 
 impl<'scene> geom::Surface<'scene> for Sphere<'scene> {
-    fn bound(&self) -> geom::Bound {
+    fn bound(&self) -> geom::Box3 {
         let r = Vec3::broadcast(self.r);
-        geom::Bound::new(self.c - r, self.c + r)
+        geom::Box3::new(self.c - r, self.c + r)
     }
 
     fn hit(&self, ray: &mut Ray, hit: &mut geom::Record<'scene>) -> bool {

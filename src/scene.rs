@@ -23,7 +23,7 @@ impl<'scene> Scene<'scene> {
 }
 
 impl<'scene> geom::Surface<'scene> for Scene<'scene> {
-    fn bound(&self) -> geom::Bound {
+    fn bound(&self) -> geom::Box3 {
         self.surface.bound()
     }
 

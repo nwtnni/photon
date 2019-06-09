@@ -2,17 +2,17 @@ use crate::math::{self, Axis, Ray, Vec3};
 use crate::geom;
 
 #[derive(Copy, Clone, Debug)]
-pub struct Bound {
+pub struct Box3 {
     min: Vec3, 
     max: Vec3,
 }
 
-impl Bound {
+impl Box3 {
     #[inline(always)]
     pub fn new(a: Vec3, b: Vec3) -> Self {
         let min = a.min(&b);
         let max = a.max(&b);
-        Bound { min, max }
+        Box3 { min, max }
     }
 
     #[inline(always)]
@@ -39,19 +39,19 @@ impl Bound {
     pub fn union_b(&self, rhs: &Self) -> Self {
         let min = self.min.min(&rhs.min);
         let max = self.max.max(&rhs.max);
-        Bound { min, max }
+        Box3 { min, max }
     }
 
     pub fn union_v(&self, rhs: &Vec3) -> Self {
         let min = self.min.min(rhs);
         let max = self.max.max(rhs);
-        Bound { min, max }
+        Box3 { min, max }
     }
 
     pub fn smallest() -> Self {
         let min = std::f32::NEG_INFINITY;
         let max = std::f32::INFINITY;
-        Bound {
+        Box3 {
             min: Vec3::new(max, max, max),
             max: Vec3::new(min, min, min),
         }
@@ -71,13 +71,13 @@ impl Bound {
     }
 }
 
-impl Default for Bound {
+impl Default for Box3 {
     fn default() -> Self {
-        Bound::smallest()
+        Box3::smallest()
     }
 }
 
-impl std::ops::Index<usize> for Bound {
+impl std::ops::Index<usize> for Box3 {
     type Output = Vec3;
     fn index(&self, index: usize) -> &Self::Output {
         match index {
@@ -88,8 +88,8 @@ impl std::ops::Index<usize> for Bound {
     }
 }
 
-impl<'scene> geom::Surface<'scene> for Bound {
-    fn bound(&self) -> Bound {
+impl<'scene> geom::Surface<'scene> for Box3 {
+    fn bound(&self) -> Box3 {
         *self
     }
 

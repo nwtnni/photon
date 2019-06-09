@@ -11,7 +11,7 @@ const BUCKETS: usize = 12;
 pub enum Tree<'scene> {
     Leaf(Leaf<'scene>),
     Node {
-        bound: geom::Bound,
+        bound: geom::Box3,
         axis: Axis,
         l: Box<Tree<'scene>>,
         r: Box<Tree<'scene>>,
@@ -45,7 +45,7 @@ impl<'scene> Tree<'scene> {
 }
 
 impl<'scene> Surface<'scene> for Tree<'scene> {
-    fn bound(&self) -> geom::Bound {
+    fn bound(&self) -> geom::Box3 {
         match self {
         | Tree::Leaf(surfaces) => surfaces.bound(),
         | Tree::Node { bound, .. } => *bound,
@@ -101,12 +101,12 @@ impl<'scene> Surface<'scene> for Tree<'scene> {
 #[derive(Clone, Debug)]
 struct Info {
     index: usize,
-    bound: geom::Bound,
+    bound: geom::Box3,
     centroid: Vec3,
 }
 
 impl Info {
-    fn new(index: usize, bound: geom::Bound) -> Self {
+    fn new(index: usize, bound: geom::Box3) -> Self {
         let centroid = bound.min() * 0.5 + bound.max() * 0.5;
         Info { index, bound, centroid }
     }
@@ -122,7 +122,7 @@ fn build<'scene>(
     let count = hi - lo;
     let bound = info[lo..hi].iter()
         .map(|info| info.bound)
-        .fold(geom::Bound::smallest(), |a, b| a.union_b(&b));
+        .fold(geom::Box3::smallest(), |a, b| a.union_b(&b));
 
     if count == 1 {
         let mut leaf = Leaf::default();
@@ -132,7 +132,7 @@ fn build<'scene>(
 
     let centroid_bound = info[lo..hi].iter()
         .map(|info| info.centroid)
-        .fold(geom::Bound::smallest(), |a, b| a.union_v(&b));
+        .fold(geom::Box3::smallest(), |a, b| a.union_v(&b));
 
     let dim = centroid_bound.max_extent();
 
@@ -148,7 +148,7 @@ fn build<'scene>(
 
     } else {
 
-        let mut buckets = [(0, geom::Bound::smallest()); BUCKETS];
+        let mut buckets = [(0, geom::Box3::smallest()); BUCKETS];
         let mut assignment: HashMap<usize, usize> = HashMap::default();
         for i in lo..hi {
             let o = centroid_bound.offset(&info[i].centroid)[dim as usize];
@@ -161,14 +161,14 @@ fn build<'scene>(
 
         let mut cost = [0.0; BUCKETS - 1];
         for i in 0..BUCKETS - 1 {
-            let mut left_bound = geom::Bound::smallest();
+            let mut left_bound = geom::Box3::smallest();
             let mut left_count = 0;
             for j in 0..=i {
                 left_count += buckets[j].0;
                 left_bound = left_bound.union_b(&buckets[j].1);
             }
 
-            let mut right_bound = geom::Bound::smallest();
+            let mut right_bound = geom::Box3::smallest();
             let mut right_count = 0;
             for j in i + 1..BUCKETS {
                 right_count += buckets[j].0;

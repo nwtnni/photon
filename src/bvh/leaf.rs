@@ -6,7 +6,7 @@ pub const LEAF_SIZE: usize = 16;
 
 #[derive(Copy, Clone, Debug, Default)]
 pub struct Leaf<'scene> {
-    bound: geom::Bound,
+    bound: geom::Box3,
     surfaces: [Option<&'scene dyn Surface<'scene>>; LEAF_SIZE],
 }
 
@@ -24,7 +24,7 @@ impl<'scene> Leaf<'scene> {
 }
 
 impl<'scene> Surface<'scene> for Leaf<'scene> {
-    fn bound(&self) -> geom::Bound {
+    fn bound(&self) -> geom::Box3 {
         self.bound
     }
 

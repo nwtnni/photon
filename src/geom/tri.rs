@@ -14,8 +14,8 @@ impl<'scene> Tri<'scene> {
 }
 
 impl<'scene> geom::Surface<'scene> for Tri<'scene> {
-    fn bound(&self) -> geom::Bound {
-        geom::Bound::new(*self.vertices[0], *self.vertices[1])
+    fn bound(&self) -> geom::Box3 {
+        geom::Box3::new(*self.vertices[0], *self.vertices[1])
             .union_v(self.vertices[2])
     }
 

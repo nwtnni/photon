@@ -14,9 +14,9 @@ impl<'scene> Translate<'scene> {
 }
 
 impl<'scene> geom::Surface<'scene> for Translate<'scene> {
-    fn bound(&self) -> geom::Bound {
+    fn bound(&self) -> geom::Box3 {
         let bound = self.surface.bound();
-        geom::Bound::new(
+        geom::Box3::new(
             bound.min() + self.offset,
             bound.max() + self.offset,
         )

@@ -20,13 +20,13 @@ pub enum Tree<'scene> {
     Leaf(Box<bvh::Leaf<'scene>>),
     Node {
         axis: math::Axis,
-        bound: geom::Bound,
+        bound: geom::Box3,
         offset: u32,
     },
 }
 
 impl<'scene> Tree<'scene> {
-    fn bound(&self) -> geom::Bound {
+    fn bound(&self) -> geom::Box3 {
         match self {
         | Tree::Leaf(leaf) => leaf.bound(),
         | Tree::Node { bound, .. } => *bound,
@@ -50,7 +50,7 @@ impl<'scene> bvh::Tree<'scene> {
 }
 
 impl<'scene> Surface<'scene> for Linear<'scene> {
-    fn bound(&self) -> geom::Bound {
+    fn bound(&self) -> geom::Box3 {
         match &self.0[0] {
         | Tree::Leaf(surface) => surface.bound(),
         | Tree::Node { bound, .. } => *bound,

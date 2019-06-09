@@ -7,7 +7,7 @@ mod mesh;
 mod tri;
 mod translate;
 
-pub use bound::Bound;
+pub use bound::Box3;
 pub use sphere::Sphere;
 pub use mesh::Mesh;
 pub use translate::Translate;
@@ -37,7 +37,7 @@ pub struct Record<'scene> {
 
 /// Represents an object that can interact with light rays.
 pub trait Surface<'scene>: std::fmt::Debug + Send + Sync {
-    fn bound(&self) -> Bound;
+    fn bound(&self) -> Box3;
     fn hit(&self, ray: &mut Ray, record: &mut Record<'scene>) -> bool;
     fn hit_any(&self, ray: &Ray) -> bool;
 }
