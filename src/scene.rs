@@ -9,12 +9,12 @@ use crate::math;
 pub struct Scene<'scene> {
     camera: camera::Camera,
     lights: Vec<&'scene dyn light::Light>,
-    surfaces: bvh::Linear<'scene>,
+    surface: &'scene dyn geom::Surface<'scene>,
 }
 
 impl<'scene> Scene<'scene> {
-    pub fn new(arena: &arena::Arena) -> Self {
-        unimplemented!()
+    pub fn new(camera: camera::Camera, lights: Vec<&'scene dyn light::Light>, surface: &'scene dyn geom::Surface<'scene>) -> Self {
+        Scene { camera, lights, surface }
     }
 
     pub fn lights(&self) -> &[&'scene dyn light::Light] {
@@ -24,14 +24,14 @@ impl<'scene> Scene<'scene> {
 
 impl<'scene> geom::Surface<'scene> for Scene<'scene> {
     fn bound(&self) -> geom::Bound {
-        self.surfaces.bound()
+        self.surface.bound()
     }
 
     fn hit(&self, ray: &mut math::Ray, hit: &mut geom::Record<'scene>) -> bool {
-        self.surfaces.hit(ray, hit)
+        self.surface.hit(ray, hit)
     }
 
     fn hit_any(&self, ray: &math::Ray) -> bool {
-        self.surfaces.hit_any(ray)
+        self.surface.hit_any(ray)
     }
 }

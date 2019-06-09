@@ -7,6 +7,12 @@ pub struct Lambertian {
     color: Vec3,
 }
 
+impl Lambertian {
+    pub fn new(color: Vec3) -> Self {
+        Lambertian { color }
+    }
+}
+
 impl bxdf::BXDF for Lambertian {
     fn eval(&self, wi: &Vec3, wr: &Vec3, n: &Vec3) -> Vec3 {
         if wi.dot(n) >= 0.0 && wr.dot(n) >= 0.0 {

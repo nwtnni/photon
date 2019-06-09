@@ -2,20 +2,24 @@ use std::collections::HashMap;
 
 use rayon::prelude::*;
 
+use photon::prelude::*;
 use photon::arena::Arena;
-use photon::bvh;
+use photon::bxdf;
+use photon::geom;
+use photon::integrator;
 use photon::math::{Ray, Vec3};
 use photon::model::obj;
-use photon::geom::{Surface, Sphere, Translate, Record};
-use photon::texture::{Texture, Checker, Constant};
+use photon::geom::{Sphere, Translate, Record};
 use photon::camera::Camera;
+use photon::light;
+use photon::scene;
 
-fn render(
+fn render<'scene, I: Integrator<'scene>>(
     nx: usize, 
     ny: usize,
     ns: usize,
     camera: &Camera,
-    scene: &Surface
+    scene: &scene::Scene<'scene>,
 ) {
     #[cfg(feature = "preview")]
     let (tx, preview) = {
@@ -33,14 +37,19 @@ fn render(
     // Allow each thread exclusive access to a single row 
     buffers.par_extend((0..ny).into_par_iter().map(move |y| {
         let mut buffer = Vec::with_capacity(nx);
+        let mut hit = Record::default();
         for x in 0..nx {
             let mut c = Vec3::default();
             for _ in 0..ns {
                 let u = (x as f32 + rand::random::<f32>()) / nx as f32;
                 let v = (y as f32 + rand::random::<f32>()) / ny as f32;
                 let mut r = camera.get(u, v);
-                // c += color(&mut r, scene, 0) / ns as f32;
+                // FIXME: move logic inside Scene?
+                if scene.hit(&mut r, &mut hit) {
+                    c += I::shade(scene, &r, &hit, 0);
+                }
             }
+            c /= ns as f32;
             let rgb = (
                 (c[0].sqrt() * 255.99) as u8,
                 (c[1].sqrt() * 255.99) as u8,
@@ -77,15 +86,15 @@ fn render(
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let nx = 200; // Width
-    let ny = 100; // Height
-    let ns = 1;  // Samples per pixel
+    let nx = 1920; // Width
+    let ny = 1080; // Height
+    let ns = 100;  // Samples per pixel
 
     let arena = Arena::new(96 * 1024 * 1024);
 
     // Camera setup
-    let origin = Vec3::new(-2.0, 3.0, 4.0);
-    let toward = Vec3::new(0.0, 0.5, 0.0);
+    let origin = Vec3::new(0.0, 0.0, 1.0);
+    let toward = Vec3::new(0.0, 0.0, 0.0);
     let up = Vec3::new(0.0, 1.0, 0.0);
     let fov = 45.0;
     let aspect = nx as f32 / ny as f32;
@@ -93,33 +102,28 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let aperture = 0.0001;
     let camera = Camera::new(origin, toward, up, fov, aspect, aperture, focus);
 
-    // let blue = Constant::new(Vec3::new(0.50, 0.50, 0.60));
-    // let white = Constant::new(Vec3::new(1.0, 1.0, 1.0));
-    // let checker = Checker::new(0.05, &blue, &white);
-    // let material = Diffuse::new(&checker);
-    // let floor = Sphere::new(Vec3::new(0.0, -1000.0, 0.0), 1000.0, &material);
+    let light = &light::Point::new(
+        Vec3::new(0.0, 1.0, 0.0),
+        Vec3::new(1.0, 1.0, 1.0),
+    ) as &dyn light::Light;
 
-    // let blue = Metal::new(Vec3::new(0.60, 0.60, 0.50), 0.05);
-    // let bunny = obj::parse("models/bunny.obj", &arena, &blue);
-    // let center = Translate::new(Vec3::new(0.0, 0.925, 0.0), &bunny);
-    
-    // let teapot = obj::parse("models/teapot.obj", &arena, &blue, 0.0, 1.0);
-    // let center = Translate::new(Vec3::new(3.0, 0.0, 2.0), &teapot);
-    
-    // let center = obj::parse("models/dragon.obj", &arena, &blue, 0.0, 1.0);
+    let bxdf = &bxdf::Lambertian::new(
+        Vec3::new(0.0, 1.0, 0.0)
+    ) as &dyn bxdf::BXDF;
 
-    // let left = Translate::new(Vec3::new(-1.5, 0.0, -1.5), &center);
-    // let right = Translate::new(Vec3::new(1.5, 0.0, 1.5), &center);
+    let surface = &geom::Sphere::new(
+        Vec3::new(0.0, 0.0, 0.0),
+        0.25,
+        bxdf,
+    ) as &dyn geom::Surface;
 
-    // let mut scene: Vec<&dyn Surface> = Vec::new();
-    // scene.push(&center);
-    // scene.push(&left);
-    // scene.push(&right);
-    // scene.push(&floor);
+    let scene = scene::Scene::new(
+        camera,
+        vec![light],
+        surface,
+    );
 
-    // let scene = bvh::Linear::new(&arena, &scene);
-
-    // render(nx, ny, ns, &camera, &scene);
+    render::<integrator::Point>(nx, ny, ns, &camera, &scene);
 
     Ok(())
 }
