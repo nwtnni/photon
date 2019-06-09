@@ -5,32 +5,10 @@ use rayon::prelude::*;
 use photon::arena::Arena;
 use photon::bvh;
 use photon::math::{Ray, Vec3};
-use photon::material::{Metal, Diffuse};
 use photon::model::obj;
 use photon::geom::{Surface, Sphere, Translate, Record};
 use photon::texture::{Texture, Checker, Constant};
 use photon::camera::Camera;
-
-/// Main ray tracing function.
-/// Intersects `ray` with `scene`, potentially recursing upon reflecting or refracting.
-fn color(ray: &mut Ray, scene: &dyn Surface, depth: i32) -> Vec3 {
-    let mut hit = Record::default();
-    if scene.hit(ray, &mut hit) {
-        let mut attenuation = Vec3::default();
-        let mut scattered = Ray::default();
-        if depth < 1 && hit.m.unwrap().scatter(ray, &hit, &mut attenuation, &mut scattered) {
-            color(&mut scattered, scene, depth + 1) * attenuation
-        } else {
-            Vec3::default()
-        }
-    } else {
-        let dir = ray.d.normalize();
-        let t = 0.5 * (dir.y() + 1.0);
-        let white = Vec3::new(1.0, 1.0, 1.0);
-        let blue = Vec3::new(0.5, 0.7, 1.0);
-        white.lerp(&blue, t)
-    }
-}
 
 fn render(
     nx: usize, 
@@ -61,7 +39,7 @@ fn render(
                 let u = (x as f32 + rand::random::<f32>()) / nx as f32;
                 let v = (y as f32 + rand::random::<f32>()) / ny as f32;
                 let mut r = camera.get(u, v);
-                c += color(&mut r, scene, 0) / ns as f32;
+                // c += color(&mut r, scene, 0) / ns as f32;
             }
             let rgb = (
                 (c[0].sqrt() * 255.99) as u8,
@@ -115,15 +93,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let aperture = 0.0001;
     let camera = Camera::new(origin, toward, up, fov, aspect, aperture, focus);
 
-    let blue = Constant::new(Vec3::new(0.50, 0.50, 0.60));
-    let white = Constant::new(Vec3::new(1.0, 1.0, 1.0));
-    let checker = Checker::new(0.05, &blue, &white);
-    let material = Diffuse::new(&checker);
-    let floor = Sphere::new(Vec3::new(0.0, -1000.0, 0.0), 1000.0, &material);
+    // let blue = Constant::new(Vec3::new(0.50, 0.50, 0.60));
+    // let white = Constant::new(Vec3::new(1.0, 1.0, 1.0));
+    // let checker = Checker::new(0.05, &blue, &white);
+    // let material = Diffuse::new(&checker);
+    // let floor = Sphere::new(Vec3::new(0.0, -1000.0, 0.0), 1000.0, &material);
 
-    let blue = Metal::new(Vec3::new(0.60, 0.60, 0.50), 0.05);
-    let bunny = obj::parse("models/bunny.obj", &arena, &blue);
-    let center = Translate::new(Vec3::new(0.0, 0.925, 0.0), &bunny);
+    // let blue = Metal::new(Vec3::new(0.60, 0.60, 0.50), 0.05);
+    // let bunny = obj::parse("models/bunny.obj", &arena, &blue);
+    // let center = Translate::new(Vec3::new(0.0, 0.925, 0.0), &bunny);
     
     // let teapot = obj::parse("models/teapot.obj", &arena, &blue, 0.0, 1.0);
     // let center = Translate::new(Vec3::new(3.0, 0.0, 2.0), &teapot);
@@ -133,15 +111,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // let left = Translate::new(Vec3::new(-1.5, 0.0, -1.5), &center);
     // let right = Translate::new(Vec3::new(1.5, 0.0, 1.5), &center);
 
-    let mut scene: Vec<&dyn Surface> = Vec::new();
-    scene.push(&center);
+    // let mut scene: Vec<&dyn Surface> = Vec::new();
+    // scene.push(&center);
     // scene.push(&left);
     // scene.push(&right);
-    scene.push(&floor);
+    // scene.push(&floor);
 
-    let scene = bvh::Linear::new(&arena, &scene);
+    // let scene = bvh::Linear::new(&arena, &scene);
 
-    render(nx, ny, ns, &camera, &scene);
+    // render(nx, ny, ns, &camera, &scene);
 
     Ok(())
 }

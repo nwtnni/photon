@@ -1,13 +1,13 @@
-use crate::arena::Arena;
-use crate::material::Material;
+use crate::arena;
+use crate::bxdf;
 use crate::math::Vec3;
-use crate::geom::{Surface, Mesh, Tri};
+use crate::geom;
 
 pub fn parse<'scene, P>(
     obj: P,
-    arena: &'scene Arena,
-    material: &'scene dyn Material<'scene>,
-) -> Mesh<'scene>
+    arena: &'scene arena::Arena,
+    material: &'scene dyn bxdf::BXDF,
+) -> geom::Mesh<'scene>
     where P: AsRef<std::path::Path>,
 {
     let obj = std::fs::read_to_string(obj).expect("[INTERNAL ERROR]: could not read OBJ file");
@@ -57,9 +57,9 @@ pub fn parse<'scene, P>(
 
     let ts = fs.into_iter()
         .map(|(a, b, c)| {
-            arena.alloc(Tri::new([vs[a], vs[b], vs[c]], [ns[a], ns[b], ns[c]])) as &'scene dyn Surface
+            arena.alloc(geom::Tri::new([vs[a], vs[b], vs[c]], [ns[a], ns[b], ns[c]])) as &'scene dyn geom::Surface
         })
         .collect::<Vec<_>>();
 
-    Mesh::new(arena, material, &ts)
+    geom::Mesh::new(arena, material, &ts)
 }

@@ -14,7 +14,6 @@ pub mod integrator;
 pub mod light;
 
 /// Scattering models
-pub mod material;
 pub mod bxdf;
 
 /// External models

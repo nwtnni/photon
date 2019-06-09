@@ -1,5 +1,5 @@
 use crate::math::{Ray, Vec3};
-use crate::material::Material;
+use crate::bxdf;
 
 mod bound;
 mod sphere;
@@ -31,8 +31,8 @@ pub struct Record<'scene> {
     /// Normal at hit point
     pub n: Vec3,
 
-    /// Material at hit point
-    pub m: Option<&'scene dyn Material<'scene>>,
+    /// BXDF at hit point
+    pub bxdf: Option<&'scene dyn bxdf::BXDF>,
 }
 
 /// Represents an object that can interact with light rays.
