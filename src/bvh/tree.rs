@@ -67,7 +67,7 @@ impl<'scene> Surface<'scene> for Tree<'scene> {
         | Tree::Leaf(surfaces) => {
             surfaces.hit(ray, hit)
         }
-        | Tree::Node { bound, l, r, .. } => {
+        | Tree::Node { l, r, .. } => {
             let mut success = false;
             success |= l.hit(ray, hit);
             success |= r.hit(ray, hit);
@@ -91,7 +91,7 @@ impl<'scene> Surface<'scene> for Tree<'scene> {
         | Tree::Leaf(surfaces) => {
             surfaces.hit_any(ray)
         }
-        | Tree::Node { bound, l, r, .. } => {
+        | Tree::Node { l, r, .. } => {
             l.hit_any(ray) || r.hit_any(ray)
         },
         }
@@ -124,11 +124,9 @@ fn build<'scene>(
         .map(|info| info.bound)
         .fold(geom::Bound::smallest(), |a, b| a.union_b(&b));
 
-    if count <= LEAF_SIZE {
+    if count == 1 {
         let mut leaf = Leaf::default();
-        for (i, j) in (lo..hi).enumerate() {
-            leaf.set(i, surfaces[info[j].index]);
-        }
+        leaf.set(0, surfaces[info[lo].index]);
         return Tree::Leaf(leaf)
     }
 
@@ -177,7 +175,7 @@ fn build<'scene>(
                 right_bound = right_bound.union_b(&buckets[j].1);
             }
 
-            cost[i] = ( 
+            cost[i] = 1.0 + ( 
                 left_count as f32 * left_bound.surface_area() +
                 right_count as f32 * right_bound.surface_area()
             ) / bound.surface_area();
@@ -192,10 +190,20 @@ fn build<'scene>(
             }
         }
 
-        lo + partition::partition(
-            &mut info[lo..hi],
-            |info| assignment[&info.index] <= min_bucket
-        ).0.len()
+        if count > LEAF_SIZE || min_cost < count as f32 {
+
+            lo + partition::partition(
+                &mut info[lo..hi],
+                |info| assignment[&info.index] <= min_bucket
+            ).0.len()
+        
+        } else {
+            let mut leaf = Leaf::default();
+            for (i, j) in (lo..hi).enumerate() {
+                leaf.set(i, surfaces[info[j].index]);
+            }
+            return Tree::Leaf(leaf)
+        }
     };
 
     let l = build(surfaces, info, lo, mid);

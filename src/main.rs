@@ -5,6 +5,7 @@ use rayon::prelude::*;
 use photon::prelude::*;
 use photon::arena::Arena;
 use photon::bxdf;
+use photon::bvh;
 use photon::geom;
 use photon::integrator;
 use photon::math::{Ray, Vec3};
@@ -122,16 +123,28 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     //     bxdf,
     // ) as &dyn geom::Surface;
       
-    let surface = &model::obj::parse(
+    let buddha = &model::obj::parse(
         "models/buddha.obj",
         &arena,
         bxdf,
     ) as &dyn geom::Surface;
 
+    let left = &Translate::new(
+        Vec3::new(-1.0, 0.0, 0.0),
+        buddha,
+    ) as &dyn geom::Surface;
+
+    let right = &Translate::new(
+        Vec3::new(1.0, 0.0, 0.0),
+        buddha,
+    ) as &dyn geom::Surface;
+
+    let surface = bvh::Linear::new(&[left, right]);
+
     let scene = scene::Scene::new(
         camera,
         vec![],
-        surface,
+        &surface,
     );
 
     render::<integrator::Normal>(nx, ny, ns, &camera, &scene);
