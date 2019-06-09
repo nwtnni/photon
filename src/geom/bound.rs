@@ -80,7 +80,7 @@ impl Bound {
             let inv = inv[i];
             let mut t0 = (self.min[i] - pos) * inv;
             let mut t1 = (self.max[i] - pos) * inv;
-            if inv < 0.0 { std::mem::swap(&mut t0, &mut t1) }
+            if t0 > t1 { std::mem::swap(&mut t0, &mut t1) }
             let t_min = if t0 > ray.min { t0 } else { ray.min };
             let t_max = if t1 < ray.max { t1 } else { ray.max };
             if t_max <= t_min { return false }
@@ -120,7 +120,7 @@ impl<'scene> geom::Surface<'scene> for Bound {
             let inv = 1.0 / ray.d[i];
             let mut t0 = (self.min[i] - pos) * inv;
             let mut t1 = (self.max[i] - pos) * inv;
-            if inv < 0.0 { std::mem::swap(&mut t0, &mut t1) }
+            if t0 > t1 { std::mem::swap(&mut t0, &mut t1) }
             let t_min = if t0 > ray.min { t0 } else { ray.min };
             let t_max = if t1 < ray.max { t1 } else { ray.max };
             if t_max <= t_min { return false }
