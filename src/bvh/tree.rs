@@ -107,7 +107,7 @@ struct Info {
 
 impl Info {
     fn new(index: usize, bound: geom::Box3) -> Self {
-        let centroid = bound.min() * 0.5 + bound.max() * 0.5;
+        let centroid = bound.min * 0.5 + bound.max * 0.5;
         Info { index, bound, centroid }
     }
 }

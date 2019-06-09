@@ -3,35 +3,29 @@ use crate::math::{Ray, Vec3};
 use crate::geom;
 
 /// Basic sphere.
+#[readonly::make]
 #[derive(Copy, Clone, Debug)]
 pub struct Sphere<'scene> {
     /// Center
-    c: Vec3,
+    pub center: Vec3,
 
     /// Radius
-    r: f32,
+    pub radius: f32,
 
     /// BXDF
-    bxdf: &'scene dyn bxdf::BXDF,
+    pub bxdf: &'scene dyn bxdf::BXDF,
 }
 
 impl<'scene> Sphere<'scene> {
-    #[inline(always)]
-    pub fn new(c: Vec3, r: f32, bxdf: &'scene dyn bxdf::BXDF) -> Self {
-        Sphere { c, r, bxdf }
+    pub fn new(center: Vec3, radius: f32, bxdf: &'scene dyn bxdf::BXDF) -> Self {
+        Sphere { center, radius, bxdf }
     }
-
-    #[inline(always)]
-    pub fn c(&self) -> Vec3 { self.c }
-
-    #[inline(always)]
-    pub fn r(&self) -> f32 { self.r }
 }
 
 impl<'scene> geom::Surface<'scene> for Sphere<'scene> {
     fn bound(&self) -> geom::Box3 {
-        let r = Vec3::broadcast(self.r);
-        geom::Box3::new(self.c - r, self.c + r)
+        let r = Vec3::broadcast(self.radius);
+        geom::Box3::new(self.center - r, self.center + r)
     }
 
     fn hit(&self, ray: &mut Ray, hit: &mut geom::Record<'scene>) -> bool {
@@ -41,10 +35,10 @@ impl<'scene> geom::Surface<'scene> for Sphere<'scene> {
             crate::stats::SPHERE_INTERSECTION_TESTS.inc();
         }
 
-        let o = ray.o - self.c;
-        let a = ray.d.len_sq() as f32;
-        let b = o.dot(&ray.d);
-        let c = o.len_sq() - self.r * self.r;
+        let o = ray.origin - self.center;
+        let a = ray.dir.len_sq() as f32;
+        let b = o.dot(&ray.dir);
+        let c = o.len_sq() - self.radius * self.radius;
         let d = b * b - a * c;
 
         if d < 0.0 { return false }
@@ -60,10 +54,10 @@ impl<'scene> geom::Surface<'scene> for Sphere<'scene> {
             return false;
         };
 
-        ray.max = t;
+        ray.set_max(t);
         hit.t = t;
         hit.p = ray.at(t);
-        hit.n = (hit.p - self.c()) / self.r();
+        hit.n = (hit.p - self.center) / self.radius;
         hit.bxdf = Some(self.bxdf);
         let phi = hit.p.z().atan2(hit.p.x());
         let theta = hit.p.y().asin();
@@ -77,10 +71,10 @@ impl<'scene> geom::Surface<'scene> for Sphere<'scene> {
             crate::stats::INTERSECTION_TESTS.inc();
             crate::stats::SPHERE_INTERSECTION_TESTS.inc();
         }
-        let o = ray.o - self.c;
-        let a = ray.d.len_sq() as f32;
-        let b = o.dot(&ray.d);
-        let c = o.len_sq() - self.r * self.r;
+        let o = ray.origin - self.center;
+        let a = ray.dir.len_sq() as f32;
+        let b = o.dot(&ray.dir);
+        let c = o.len_sq() - self.radius * self.radius;
         let d = b * b - a * c;
         if d < 0.0 { return false }
         let (t_a, t_b) = ((-b - d.sqrt()) / a, (-b + d.sqrt()) / a);

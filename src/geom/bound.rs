@@ -1,28 +1,18 @@
 use crate::math::{self, Axis, Ray, Vec3};
 use crate::geom;
 
+#[readonly::make]
 #[derive(Copy, Clone, Debug)]
 pub struct Box3 {
-    min: Vec3, 
-    max: Vec3,
+    pub min: Vec3, 
+    pub max: Vec3,
 }
 
 impl Box3 {
-    #[inline(always)]
     pub fn new(a: Vec3, b: Vec3) -> Self {
         let min = a.min(&b);
         let max = a.max(&b);
         Box3 { min, max }
-    }
-
-    #[inline(always)]
-    pub fn min(&self) -> Vec3 {
-        self.min
-    }
-
-    #[inline(always)]
-    pub fn max(&self) -> Vec3 {
-        self.max
     }
 
     pub fn max_extent(&self) -> Axis {
@@ -108,19 +98,19 @@ impl<'scene> geom::Surface<'scene> for Box3 {
             crate::stats::BOUNDING_BOX_INTERSECTION_TESTS.inc();
         }
 
-        let x_min = (self[ray.sign[0]].x() - ray.o.x()) * ray.inv[0];
-        let x_max = (self[1 - ray.sign[0]].x() - ray.o.x()) * ray.inv[0];
+        let x_min = (self[ray.sign[0]].x() - ray.origin.x()) * ray.inv[0];
+        let x_max = (self[1 - ray.sign[0]].x() - ray.origin.x()) * ray.inv[0];
 
-        let y_min = (self[ray.sign[1]].y() - ray.o.y()) * ray.inv[1];
-        let y_max = (self[1 - ray.sign[1]].y() - ray.o.y()) * ray.inv[1];
+        let y_min = (self[ray.sign[1]].y() - ray.origin.y()) * ray.inv[1];
+        let y_max = (self[1 - ray.sign[1]].y() - ray.origin.y()) * ray.inv[1];
 
         if x_min > y_max || y_min > x_max { return false }
 
         let ray_min = math::max(x_min, y_min);
         let ray_max = math::min(x_max, y_max);
 
-        let z_min = (self[ray.sign[2]].z() - ray.o.z()) * ray.inv[2];
-        let z_max = (self[1 - ray.sign[2]].z() - ray.o.z()) * ray.inv[2];
+        let z_min = (self[ray.sign[2]].z() - ray.origin.z()) * ray.inv[2];
+        let z_max = (self[1 - ray.sign[2]].z() - ray.origin.z()) * ray.inv[2];
 
         if ray_min > z_max || z_min > ray_max { return false }
 

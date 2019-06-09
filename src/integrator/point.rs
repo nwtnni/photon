@@ -19,7 +19,7 @@ impl<'scene> integrator::Integrator<'scene> for Point {
             let n = hit.n;
             let l = light.p();
             let wi = (l - p).normalize();
-            let wr = (ray.o - p).normalize();
+            let wr = (ray.origin - p).normalize();
 
             if scene.hit_any(&Ray::new(p, wi)) || n.dot(&wi) < 0.0 { continue }
 
