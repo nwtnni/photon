@@ -98,25 +98,25 @@ impl<'scene> geom::Surface<'scene> for Box3 {
             crate::stats::BOUNDING_BOX_INTERSECTION_TESTS.inc();
         }
 
-        let x_min = (self[ray.sign[0]].x() - ray.origin.x()) * ray.inv[0];
-        let x_max = (self[1 - ray.sign[0]].x() - ray.origin.x()) * ray.inv[0];
+        let x_min = (self[    ray.sign[0]][0] - ray.origin[0]) * ray.inv[0];
+        let x_max = (self[1 - ray.sign[0]][0] - ray.origin[0]) * ray.inv[0];
 
-        let y_min = (self[ray.sign[1]].y() - ray.origin.y()) * ray.inv[1];
-        let y_max = (self[1 - ray.sign[1]].y() - ray.origin.y()) * ray.inv[1];
+        let y_min = (self[    ray.sign[1]][1] - ray.origin[1]) * ray.inv[1];
+        let y_max = (self[1 - ray.sign[1]][1] - ray.origin[1]) * ray.inv[1];
 
         if x_min > y_max || y_min > x_max { return false }
 
-        let ray_min = math::max(x_min, y_min);
-        let ray_max = math::min(x_max, y_max);
+        let min = math::max(x_min, y_min);
+        let max = math::min(x_max, y_max);
 
-        let z_min = (self[ray.sign[2]].z() - ray.origin.z()) * ray.inv[2];
-        let z_max = (self[1 - ray.sign[2]].z() - ray.origin.z()) * ray.inv[2];
+        let z_min = (self[    ray.sign[2]][2] - ray.origin[2]) * ray.inv[2];
+        let z_max = (self[1 - ray.sign[2]][2] - ray.origin[2]) * ray.inv[2];
 
-        if ray_min > z_max || z_min > ray_max { return false }
+        if min > z_max || z_min > max { return false }
 
-        let ray_min = math::max(ray_min, z_min);
-        let ray_max = math::min(ray_max, z_max);
+        let min = math::max(min, z_min);
+        let max = math::min(max, z_max);
 
-        ray_min < ray.max && ray_max > ray.min
+        min < ray.max && max > ray.min
     }
 }
