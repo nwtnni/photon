@@ -24,4 +24,8 @@ impl Light for Point {
         *wi = (self.p - p).normalize();
         1.0
     }
+
+    fn downcast_point(&self) -> Option<Point> {
+        Some(*self)
+    }
 }
