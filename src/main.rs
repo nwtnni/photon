@@ -8,7 +8,7 @@ use photon::bxdf;
 use photon::geom;
 use photon::integrator;
 use photon::math::{Ray, Vec3};
-use photon::model::obj;
+use photon::model;
 use photon::geom::{Sphere, Translate, Record};
 use photon::camera::Camera;
 use photon::light;
@@ -76,6 +76,8 @@ fn render<'scene, I: Integrator<'scene>>(
         println!("{}", photon::stats::ARENA_MEMORY);
         println!("{}", photon::stats::INTERSECTION_TESTS);
         println!("{}", photon::stats::BOUNDING_BOX_INTERSECTION_TESTS);
+        println!("{}", photon::stats::BVH_HITS);
+        println!("{}", photon::stats::BVH_MISSES);
         println!("{}", photon::stats::SPHERE_INTERSECTION_TESTS);
         println!("{}", photon::stats::TRI_INTERSECTION_TESTS);
         println!("{}", photon::stats::LIST_INTERSECTION_TESTS);
@@ -93,7 +95,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let arena = Arena::new(96 * 1024 * 1024);
 
     // Camera setup
-    let origin = Vec3::new(0.0, 0.0, 1.0);
+    // let origin = Vec3::new(4.0, 6.0, 8.0);
+    // let toward = Vec3::new(-4.0, -6.0, -8.0);
+    // let up = Vec3::new(0.0, 1.0, 0.0);
+    let origin = Vec3::new(0.0, 0.0, 5.0);
     let toward = Vec3::new(0.0, 0.0, 0.0);
     let up = Vec3::new(0.0, 1.0, 0.0);
     let fov = 45.0;
@@ -111,19 +116,25 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         Vec3::new(0.0, 1.0, 0.0)
     ) as &dyn bxdf::BXDF;
 
-    let surface = &geom::Sphere::new(
-        Vec3::new(0.0, 0.0, 0.0),
-        0.25,
+    // let surface = &geom::Sphere::new(
+    //     Vec3::new(0.0, 0.0, 0.0),
+    //     0.25,
+    //     bxdf,
+    // ) as &dyn geom::Surface;
+      
+    let surface = &model::obj::parse(
+        "models/buddha.obj",
+        &arena,
         bxdf,
     ) as &dyn geom::Surface;
 
     let scene = scene::Scene::new(
         camera,
-        vec![light],
+        vec![],
         surface,
     );
 
-    render::<integrator::Point>(nx, ny, ns, &camera, &scene);
+    render::<integrator::Normal>(nx, ny, ns, &camera, &scene);
 
     Ok(())
 }

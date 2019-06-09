@@ -21,6 +21,8 @@ macro_rules! memory {
 counter!(PIXELS_RENDERED);
 counter!(INTERSECTION_TESTS);
 counter!(BOUNDING_BOX_INTERSECTION_TESTS);
+counter!(BVH_HITS);
+counter!(BVH_MISSES);
 counter!(SPHERE_INTERSECTION_TESTS);
 counter!(TRI_INTERSECTION_TESTS);
 counter!(LIST_INTERSECTION_TESTS);

@@ -1,4 +1,4 @@
-use crate::math::{Axis, Ray, Vec3};
+use crate::math::{self, Axis, Ray, Vec3};
 use crate::geom;
 
 #[derive(Copy, Clone, Debug)]
@@ -69,24 +69,6 @@ impl Bound {
         let d = self.max - self.min;
         2.0 * (d.x() * d.x() + d.y() * d.y() + d.z() * d.z())
     }
-
-    pub fn hit_inv(&self, ray: &Ray, inv: &[f32; 3]) -> bool {
-        if cfg!(feature = "stats") {
-            crate::stats::INTERSECTION_TESTS.inc();
-            crate::stats::BOUNDING_BOX_INTERSECTION_TESTS.inc();
-        }
-        for i in 0..3 {
-            let pos = ray.o[i];
-            let inv = inv[i];
-            let mut t0 = (self.min[i] - pos) * inv;
-            let mut t1 = (self.max[i] - pos) * inv;
-            if t0 > t1 { std::mem::swap(&mut t0, &mut t1) }
-            let t_min = if t0 > ray.min { t0 } else { ray.min };
-            let t_max = if t1 < ray.max { t1 } else { ray.max };
-            if t_max <= t_min { return false }
-        }
-        true
-    }
 }
 
 impl Default for Bound {
@@ -98,7 +80,17 @@ impl Default for Bound {
             max: Vec3::new(max, max, max),
         }
     }
+}
 
+impl std::ops::Index<usize> for Bound {
+    type Output = Vec3;
+    fn index(&self, index: usize) -> &Self::Output {
+        match index {
+        | 0 => &self.min,
+        | 1 => &self.max,
+        | _ => unreachable!(),
+        }
+    }
 }
 
 impl<'scene> geom::Surface<'scene> for Bound {
@@ -110,21 +102,36 @@ impl<'scene> geom::Surface<'scene> for Bound {
         self.hit_any(&*ray)
     }
 
+    /// See [PBRT][0], the [bvh][1] crate, and the [original paper][2].
+    ///
+    /// [0]: https://github.com/mmp/pbrt-v3/blob/3e9dfd72c6a669848616a18c22f347c0810a0b51/src/core/geometry.h#L1411-L1438
+    /// [1]: https://github.com/svenstaro/bvh/blob/15ca10d07e40036135621cd80df2e5ba024a5991/src/ray.rs#L85-L150
+    /// [2]: http://www.cs.utah.edu/~awilliam/box/box.pdf 
     fn hit_any(&self, ray: &Ray) -> bool {
         if cfg!(feature = "stats") {
             crate::stats::INTERSECTION_TESTS.inc();
             crate::stats::BOUNDING_BOX_INTERSECTION_TESTS.inc();
         }
-        for i in 0..3 {
-            let pos = ray.o[i];
-            let inv = 1.0 / ray.d[i];
-            let mut t0 = (self.min[i] - pos) * inv;
-            let mut t1 = (self.max[i] - pos) * inv;
-            if t0 > t1 { std::mem::swap(&mut t0, &mut t1) }
-            let t_min = if t0 > ray.min { t0 } else { ray.min };
-            let t_max = if t1 < ray.max { t1 } else { ray.max };
-            if t_max <= t_min { return false }
-        }
-        true
+
+        let x_min = (self[ray.sign[0]].x() - ray.o.x()) * ray.inv[0];
+        let x_max = (self[1 - ray.sign[0]].x() - ray.o.x()) * ray.inv[0];
+
+        let y_min = (self[ray.sign[1]].y() - ray.o.y()) * ray.inv[1];
+        let y_max = (self[1 - ray.sign[1]].y() - ray.o.y()) * ray.inv[1];
+
+        if x_min > y_max || y_min > x_max { return false }
+
+        let ray_min = math::max(x_min, y_min);
+        let ray_max = math::min(x_max, y_max);
+
+        let z_min = (self[ray.sign[2]].z() - ray.o.z()) * ray.inv[2];
+        let z_max = (self[1 - ray.sign[2]].z() - ray.o.z()) * ray.inv[2];
+
+        if ray_min > z_max || z_min > ray_max { return false }
+
+        let ray_min = math::max(ray_min, z_min);
+        let ray_max = math::min(ray_max, z_max);
+
+        ray_min < ray.max && ray_max > ray.min
     }
 }

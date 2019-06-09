@@ -35,6 +35,13 @@ impl<'scene> Tree<'scene> {
         | Tree::Node { l, r, .. } => 1 + l.len() + r.len(),
         }
     }
+
+    pub fn depth(&self) -> usize {
+        match self {
+        | Tree::Leaf(_) => 1,
+        | Tree::Node { l, r, .. } => 1 + std::cmp::max(l.depth(), r.depth()),
+        }
+    }
 }
 
 impl<'scene> Surface<'scene> for Tree<'scene> {
@@ -46,23 +53,46 @@ impl<'scene> Surface<'scene> for Tree<'scene> {
     }
 
     fn hit(&self, ray: &mut Ray, hit: &mut geom::Record<'scene>) -> bool {
+
+        if !self.bound().hit_any(ray) {
+            #[cfg(feature = "stats")]
+            crate::stats::BVH_MISSES.inc();
+            return false
+        }
+
+        #[cfg(feature = "stats")]
+        crate::stats::BVH_HITS.inc();
+
         match self {
-        | Tree::Leaf(surfaces) => surfaces.hit(ray, hit),
+        | Tree::Leaf(surfaces) => {
+            surfaces.hit(ray, hit)
+        }
         | Tree::Node { bound, l, r, .. } => {
-            if !bound.hit(ray, hit) { return false }
             let mut success = false;
-            if l.hit(ray, hit) { success = true; }
-            if r.hit(ray, hit) { success = true; }
+            success |= l.hit(ray, hit);
+            success |= r.hit(ray, hit);
             success
         },
         }
     }
 
     fn hit_any(&self, ray: &Ray) -> bool {
+
+        if !self.bound().hit_any(ray) {
+            #[cfg(feature = "stats")]
+            crate::stats::BVH_MISSES.inc();
+            return false
+        }
+
+        #[cfg(feature = "stats")]
+        crate::stats::BVH_HITS.inc();
+
         match self {
-        | Tree::Leaf(surfaces) => surfaces.hit_any(ray),
+        | Tree::Leaf(surfaces) => {
+            surfaces.hit_any(ray)
+        }
         | Tree::Node { bound, l, r, .. } => {
-            bound.hit_any(ray) && (l.hit_any(ray) || r.hit_any(ray))
+            l.hit_any(ray) || r.hit_any(ray)
         },
         }
     }
@@ -170,6 +200,7 @@ fn build<'scene>(
 
     let l = build(surfaces, info, lo, mid);
     let r = build(surfaces, info, mid, hi);
+
     Tree::Node {
         axis: dim,
         bound: l.bound().union_b(&r.bound()),

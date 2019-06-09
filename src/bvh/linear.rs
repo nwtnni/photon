@@ -60,8 +60,6 @@ impl<'scene> Surface<'scene> for Linear<'scene> {
         let mut this = 0;
         let mut visit = [0; 32];
         let mut success = false;
-        let inv = [1.0 / ray.d.x(), 1.0 / ray.d.y(), 1.0 / ray.d.z()];
-        let neg = [ray.d.x() < 0.0, ray.d.y() < 0.0, ray.d.z() < 0.0];
 
         macro_rules! push { ($i:expr) => {{
             visit[next] = $i; 
@@ -77,19 +75,31 @@ impl<'scene> Surface<'scene> for Linear<'scene> {
         loop {
             match &self.0[this] {
             | Tree::Leaf(surfaces) => {
-                if surfaces.hit(ray, hit) { success = true; }
+                if !surfaces.bound().hit_any(ray) {
+                    if cfg!(feature = "stats") { crate::stats::BVH_MISSES.inc(); }
+                    pop!();
+                    continue
+                }
+
+                if cfg!(feature = "stats") { crate::stats::BVH_HITS.inc(); }
+                if surfaces.hit(ray, hit) {
+                    success = true;
+                }
                 pop!();
             }
             | Tree::Node { bound, offset, axis, .. } => {
-                if !bound.hit_inv(ray, &inv) {
+                if !bound.hit_any(ray) {
+                    if cfg!(feature = "stats") { crate::stats::BVH_MISSES.inc(); }
                     pop!();
-                } else if neg[*axis as usize] {
+                    continue
+                } else if ray.sign[*axis as usize] == 1 {
                     push!(this + 1);
                     this += *offset as usize;
                 } else {
                     push!(this + *offset as usize);
                     this += 1;
                 }
+                if cfg!(feature = "stats") { crate::stats::BVH_HITS.inc(); }
             }
             }
         }
@@ -99,8 +109,6 @@ impl<'scene> Surface<'scene> for Linear<'scene> {
         let mut next = 0;
         let mut this = 0;
         let mut visit = [0; 32];
-        let inv = [1.0 / ray.d.x(), 1.0 / ray.d.y(), 1.0 / ray.d.z()];
-        let neg = [ray.d.x() < 0.0, ray.d.y() < 0.0, ray.d.z() < 0.0];
 
         macro_rules! push { ($i:expr) => {{
             visit[next] = $i; 
@@ -116,19 +124,29 @@ impl<'scene> Surface<'scene> for Linear<'scene> {
         loop {
             match &self.0[this] {
             | Tree::Leaf(surfaces) => {
+                if !surfaces.bound().hit_any(ray) {
+                    if cfg!(feature = "stats") { crate::stats::BVH_MISSES.inc(); }
+                    pop!();
+                    continue
+                }
+
+                if cfg!(feature = "stats") { crate::stats::BVH_HITS.inc(); }
                 if surfaces.hit_any(ray) { return true }
                 pop!();
             }
             | Tree::Node { axis, bound, offset, .. } => {
-                if !bound.hit_inv(ray, &inv) {
+                if !bound.hit_any(ray) {
+                    if cfg!(feature = "stats") { crate::stats::BVH_MISSES.inc(); }
                     pop!();
-                } else if neg[*axis as usize] {
+                    continue
+                } else if ray.sign[*axis as usize] == 1 {
                     push!(this + 1);
                     this += *offset as usize;
                 } else {
                     push!(this + *offset as usize);
                     this += 1;
                 }
+                if cfg!(feature = "stats") { crate::stats::BVH_HITS.inc(); }
             }
             }
         }
