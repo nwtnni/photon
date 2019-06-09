@@ -17,6 +17,14 @@ impl Point {
             i: intensity,
         }
     }
+
+    pub fn p(&self) -> Vec3 {
+        self.p
+    }
+
+    pub fn i(&self) -> Vec3 {
+        self.i
+    }
 }
 
 impl Light for Point {
