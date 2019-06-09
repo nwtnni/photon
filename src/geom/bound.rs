@@ -26,6 +26,12 @@ impl Box3 {
         }
     }
 
+    pub fn intersect(&self, rhs: &Self) -> Self {
+        let min = self.min.max(&rhs.min);
+        let max = self.max.min(&rhs.max);
+        Box3 { min, max }
+    }
+
     pub fn union_b(&self, rhs: &Self) -> Self {
         let min = self.min.min(&rhs.min);
         let max = self.max.max(&rhs.max);
@@ -45,6 +51,18 @@ impl Box3 {
             min: Vec3::new(max, max, max),
             max: Vec3::new(min, min, min),
         }
+    }
+
+    pub fn scale(&self, c: f32) -> Self {
+        let min = self.min * c;
+        let max = self.max * c;
+        Box3 { min, max }
+    }
+
+    pub fn translate(&self, v: &Vec3) -> Self {
+        let min = self.min + v;
+        let max = self.max + v;
+        Box3 { min, max }
     }
 
     pub fn offset(&self, v: &Vec3) -> Vec3 {

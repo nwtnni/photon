@@ -17,7 +17,7 @@ pub struct Vec3([f32; 3]);
 
 impl Vec3 {
     #[inline(always)]
-    pub fn new(x: f32, y: f32, z: f32) -> Self {
+    pub const fn new(x: f32, y: f32, z: f32) -> Self {
         Vec3([x, y, z])
     }
 
@@ -79,6 +79,14 @@ impl Vec3 {
     #[inline(always)]
     pub fn lerp(&self, to: &Self, t: f32) -> Self {
         self * (1.0 - t) + to * t
+    }
+
+    pub fn abs(&self) -> Self {
+        Vec3([
+            self[0].abs(),
+            self[1].abs(),
+            self[2].abs(),
+        ])
     }
 
     pub fn min(&self, rhs: &Self) -> Self {

@@ -42,8 +42,8 @@ fn render<'scene, I: Integrator<'scene>>(
         for x in 0..nx {
             let mut c = Vec3::default();
             for _ in 0..ns {
-                let u = (x as f32) / nx as f32;
-                let v = (y as f32) / ny as f32;
+                let u = (x as f32 + rand::random::<f32>()) / nx as f32;
+                let v = (y as f32 + rand::random::<f32>()) / ny as f32;
                 let mut r = camera.get(u, v);
                 // FIXME: move logic inside Scene?
                 if scene.hit(&mut r, &mut hit) {
@@ -106,7 +106,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // let origin = Vec3::new(4.0, 6.0, 8.0);
     // let toward = Vec3::new(-4.0, -6.0, -8.0);
     // let up = Vec3::new(0.0, 1.0, 0.0);
-    let origin = Vec3::new(0.0, 0.0, 5.0);
+    let origin = Vec3::new(3.0, 3.0, 3.0);
     let toward = Vec3::new(0.0, 0.0, 0.0);
     let up = Vec3::new(0.0, 1.0, 0.0);
     let fov = 45.0;
@@ -115,42 +115,18 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let aperture = 0.0001;
     let camera = Camera::new(origin, toward, up, fov, aspect, aperture, focus);
 
-    let top = &light::Point::new(
-        Vec3::new(-3.0, 3.0, 3.0),
-        Vec3::new(100.0, 100.0, 100.0),
-    ) as &dyn light::Light;
-
-    let bot = &light::Point::new(
-        Vec3::new(3.0, -3.0, 3.0),
-        Vec3::new(100.0, 100.0, 100.0),
-    ) as &dyn light::Light;
-
     let bxdf = &bxdf::Lambertian::new(
         Vec3::new(1.0, 0.75, 0.0)
     ) as &dyn bxdf::BxDF;
       
-    let buddha = &model::obj::parse(
-        "models/buddha.obj",
-        &arena,
-        bxdf,
-    ) as &dyn geom::Surface;
+    let cube = geom::Field::cube(1.0);
+    let sdf = geom::SDF::new(bxdf, cube);
 
-    let mut buddhas = Vec::new();
-
-    for i in -2..=2 {
-        buddhas.push(
-            arena.alloc(Translate::new(
-                Vec3::new(i as f32, 0.0, 0.0),
-                buddha,
-            )) as &dyn geom::Surface
-        );
-    }
-
-    let surface = bvh::Linear::new(&buddhas);
+    let surface = bvh::Linear::new(&[&sdf]);
 
     let scene = scene::Scene::new(
         camera,
-        vec![top, bot],
+        vec![],
         &surface,
     );
 

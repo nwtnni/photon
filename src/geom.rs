@@ -6,10 +6,12 @@ mod sphere;
 mod mesh;
 mod tri;
 mod translate;
+mod sdf;
 
 pub use bound::Box3;
-pub use sphere::Sphere;
 pub use mesh::Mesh;
+pub use sdf::{SDF, Field};
+pub use sphere::Sphere;
 pub use translate::Translate;
 pub use tri::Tri;
 
