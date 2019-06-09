@@ -33,7 +33,7 @@ fn render<'scene, I: Integrator<'scene>>(
     let progress = std::thread::spawn(move || photon::progress::run(nx * ny));
 
     // Row to pixel buffer map
-    let mut buffers: HashMap<usize, Vec<(u8, u8, u8)>> = HashMap::with_capacity(ny);
+    let mut buffers: HashMap<usize, Vec<(f32, f32, f32)>> = HashMap::with_capacity(ny);
 
     // Allow each thread exclusive access to a single row 
     buffers.par_extend((0..ny).into_par_iter().map(move |y| {
@@ -42,8 +42,8 @@ fn render<'scene, I: Integrator<'scene>>(
         for x in 0..nx {
             let mut c = Vec3::default();
             for _ in 0..ns {
-                let u = (x as f32 + rand::random::<f32>()) / nx as f32;
-                let v = (y as f32 + rand::random::<f32>()) / ny as f32;
+                let u = (x as f32) / nx as f32;
+                let v = (y as f32) / ny as f32;
                 let mut r = camera.get(u, v);
                 // FIXME: move logic inside Scene?
                 if scene.hit(&mut r, &mut hit) {
@@ -51,11 +51,7 @@ fn render<'scene, I: Integrator<'scene>>(
                 }
             }
             c /= ns as f32;
-            let rgb = (
-                (c[0].sqrt() * 255.99) as u8,
-                (c[1].sqrt() * 255.99) as u8,
-                (c[2].sqrt() * 255.99) as u8,
-            );
+            let rgb = (c[0].sqrt(), c[1].sqrt(), c[2].sqrt());
             buffer.push(rgb);
             #[cfg(feature = "preview")] tx.send((x, y, rgb)).ok();
             #[cfg(feature = "progress")] photon::stats::PIXELS_RENDERED.inc();
@@ -66,6 +62,17 @@ fn render<'scene, I: Integrator<'scene>>(
     // Collect buffers for PNG encoding
     let buffer = (0..ny).rev()
         .flat_map(|y| buffers.remove(&y).unwrap().into_iter())
+        .collect::<Vec<_>>();
+    
+    let max = buffer.iter()
+        .fold(std::f32::NEG_INFINITY, |max, pixel| max.max(pixel.0).max(pixel.1).max(pixel.2));
+
+    let buffer = buffer.into_iter()
+        .map(|pixel| (
+            (pixel.0 / max * 255.99) as u8,
+            (pixel.1 / max * 255.99) as u8,
+            (pixel.2 / max * 255.99) as u8,
+        ))
         .collect::<Vec<_>>();
 
     lodepng::encode24_file("out.png", &buffer, nx, ny).unwrap();
@@ -108,20 +115,19 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let aperture = 0.0001;
     let camera = Camera::new(origin, toward, up, fov, aspect, aperture, focus);
 
-    let light = &light::Point::new(
-        Vec3::new(0.0, 1.0, 0.0),
-        Vec3::new(1.0, 1.0, 1.0),
+    let top = &light::Point::new(
+        Vec3::new(-3.0, 3.0, 3.0),
+        Vec3::new(100.0, 100.0, 100.0),
+    ) as &dyn light::Light;
+
+    let bot = &light::Point::new(
+        Vec3::new(3.0, -3.0, 3.0),
+        Vec3::new(100.0, 100.0, 100.0),
     ) as &dyn light::Light;
 
     let bxdf = &bxdf::Lambertian::new(
-        Vec3::new(0.0, 1.0, 0.0)
+        Vec3::new(1.0, 0.75, 0.0)
     ) as &dyn bxdf::BXDF;
-
-    // let surface = &geom::Sphere::new(
-    //     Vec3::new(0.0, 0.0, 0.0),
-    //     0.25,
-    //     bxdf,
-    // ) as &dyn geom::Surface;
       
     let buddha = &model::obj::parse(
         "models/buddha.obj",
@@ -129,21 +135,22 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         bxdf,
     ) as &dyn geom::Surface;
 
-    let left = &Translate::new(
-        Vec3::new(-1.0, 0.0, 0.0),
-        buddha,
-    ) as &dyn geom::Surface;
+    let mut buddhas = Vec::new();
 
-    let right = &Translate::new(
-        Vec3::new(1.0, 0.0, 0.0),
-        buddha,
-    ) as &dyn geom::Surface;
+    for i in -2..=2 {
+        buddhas.push(
+            arena.alloc(Translate::new(
+                Vec3::new(i as f32, 0.0, 0.0),
+                buddha,
+            )) as &dyn geom::Surface
+        );
+    }
 
-    let surface = bvh::Linear::new(&[left, right]);
+    let surface = bvh::Linear::new(&buddhas);
 
     let scene = scene::Scene::new(
         camera,
-        vec![],
+        vec![top, bot],
         &surface,
     );
 
