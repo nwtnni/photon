@@ -7,7 +7,7 @@ use crate::math;
 #[derive(Clone, Debug)]
 pub struct Mesh<'scene> {
     bxdf: &'scene dyn bxdf::BXDF,
-    internal: bvh::Tree<'scene>,
+    internal: bvh::Linear<'scene>,
 }
 
 impl<'scene> Mesh<'scene> {
@@ -16,9 +16,7 @@ impl<'scene> Mesh<'scene> {
         bxdf: &'scene dyn bxdf::BXDF,
         triangles: &[&'scene dyn geom::Surface<'scene>],
     ) -> Self {
-        let internal = bvh::Tree::new(&triangles);
-        use geom::Surface;
-        println!("{:?}", internal.bound());
+        let internal = bvh::Linear::new(arena, &triangles);
         Mesh { bxdf, internal }
     }
 }

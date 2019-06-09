@@ -29,6 +29,15 @@ pub enum Tree<'scene> {
     },
 }
 
+impl<'scene> Tree<'scene> {
+    fn bound(&self) -> geom::Bound {
+        match self {
+        | Tree::Leaf(leaf) => leaf.bound(),
+        | Tree::Node { bound, .. } => *bound,
+        }
+    }
+}
+
 impl<'scene> bvh::Tree<'scene> {
     fn flatten(self, nodes: &mut [Tree<'scene>], index: &mut usize) {
         match self {
@@ -73,33 +82,30 @@ impl<'scene> Surface<'scene> for Linear<'scene> {
         }}}
 
         loop {
+
+            if !self.0[this].bound().hit_any(ray) {
+                #[cfg(feature = "stats")] 
+                crate::stats::BVH_MISSES.inc();
+                pop!();
+                continue
+            }
+
+            #[cfg(feature = "stats")] 
+            crate::stats::BVH_HITS.inc(); 
+
             match &self.0[this] {
             | Tree::Leaf(surfaces) => {
-                if !surfaces.bound().hit_any(ray) {
-                    if cfg!(feature = "stats") { crate::stats::BVH_MISSES.inc(); }
-                    pop!();
-                    continue
-                }
-
-                if cfg!(feature = "stats") { crate::stats::BVH_HITS.inc(); }
-                if surfaces.hit(ray, hit) {
-                    success = true;
-                }
+                success |= surfaces.hit(ray, hit);
                 pop!();
             }
-            | Tree::Node { bound, offset, axis, .. } => {
-                if !bound.hit_any(ray) {
-                    if cfg!(feature = "stats") { crate::stats::BVH_MISSES.inc(); }
-                    pop!();
-                    continue
-                } else if ray.sign[*axis as usize] == 1 {
+            | Tree::Node { offset, axis, .. } => {
+                if ray.sign[*axis as usize] == 1 {
                     push!(this + 1);
                     this += *offset as usize;
                 } else {
                     push!(this + *offset as usize);
                     this += 1;
                 }
-                if cfg!(feature = "stats") { crate::stats::BVH_HITS.inc(); }
             }
             }
         }
@@ -122,34 +128,32 @@ impl<'scene> Surface<'scene> for Linear<'scene> {
         }}}
 
         loop {
+
+            if !self.0[this].bound().hit_any(ray) {
+                #[cfg(feature = "stats")]
+                crate::stats::BVH_MISSES.inc();
+                pop!();
+                continue
+            }
+
+            #[cfg(feature = "stats")]
+            crate::stats::BVH_HITS.inc();
+
             match &self.0[this] {
             | Tree::Leaf(surfaces) => {
-                if !surfaces.bound().hit_any(ray) {
-                    if cfg!(feature = "stats") { crate::stats::BVH_MISSES.inc(); }
-                    pop!();
-                    continue
-                }
-
-                if cfg!(feature = "stats") { crate::stats::BVH_HITS.inc(); }
                 if surfaces.hit_any(ray) { return true }
                 pop!();
             }
-            | Tree::Node { axis, bound, offset, .. } => {
-                if !bound.hit_any(ray) {
-                    if cfg!(feature = "stats") { crate::stats::BVH_MISSES.inc(); }
-                    pop!();
-                    continue
-                } else if ray.sign[*axis as usize] == 1 {
+            | Tree::Node { axis, offset, .. } => {
+                if ray.sign[*axis as usize] == 1 {
                     push!(this + 1);
                     this += *offset as usize;
                 } else {
                     push!(this + *offset as usize);
                     this += 1;
                 }
-                if cfg!(feature = "stats") { crate::stats::BVH_HITS.inc(); }
             }
             }
         }
-
     }
 }
