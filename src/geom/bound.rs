@@ -49,8 +49,8 @@ impl Bound {
     }
 
     pub fn smallest() -> Self {
-        let min = std::f32::MIN;
-        let max = std::f32::MAX;
+        let min = std::f32::NEG_INFINITY;
+        let max = std::f32::INFINITY;
         Bound {
             min: Vec3::new(max, max, max),
             max: Vec3::new(min, min, min),
@@ -73,12 +73,7 @@ impl Bound {
 
 impl Default for Bound {
     fn default() -> Self {
-        let min = std::f32::MIN;
-        let max = std::f32::MAX;
-        Bound {
-            min: Vec3::new(min, min, min),
-            max: Vec3::new(max, max, max),
-        }
+        Bound::smallest()
     }
 }
 
