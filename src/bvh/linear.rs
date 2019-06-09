@@ -1,27 +1,23 @@
 use crate::prelude::*;
-use crate::arena;
 use crate::bvh;
 use crate::geom;
 use crate::math;
 
 #[derive(Clone, Debug)]
-pub struct Linear<'scene>(&'scene [Tree<'scene>]);
+pub struct Linear<'scene>(Vec<Tree<'scene>>);
 
 impl<'scene> Linear<'scene> {
-    pub fn new(arena: &'scene arena::Arena, surfaces: &[&'scene dyn Surface<'scene>]) -> Self {
-        unsafe {
-            let tree = bvh::Tree::new(surfaces);
-            let mut nodes = arena.alloc_slice_uninitialized(tree.len());
-            let mut index = 0;
-            tree.flatten(&mut nodes, &mut index);
-            Linear(nodes)
-        }
+    pub fn new(surfaces: &[&'scene dyn Surface<'scene>]) -> Self {
+        let tree = bvh::Tree::new(surfaces);
+        let mut nodes = Vec::with_capacity(tree.len());
+        tree.flatten(&mut nodes);
+        Linear(nodes)
     }
 }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Clone, Debug)]
 pub enum Tree<'scene> {
-    Leaf(bvh::Leaf<'scene>),
+    Leaf(Box<bvh::Leaf<'scene>>),
     Node {
         axis: math::Axis,
         bound: geom::Bound,
@@ -39,17 +35,15 @@ impl<'scene> Tree<'scene> {
 }
 
 impl<'scene> bvh::Tree<'scene> {
-    fn flatten(self, nodes: &mut [Tree<'scene>], index: &mut usize) {
+    fn flatten(self, nodes: &mut Vec<Tree<'scene>>) {
         match self {
         | bvh::Tree::Leaf(surfaces) => {
-            nodes[*index] = Tree::Leaf(surfaces);
-            *index += 1;
+            nodes.push(Tree::Leaf(Box::new(surfaces)));
         }
         | bvh::Tree::Node { bound, axis, l, r } => {
-            nodes[*index] = Tree::Node { axis, bound, offset: l.len() as u32 + 1, };
-            *index += 1;
-            l.flatten(nodes, index);
-            r.flatten(nodes, index);
+            nodes.push(Tree::Node { axis, bound, offset: l.len() as u32 + 1, });
+            l.flatten(nodes);
+            r.flatten(nodes);
         }
         }
     }
@@ -57,9 +51,9 @@ impl<'scene> bvh::Tree<'scene> {
 
 impl<'scene> Surface<'scene> for Linear<'scene> {
     fn bound(&self) -> geom::Bound {
-        match self.0[0] {
+        match &self.0[0] {
         | Tree::Leaf(surface) => surface.bound(),
-        | Tree::Node { bound, .. } => bound,
+        | Tree::Node { bound, .. } => *bound,
         }
     }
 

@@ -12,11 +12,10 @@ pub struct Mesh<'scene> {
 
 impl<'scene> Mesh<'scene> {
     pub fn new(
-        arena: &'scene arena::Arena,
         bxdf: &'scene dyn bxdf::BXDF,
         triangles: &[&'scene dyn geom::Surface<'scene>],
     ) -> Self {
-        let internal = bvh::Linear::new(arena, &triangles);
+        let internal = bvh::Linear::new(&triangles);
         Mesh { bxdf, internal }
     }
 }

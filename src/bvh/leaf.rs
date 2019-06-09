@@ -2,7 +2,7 @@ use crate::prelude::*;
 use crate::math;
 use crate::geom;
 
-pub const LEAF_SIZE: usize = 16;
+pub const LEAF_SIZE: usize = 8;
 
 #[derive(Copy, Clone, Debug, Default)]
 pub struct Leaf<'scene> {
