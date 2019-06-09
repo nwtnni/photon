@@ -12,12 +12,12 @@ pub struct Sphere<'scene> {
     /// Radius
     pub radius: f32,
 
-    /// BXDF
-    pub bxdf: &'scene dyn bxdf::BXDF,
+    /// BxDF
+    pub bxdf: &'scene dyn bxdf::BxDF,
 }
 
 impl<'scene> Sphere<'scene> {
-    pub fn new(center: Vec3, radius: f32, bxdf: &'scene dyn bxdf::BXDF) -> Self {
+    pub fn new(center: Vec3, radius: f32, bxdf: &'scene dyn bxdf::BxDF) -> Self {
         Sphere { center, radius, bxdf }
     }
 }

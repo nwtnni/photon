@@ -6,13 +6,13 @@ use crate::math;
 
 #[derive(Clone, Debug)]
 pub struct Mesh<'scene> {
-    bxdf: &'scene dyn bxdf::BXDF,
+    bxdf: &'scene dyn bxdf::BxDF,
     internal: bvh::Linear<'scene>,
 }
 
 impl<'scene> Mesh<'scene> {
     pub fn new(
-        bxdf: &'scene dyn bxdf::BXDF,
+        bxdf: &'scene dyn bxdf::BxDF,
         triangles: &[&'scene dyn geom::Surface<'scene>],
     ) -> Self {
         let internal = bvh::Linear::new(&triangles);

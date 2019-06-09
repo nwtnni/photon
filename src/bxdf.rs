@@ -12,7 +12,7 @@ pub struct Record {
     probability: f32, 
 }
 
-pub trait BXDF: std::fmt::Debug + Send + Sync {
+pub trait BxDF: std::fmt::Debug + Send + Sync {
     fn eval(&self, wi: &Vec3, wr: &Vec3, n: &Vec3) -> Vec3;
     fn sample(&self, w: &Vec3, n: &Vec3, sample: &mut Record);
     fn pdf(&self, wi: &Vec3, wr: &Vec3, n: &Vec3) -> f32;

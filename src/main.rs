@@ -127,7 +127,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let bxdf = &bxdf::Lambertian::new(
         Vec3::new(1.0, 0.75, 0.0)
-    ) as &dyn bxdf::BXDF;
+    ) as &dyn bxdf::BxDF;
       
     let buddha = &model::obj::parse(
         "models/buddha.obj",

@@ -13,7 +13,7 @@ impl Lambertian {
     }
 }
 
-impl bxdf::BXDF for Lambertian {
+impl bxdf::BxDF for Lambertian {
     fn eval(&self, wi: &Vec3, wr: &Vec3, n: &Vec3) -> Vec3 {
         if wi.dot(n) >= 0.0 && wr.dot(n) >= 0.0 {
             self.color / math::PI

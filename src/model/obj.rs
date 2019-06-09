@@ -6,7 +6,7 @@ use crate::geom;
 pub fn parse<'scene, P>(
     obj: P,
     arena: &'scene arena::Arena,
-    material: &'scene dyn bxdf::BXDF,
+    material: &'scene dyn bxdf::BxDF,
 ) -> geom::Mesh<'scene>
     where P: AsRef<std::path::Path>,
 {
