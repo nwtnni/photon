@@ -100,7 +100,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let ny = 1080; // Height
     let ns = 100;  // Samples per pixel
 
-    let arena = Arena::new(96 * 1024 * 1024);
+    let arena = Arena::default();
 
     // Camera setup
     // let origin = Vec3::new(4.0, 6.0, 8.0);

@@ -3,29 +3,30 @@ use std::cell;
 
 use crate::stats;
 
-const ALIGN: usize = 8;
+const DEFAULT_CAPACITY: usize = 64 * 1024 * 1024;
+const DEFAULT_ALIGNMENT: usize = 8;
 
 #[derive(Debug)]
 pub struct Arena {
     buf: *mut u8,
     cap: usize,
     len: cell::Cell<usize>,
+    align: usize,
 }
 
 impl Arena {
-    pub fn new(capacity: usize) -> Self {
+    pub fn new(capacity: usize, align: usize) -> Self {
         let cap = capacity;
         let len = cell::Cell::new(0);
-        let lay = alloc::Layout::from_size_align(cap, ALIGN).unwrap();
+        let lay = alloc::Layout::from_size_align(capacity, align).unwrap();
         unsafe {
             let buf = alloc::alloc(lay);
-            Arena { cap, len, buf }
+            Arena { cap, len, buf, align }
         }
     }
 
     pub fn alloc<T: Copy>(&self, item: T) -> &T {
-        let size = std::mem::size_of::<T>();
-        let size = (size + ALIGN - 1) & !(ALIGN - 1);
+        let size = self.align(std::mem::size_of::<T>());
         let len = self.len.get();
         if len + size >= self.cap { panic!("[INTERNAL ERROR]: Arena ran out of memory"); }
         self.len.set(len + size);
@@ -36,15 +37,26 @@ impl Arena {
             &*ptr
         }
     }
+
+    fn align(&self, addr: usize) -> usize {
+        (addr + self.align - 1) & !(self.align - 1)
+    }
+
+    fn layout(&self) -> alloc::Layout {
+        alloc::Layout::from_size_align(self.cap, self.align).unwrap()
+    }
+}
+
+impl Default for Arena {
+    fn default() -> Self {
+        Arena::new(DEFAULT_CAPACITY, DEFAULT_ALIGNMENT)
+    }
 }
 
 impl Drop for Arena {
     fn drop(&mut self) {
         unsafe {
-            alloc::dealloc(
-                self.buf,
-                alloc::Layout::from_size_align_unchecked(self.cap, 8)
-            );
+            alloc::dealloc(self.buf, self.layout());
         }
     }
 }
