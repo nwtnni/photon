@@ -121,7 +121,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
       
     let ball = geom::Shape::sphere(1.5);
     let cube = geom::Shape::cube(1.0);
-    let sdf = geom::SDF::new(bxdf, cube - ball);
+    let sdf = geom::SDF::new(bxdf, cube.smooth(ball, 0.1));
 
     let surface = bvh::Linear::new(&[&sdf]);
 

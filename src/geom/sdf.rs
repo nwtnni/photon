@@ -81,21 +81,28 @@ impl Shape {
     pub fn union(self, rhs: Shape) -> Self {
         Shape {
             bound: self.bound.union_b(&rhs.bound),
-            shape: Tree::Add(Box::new(self.shape), Box::new(rhs.shape)),
+            shape: Tree::Union(Box::new(self.shape), Box::new(rhs.shape)),
         }
     }
 
     pub fn intersect(self, rhs: Shape) -> Self {
         Shape {
             bound: self.bound.intersect(&rhs.bound),
-            shape: Tree::Mul(Box::new(self.shape), Box::new(rhs.shape)),
+            shape: Tree::Intersect(Box::new(self.shape), Box::new(rhs.shape)),
         }
     }
 
     pub fn subtract(self, rhs: Shape) -> Self {
         Shape {
             bound: self.bound,
-            shape: Tree::Sub(Box::new(self.shape), Box::new(rhs.shape)),
+            shape: Tree::Subtract(Box::new(self.shape), Box::new(rhs.shape)),
+        }
+    }
+
+    pub fn smooth(self, rhs: Shape, k: f32) -> Self {
+        Shape {
+            bound: self.bound.union_b(&rhs.bound),
+            shape: Tree::Smooth(Box::new(self.shape), Box::new(rhs.shape), k),
         }
     }
 
@@ -153,9 +160,10 @@ impl std::ops::Sub for Shape {
 enum Tree {
     Box(math::Vec3, f32),
     Sphere(f32),
-    Add(Box<Tree>, Box<Tree>), 
-    Mul(Box<Tree>, Box<Tree>),
-    Sub(Box<Tree>, Box<Tree>),
+    Union(Box<Tree>, Box<Tree>), 
+    Intersect(Box<Tree>, Box<Tree>),
+    Subtract(Box<Tree>, Box<Tree>),
+    Smooth(Box<Tree>, Box<Tree>, f32),
     Scale(Box<Tree>, f32),
     Translate(Box<Tree>, math::Vec3),
 }
@@ -172,14 +180,20 @@ impl Tree {
         | Tree::Sphere(radius) => {
             point.len() - radius
         }
-        | Tree::Add(lhs, rhs) => {
+        | Tree::Union(lhs, rhs) => {
             math::min(lhs.at(point), rhs.at(point))
         }
-        | Tree::Mul(lhs, rhs) => {
+        | Tree::Intersect(lhs, rhs) => {
             math::max(lhs.at(point), rhs.at(point))
         }
-        | Tree::Sub(lhs, rhs) => {
+        | Tree::Subtract(lhs, rhs) => {
             math::max(lhs.at(point), -rhs.at(point))
+        }
+        | Tree::Smooth(lhs, rhs, k) => {
+            let a = lhs.at(point);
+            let b = rhs.at(point);
+            let h = math::max(k - (a - b).abs(), 0.0) / k;
+            math::min(a, b) - h * h * k * 0.25
         }
         | Tree::Scale(shape, scale) => {
             shape.at(&(point / scale)) * scale
