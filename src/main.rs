@@ -115,6 +115,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let aperture = 0.0001;
     let camera = Camera::new(origin, toward, up, fov, aspect, aperture, focus);
 
+    let light = &light::Point::new(
+        Vec3::new(0.0, 0.0, 0.0),
+        Vec3::new(10.0, 10.0, 10.0),
+    ) as &dyn light::Light;
+
     let bxdf = &bxdf::Lambertian::new(
         Vec3::new(1.0, 0.75, 0.0)
     ) as &dyn bxdf::BxDF;
@@ -127,11 +132,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let scene = scene::Scene::new(
         camera,
-        vec![],
+        vec![light],
         &surface,
     );
 
-    render::<integrator::Normal>(nx, ny, ns, &camera, &scene);
+    render::<integrator::Point>(nx, ny, ns, &camera, &scene);
 
     Ok(())
 }

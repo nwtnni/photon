@@ -21,7 +21,10 @@ impl<'scene> integrator::Integrator<'scene> for Point {
             let wi = (l - p).normalize();
             let wr = (ray.origin - p).normalize();
 
-            if scene.hit_any(&Ray::new(p, wi)) || n.dot(&wi) < 0.0 { continue }
+            let mut shadow = Ray::new(p, wi);
+            shadow.set_max((l - p).len());
+
+            if scene.hit_any(&shadow) || n.dot(&wi) < 0.0 { continue }
 
             color += hit.bxdf.unwrap().eval(&wi, &wr, &n)
                 / l.sub(&p).len_sq()
