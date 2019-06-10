@@ -10,7 +10,7 @@ mod sdf;
 
 pub use bound::Box3;
 pub use mesh::Mesh;
-pub use sdf::{SDF, Field};
+pub use sdf::{SDF, Shape};
 pub use sphere::Sphere;
 pub use translate::Translate;
 pub use tri::Tri;

@@ -2,8 +2,8 @@ use crate::bxdf;
 use crate::geom;
 use crate::math;
 
-const MAX_STEPS: usize = 64;
-const EPSILON: f32 = 0.000_01;
+const HORIZON: f32 = 100.0;
+const EPSILON: f32 = 0.001;
 const DX: math::Vec3 = math::Vec3::new(EPSILON, 0.0, 0.0);
 const DY: math::Vec3 = math::Vec3::new(0.0, EPSILON, 0.0);
 const DZ: math::Vec3 = math::Vec3::new(0.0, 0.0, EPSILON);
@@ -11,22 +11,22 @@ const DZ: math::Vec3 = math::Vec3::new(0.0, 0.0, EPSILON);
 #[derive(Debug)]
 pub struct SDF<'scene> {
     bxdf: &'scene dyn bxdf::BxDF,
-    field: Field,
+    shape: Shape,
 }
 
 impl<'scene> SDF<'scene> {
-    pub fn new(bxdf: &'scene dyn bxdf::BxDF, field: Field) -> Self {
-        SDF { bxdf, field }
+    pub fn new(bxdf: &'scene dyn bxdf::BxDF, shape: Shape) -> Self {
+        SDF { bxdf, shape }
     }
 }
 
 impl<'scene> geom::Surface<'scene> for SDF<'scene> {
     fn bound(&self) -> geom::Box3 {
-        self.field.bound()
+        self.shape.bound()
     }
 
     fn hit(&self, ray: &mut math::Ray, hit: &mut geom::Record<'scene>) -> bool {
-        if self.field.hit(ray, hit) {
+        if self.shape.hit(ray, hit) {
             hit.bxdf = Some(self.bxdf);
             true
         } else {
@@ -35,18 +35,159 @@ impl<'scene> geom::Surface<'scene> for SDF<'scene> {
     }
 
     fn hit_any(&self, ray: &math::Ray) -> bool {
-        self.field.hit_any(ray)
+        self.shape.hit_any(ray)
     }
 }
 
-pub struct Field {
-    field: Box<dyn Fn(&math::Vec3) -> f32 + Send + Sync>,
-    bound: geom::Box3, 
+#[derive(Clone, Debug)]
+pub struct Shape {
+    bound: geom::Box3,
+    shape: Tree,
 }
 
-impl Field {
+impl Shape {
+    pub fn sphere(radius: f32) -> Self {
+        let c = math::Vec3::default();
+        let r = math::Vec3::broadcast(radius);
+        Shape {
+            bound: geom::Box3::new(c - r, c + r),
+            shape: Tree::Sphere(radius),
+        }
+    }
+
+    pub fn cube(side: f32) -> Self {
+        let a = math::Vec3::broadcast(-side);
+        let b = math::Vec3::broadcast(side);
+        Shape {
+            bound: geom::Box3::new(a, b),
+            shape: Tree::Box(b, 0.0),
+        }
+    }
+
+    pub fn sharp_box(corner: math::Vec3) -> Self {
+        Shape {
+            bound: geom::Box3::new(-corner, corner),
+            shape: Tree::Box(corner, 0.0),
+        }
+    }
+
+    pub fn round_box(corner: math::Vec3, radius: f32) -> Self {
+        Shape {
+            bound: geom::Box3::new(-corner, corner),
+            shape: Tree::Box(corner, radius),
+        }
+    }
+
+    pub fn union(self, rhs: Shape) -> Self {
+        Shape {
+            bound: self.bound.union_b(&rhs.bound),
+            shape: Tree::Add(Box::new(self.shape), Box::new(rhs.shape)),
+        }
+    }
+
+    pub fn intersect(self, rhs: Shape) -> Self {
+        Shape {
+            bound: self.bound.intersect(&rhs.bound),
+            shape: Tree::Mul(Box::new(self.shape), Box::new(rhs.shape)),
+        }
+    }
+
+    pub fn subtract(self, rhs: Shape) -> Self {
+        Shape {
+            bound: self.bound,
+            shape: Tree::Sub(Box::new(self.shape), Box::new(rhs.shape)),
+        }
+    }
+
+    pub fn scale(self, c: f32) -> Self {
+        Shape {
+            bound: self.bound.scale(c),
+            shape: Tree::Scale(Box::new(self.shape), c),
+        }
+    }
+
+    pub fn translate(self, v: math::Vec3) -> Self {
+        Shape {
+            bound: self.bound.translate(&v),
+            shape: Tree::Translate(Box::new(self.shape), v),
+        }
+    }
+}
+
+impl<'scene> geom::Surface<'scene> for Shape {
+    fn bound(&self) -> geom::Box3 {
+        self.bound
+    }
+
+    fn hit(&self, ray: &mut math::Ray, hit: &mut geom::Record<'scene>) -> bool {
+        self.shape.hit(ray, hit)
+    }
+
+    fn hit_any(&self, ray: &math::Ray) -> bool {
+        self.shape.hit_any(ray)
+    }
+}
+
+impl std::ops::BitAnd for Shape {
+    type Output = Self;
+    fn bitand(self, rhs: Self) -> Self::Output {
+        self.intersect(rhs)
+    }
+}
+
+impl std::ops::BitOr for Shape {
+    type Output = Self;
+    fn bitor(self, rhs: Self) -> Self::Output {
+        self.union(rhs)
+    }
+}
+
+impl std::ops::Sub for Shape {
+    type Output = Self;
+    fn sub(self, rhs: Self) -> Self::Output {
+        self.subtract(rhs)
+    }
+}
+
+#[derive(Clone, Debug)]
+enum Tree {
+    Box(math::Vec3, f32),
+    Sphere(f32),
+    Add(Box<Tree>, Box<Tree>), 
+    Mul(Box<Tree>, Box<Tree>),
+    Sub(Box<Tree>, Box<Tree>),
+    Scale(Box<Tree>, f32),
+    Translate(Box<Tree>, math::Vec3),
+}
+
+impl Tree {
     pub fn at(&self, point: &math::Vec3) -> f32 {
-        (self.field)(&point) 
+        match self {
+        | Tree::Box(corner, radius) => {
+            let d = point.abs() - corner; 
+            let a = d.max(&math::Vec3::default()).len() - radius;
+            let b = math::min(0.0, math::max(d.x(), math::max(d.y(), d.z())));
+            a + b
+        }
+        | Tree::Sphere(radius) => {
+            point.len() - radius
+        }
+        | Tree::Add(lhs, rhs) => {
+            math::min(lhs.at(point), rhs.at(point))
+        }
+        | Tree::Mul(lhs, rhs) => {
+            math::max(lhs.at(point), rhs.at(point))
+        }
+        | Tree::Sub(lhs, rhs) => {
+            math::max(lhs.at(point), -rhs.at(point))
+        }
+        | Tree::Scale(shape, scale) => {
+            shape.at(&(point / scale)) * scale
+        }
+        | Tree::Translate(shape, offset) => {
+            shape.at(&(point - offset))
+        }
+        }
     }
 
     pub fn normal(&self, point: &math::Vec3) -> math::Vec3 {
@@ -55,58 +196,16 @@ impl Field {
         let dz = self.at(&(point + DZ)) - self.at(&(point - DZ));
         math::Vec3::new(dx, dy, dz).normalize()
     }
-
-    pub fn sphere(radius: f32) -> Self {
-        let c = math::Vec3::default();
-        let r = math::Vec3::broadcast(radius);
-        Field {
-            field: Box::new(move |point| point.len() - radius),
-            bound: geom::Box3::new(c - r, c + r),
-        }
-    }
-
-    pub fn cube(side: f32) -> Self {
-        let a = math::Vec3::default();
-        let b = math::Vec3::broadcast(side);
-        Field {
-            bound: geom::Box3::new(a, b),
-            field: Box::new(move |point| {
-                let d = point.abs() - b;
-                d.max(&a).len() + math::min(0.0, math::max(d.x(), math::max(d.y(), d.z())))
-            }),
-        }
-    }
-
-    pub fn union(self, rhs: Field) -> Self {
-        Field {
-            bound: self.bound.union_b(&rhs.bound),
-            field: Box::new(move |point| math::min(self.at(point), rhs.at(point))),
-        }
-    }
-
-    pub fn intersect(self, rhs: Field) -> Self {
-        Field {
-            bound: self.bound.intersect(&rhs.bound),
-            field: Box::new(move |point| math::max(self.at(point), rhs.at(point))),
-        }
-    }
-
-    pub fn subtract(self, rhs: Field) -> Self {
-        Field {
-            bound: self.bound,
-            field: Box::new(move |point| math::max(self.at(point), -rhs.at(point))),
-        }
-    }
 }
 
-impl<'scene> geom::Surface<'scene> for Field {
+impl<'scene> geom::Surface<'scene> for Tree {
     fn bound(&self) -> geom::Box3 {
-        self.bound
+        panic!("Bound should be stored in parent Shape")
     }
 
     fn hit(&self, ray: &mut math::Ray, hit: &mut geom::Record<'scene>) -> bool {
         let mut t = 0.0;
-        for _ in 0..MAX_STEPS {
+        while t < HORIZON {
             let p = ray.origin + ray.dir * t;
             let dt = self.at(&p);
             if dt < EPSILON {
@@ -123,38 +222,11 @@ impl<'scene> geom::Surface<'scene> for Field {
 
     fn hit_any(&self, ray: &math::Ray) -> bool {
         let mut t = 0.0;
-        for _ in 0..MAX_STEPS {
+        while t < HORIZON {
             let dt = self.at(&(ray.origin + ray.dir * t));
             if dt < EPSILON { return true }
             t += dt;
         }
         false
-    }
-}
-
-impl std::ops::BitAnd for Field {
-    type Output = Self;
-    fn bitand(self, rhs: Self) -> Self::Output {
-        self.intersect(rhs)
-    }
-}
-
-impl std::ops::BitOr for Field {
-    type Output = Self;
-    fn bitor(self, rhs: Self) -> Self::Output {
-        self.union(rhs)
-    }
-}
-
-impl std::ops::Sub for Field {
-    type Output = Self;
-    fn sub(self, rhs: Self) -> Self::Output {
-        self.subtract(rhs)
-    }
-}
-
-impl std::fmt::Debug for Field {
-    fn fmt(&self, fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(fmt, "<ABSTRACT>")
     }
 }

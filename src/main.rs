@@ -106,7 +106,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // let origin = Vec3::new(4.0, 6.0, 8.0);
     // let toward = Vec3::new(-4.0, -6.0, -8.0);
     // let up = Vec3::new(0.0, 1.0, 0.0);
-    let origin = Vec3::new(3.0, 3.0, 3.0);
+    let origin = Vec3::new(-3.0, 0.0, 3.0);
     let toward = Vec3::new(0.0, 0.0, 0.0);
     let up = Vec3::new(0.0, 1.0, 0.0);
     let fov = 45.0;
@@ -119,8 +119,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         Vec3::new(1.0, 0.75, 0.0)
     ) as &dyn bxdf::BxDF;
       
-    let cube = geom::Field::cube(1.0);
-    let sdf = geom::SDF::new(bxdf, cube);
+    let ball = geom::Shape::sphere(1.5);
+    let cube = geom::Shape::cube(1.0);
+    let sdf = geom::SDF::new(bxdf, cube - ball);
 
     let surface = bvh::Linear::new(&[&sdf]);
 
