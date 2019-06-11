@@ -4,7 +4,7 @@ use crate::math;
 
 impl<'scene> light::Light for geom::Rect<'scene> {
     fn intensity(&self) -> math::Vec3 {
-        self.emit.expect("Must be emitter to be in scene as a light");
+        self.emit.expect("Must be emitter to be in scene as a light")
     }
 
     fn sample(&self, p: &math::Vec3, r: &mut light::Record) {

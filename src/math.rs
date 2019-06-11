@@ -21,6 +21,11 @@ pub fn max(a: f32, b: f32) -> f32 {
     if a > b { a } else { b }
 }
 
+/// Restrict `a` to be between `lo` and `hi`, inclusive.
+pub fn clamp(a: f32, lo: f32, hi: f32) -> f32 {
+    max(lo, min(a, hi))
+}
+
 /// Generate a point in the unit sphere with uniform probability.
 pub fn uniform_sphere() -> Vec3 {
     loop {
