@@ -1,5 +1,6 @@
 use crate::bxdf;
 use crate::geom;
+use crate::light;
 use crate::math;
 
 #[readonly::make]
@@ -29,6 +30,10 @@ impl<'scene> Rect<'scene> {
             bxdf,
             emit,
         }
+    }
+
+    pub fn as_light(&self) -> &dyn light::Light {
+        self
     }
 }
 
