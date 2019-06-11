@@ -22,15 +22,18 @@ impl bxdf::BxDF for Lambertian {
         }
     }
 
-    fn sample(&self, _: &Vec3, n: &Vec3, sample: &mut bxdf::Record) {
+    fn sample(&self, _: &Vec3, n: &Vec3) -> bxdf::Sample {
         let local = math::cosine_sphere();  
         let (u, v) = math::basis(n);
-        sample.w = n * local.z()
-            + u * local.x()
-            + v * local.y();
-        sample.bxdf = self.color / math::PI;
-        sample.discrete = false;
-        sample.probability = sample.w.dot(n) / math::PI;
+        let d = n * local.z()
+                + u * local.x()
+                + v * local.y();
+        bxdf::Sample {
+            d,
+            v: self.color / math::PI,
+            p: d.dot(n) / math::PI,
+            delta: false,
+        }
     }
 
     fn pdf(&self, _: &Vec3, wr: &Vec3, n: &Vec3) -> f32 {

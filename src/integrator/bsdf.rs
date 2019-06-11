@@ -31,14 +31,13 @@ impl<'scene> integrator::Integrator<'scene> for BSDF {
                 * light.i;
         }
 
-        let mut bxdf_record = bxdf::Record::default();
-        hit.bxdf.unwrap().sample(&wr, &n, &mut bxdf_record);
+        let bxdf = hit.bxdf.unwrap().sample(&wr, &n);
 
         let mut hit_record = geom::Record::default();
-        let mut ray = math::Ray::new(p, bxdf_record.w);
+        let mut ray = math::Ray::new(p, bxdf.d);
 
         if scene.hit(&mut ray, &mut hit_record) {
-            if bxdf_record.discrete {
+            if bxdf.delta {
                 color += Self::shade(scene, &ray, &hit_record, depth + 1);
             } else if let Some(light) = hit_record.emit {
                 color += light; 
@@ -47,8 +46,8 @@ impl<'scene> integrator::Integrator<'scene> for BSDF {
             color += scene.background();
         }
 
-        color *= bxdf_record.bxdf * bxdf_record.w.dot(&n).abs();
-        if bxdf_record.probability > 0.000_01 { color /= bxdf_record.probability; }
+        color *= bxdf.v * bxdf.d.dot(&n).abs();
+        if bxdf.p > 0.000_01 { color /= bxdf.p; }
         color
     }
 }

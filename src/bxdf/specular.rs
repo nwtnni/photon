@@ -18,8 +18,8 @@ impl bxdf::BxDF for Specular {
         math::Vec3::default()
     }
 
-    fn sample(&self, w: &math::Vec3, n: &math::Vec3, sample: &mut bxdf::Record) {
-        let cos_i = w.dot(n);
+    fn sample(&self, d: &math::Vec3, n: &math::Vec3) -> bxdf::Sample {
+        let cos_i = d.dot(n);
 
         let (cos_i, eta, n) = if cos_i <= 0.0 {
             (-cos_i, 1.0 / self.eta, -n)
@@ -30,15 +30,19 @@ impl bxdf::BxDF for Specular {
         let (reflect, cos_t) = bxdf::dieletric(cos_i, eta);
 
         if rand::random::<f32>() < reflect {
-            sample.w = math::reflect(*w, n).normalize();
-            sample.bxdf = math::Vec3::broadcast(reflect / cos_i);
-            sample.probability = reflect;
-            sample.discrete = true;
+            bxdf::Sample {
+                d: math::reflect(*d, n).normalize(),
+                v: math::Vec3::broadcast(reflect / cos_i),
+                p: reflect,
+                delta: true,
+            }
         } else {
-            sample.w = ((n * cos_i - w) * (1.0 / eta) + (n * -cos_t)).normalize();
-            sample.bxdf = math::Vec3::broadcast((1.0 - reflect) / cos_t);
-            sample.probability = 1.0 - reflect;
-            sample.discrete = true;
+            bxdf::Sample {
+                d: ((n * cos_i - d) * (1.0 / eta) + (n * -cos_t)).normalize(),
+                v: math::Vec3::broadcast((1.0 - reflect) / cos_t),
+                p: 1.0 - reflect,
+                delta: true,
+            }
         }
     }
 
