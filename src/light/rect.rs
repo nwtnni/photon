@@ -3,8 +3,12 @@ use crate::light;
 use crate::math;
 
 impl<'scene> light::Light for geom::Rect<'scene> {
-    fn intensity(&self) -> math::Vec3 {
-        self.emit.expect("Must be emitter to be in scene as a light")
+    fn eval(&self, ray: &math::Ray) -> math::Vec3 {
+        if ray.d.dot(&self.n) < 0.0 {
+            self.emit.expect("Must be emitter to be in scene as a light")
+        } else {
+            math::Vec3::default()
+        }
     }
 
     fn sample(&self, p: &math::Vec3, r: &mut light::Record) {
@@ -12,10 +16,9 @@ impl<'scene> light::Light for geom::Rect<'scene> {
             + self.u * rand::random::<f32>()
             + self.v * rand::random::<f32>();
         let wi = l - p;
-        r.d = wi.normalize();
-        r.a = math::max(0.0, r.d.dot(&self.n)) / wi.len_sq();
+        r.l = l;
+        r.a = wi.normalize().dot(&self.n).abs() / wi.len_sq();
         r.p = 1.0 / (self.u.len() * self.v.len());
-        r.t = wi.len();
     }
 
     fn pdf(&self, _: &math::Ray) -> f32 {

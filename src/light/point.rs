@@ -21,15 +21,13 @@ impl Point {
 }
 
 impl light::Light for Point {
-    fn intensity(&self) -> math::Vec3 {
+    fn eval(&self, _: &math::Ray) -> math::Vec3 {
         self.i    
     }
 
     fn sample(&self, p: &math::Vec3, r: &mut light::Record) {
-        let wi = self.p - p;
-        r.d = wi.normalize();
-        r.a = 1.0 / wi.len_sq();
-        r.t = wi.len();
+        r.l = self.p;
+        r.a = 1.0 / (self.p - p).len_sq();
         r.p = 1.0;
     }
 

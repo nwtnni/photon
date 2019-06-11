@@ -6,10 +6,12 @@ use crate::geom::Surface;
 mod normal;
 mod point;
 mod bsdf;
+mod light;
 
 pub use normal::Normal;
 pub use point::Point;
 pub use bsdf::BSDF;
+pub use light::Light;
 
 pub trait Integrator<'scene> {
     fn shade(scene: &scene::Scene<'scene>, ray: &math::Ray, hit: &geom::Record<'scene>, depth: usize) -> math::Vec3;

@@ -100,7 +100,7 @@ fn render<'scene, I: Integrator<'scene>>(
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let nx = 800; // Width
     let ny = 600; // Height
-    let ns = 1000;  // Samples per pixel
+    let ns = 100;  // Samples per pixel
 
     // Camera setup
     let origin = Vec3::new(20.0, 10.0, 12.0);
@@ -134,8 +134,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
       
     let rect = geom::Rect::new(
         Vec3::new(-3.5, 2.5, 10.0),
-        Vec3::new(7.0, 0.0, 0.0),
         Vec3::new(0.0, 5.0, 0.0),
+        Vec3::new(7.0, 0.0, 0.0),
         lamb,
         Some(Vec3::new(100.0, 100.0, 100.0)),
     );
@@ -162,7 +162,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         &surface,
     );
 
-    render::<integrator::BSDF>(nx, ny, ns, &camera, &scene);
+    render::<integrator::Light>(nx, ny, ns, &camera, &scene);
 
     Ok(())
 }
