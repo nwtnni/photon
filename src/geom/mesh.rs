@@ -1,4 +1,3 @@
-use crate::arena;
 use crate::bvh;
 use crate::bxdf;
 use crate::geom;
@@ -28,6 +27,7 @@ impl<'scene> geom::Surface<'scene> for Mesh<'scene> {
     fn hit(&self, ray: &mut math::Ray, hit: &mut geom::Record<'scene>) -> bool {
         if self.internal.hit(ray, hit) {
             hit.bxdf = Some(self.bxdf);
+            hit.emit = None;
             true
         } else {
             false

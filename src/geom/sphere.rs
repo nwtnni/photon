@@ -59,6 +59,7 @@ impl<'scene> geom::Surface<'scene> for Sphere<'scene> {
         hit.p = ray.at(t);
         hit.n = (hit.p - self.center) / self.radius;
         hit.bxdf = Some(self.bxdf);
+        hit.emit = None;
         let phi = hit.p.z().atan2(hit.p.x());
         let theta = hit.p.y().asin();
         hit.u = 1.0 - (phi + std::f32::consts::PI) / (2.0 * std::f32::consts::PI);

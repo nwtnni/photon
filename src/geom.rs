@@ -1,4 +1,4 @@
-use crate::math::{Ray, Vec3};
+use crate::math;
 use crate::bxdf;
 
 mod bound;
@@ -30,18 +30,21 @@ pub struct Record<'scene> {
     pub v: f32,
 
     /// Hit point
-    pub p: Vec3,
+    pub p: math::Vec3,
 
     /// Normal at hit point
-    pub n: Vec3,
+    pub n: math::Vec3,
 
     /// BxDF at hit point
     pub bxdf: Option<&'scene dyn bxdf::BxDF>,
+
+    /// Light emission at hit point
+    pub emit: Option<math::Vec3>,
 }
 
 /// Represents an object that can interact with light rays.
 pub trait Surface<'scene>: std::fmt::Debug + Send + Sync {
     fn bound(&self) -> Box3;
-    fn hit(&self, ray: &mut Ray, record: &mut Record<'scene>) -> bool;
-    fn hit_any(&self, ray: &Ray) -> bool;
+    fn hit(&self, ray: &mut math::Ray, record: &mut Record<'scene>) -> bool;
+    fn hit_any(&self, ray: &math::Ray) -> bool;
 }

@@ -28,6 +28,7 @@ impl<'scene> geom::Surface<'scene> for SDF<'scene> {
     fn hit(&self, ray: &mut math::Ray, hit: &mut geom::Record<'scene>) -> bool {
         if self.shape.hit(ray, hit) {
             hit.bxdf = Some(self.bxdf);
+            hit.emit = None;
             true
         } else {
             false

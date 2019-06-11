@@ -59,6 +59,7 @@ impl<'scene> geom::Surface<'scene> for Rect<'scene> {
         hit.u = u;
         hit.v = v;
         hit.bxdf = Some(self.bxdf);
+        hit.emit = self.emit;
 
         true
     }
