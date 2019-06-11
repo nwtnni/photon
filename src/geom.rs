@@ -6,14 +6,14 @@ mod sphere;
 mod mesh;
 mod tri;
 mod translate;
-mod rect;
+mod quad;
 mod sdf;
 
 pub use bound::Box3;
 pub use mesh::Mesh;
 pub use sdf::{SDF, Shape};
 pub use sphere::Sphere;
-pub use rect::Rect;
+pub use quad::Quad;
 pub use translate::Translate;
 pub use tri::Tri;
 

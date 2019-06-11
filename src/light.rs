@@ -3,7 +3,7 @@ use std::fmt;
 use crate::math;
 
 mod point;
-mod rect;
+mod quad;
 
 pub use point::Point;
 

@@ -7,12 +7,17 @@ use crate::math;
 pub struct Scene<'scene> {
     background: math::Vec3,
     camera: camera::Camera,
-    lights: Vec<&'scene dyn light::Light>,
+    lights: &'scene [&'scene dyn light::Light],
     surface: &'scene dyn geom::Surface<'scene>,
 }
 
 impl<'scene> Scene<'scene> {
-    pub fn new(background: math::Vec3, camera: camera::Camera, lights: Vec<&'scene dyn light::Light>, surface: &'scene dyn geom::Surface<'scene>) -> Self {
+    pub fn new(
+        background: math::Vec3, 
+        camera: camera::Camera,
+        lights: &'scene [&'scene dyn light::Light],
+        surface: &'scene dyn geom::Surface<'scene>
+    ) -> Self {
         Scene { background, camera, lights, surface }
     }
 

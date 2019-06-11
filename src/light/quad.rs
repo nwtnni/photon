@@ -2,7 +2,7 @@ use crate::geom;
 use crate::light;
 use crate::math;
 
-impl<'scene> light::Light for geom::Rect<'scene> {
+impl<'scene> light::Light for geom::Quad<'scene> {
     fn eval(&self, ray: &math::Ray) -> math::Vec3 {
         if ray.d.dot(&self.n) < 0.0 {
             self.emit.expect("Must be emitter to be in scene as a light")

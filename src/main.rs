@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use rayon::prelude::*;
 
 use photon::prelude::*;
-use photon::arena::Arena;
+use photon::arena;
 use photon::bxdf;
 use photon::bvh;
 use photon::geom;
@@ -100,15 +100,15 @@ fn render<'scene, I: Integrator<'scene>>(
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let nx = 800; // Width
     let ny = 600; // Height
-    let ns = 100;  // Samples per pixel
+    let ns = 1;  // Samples per pixel
 
     // Camera setup
-    let origin = Vec3::new(20.0, 10.0, 12.0);
-    let toward = Vec3::new(0.0, 5.0, 0.0);
+    let origin = Vec3::new(278.0, 273.0, -800.0);
+    let toward = Vec3::new(278.0, 273.0, 0.0);
     let up = Vec3::new(0.0, 1.0, 0.0);
-    let fov = 45.0;
+    let fov = 90.0;
     let aspect = nx as f32 / ny as f32;
-    let focus = 4.5;
+    let focus = 0.035;
     let aperture = 0.0001;
     let camera = Camera::new(origin, toward, up, fov, aspect, aperture, focus);
 
@@ -119,9 +119,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         Vec3::new(100.0, 100.0, 100.0),
     ) as &dyn light::Light;
 
-    let lamb = &bxdf::Lambertian::new(
+    let white = bxdf::Lambertian::new(
         Vec3::new(1.0, 1.0, 1.0)
-    ) as &dyn bxdf::BxDF;
+    );
 
     let blue = &bxdf::Lambertian::new(
         Vec3::new(0.0, 0.00, 1.0)
@@ -131,38 +131,38 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         Vec3::new(1.0, 1.0, 1.0),
         1.5
     );
-      
-    let rect = geom::Rect::new(
-        Vec3::new(-3.5, 2.5, 10.0),
-        Vec3::new(0.0, 5.0, 0.0),
-        Vec3::new(7.0, 0.0, 0.0),
-        lamb,
-        Some(Vec3::new(100.0, 100.0, 100.0)),
+
+    let floor = geom::Quad::new(
+        Vec3::new(0.0, 0.0, 0.0),
+        Vec3::new(549.6, 0.0, 0.0),
+        Vec3::new(0.0, 0.0, 559.2),
+        &white,
+        None,
     );
 
-    let sphere = geom::Sphere::new(
-        Vec3::new(0.0, 0.0, 1.0),
-        0.25,
-        blue,
+    let ceiling = geom::Quad::new(
+        // Vec3::new(556.0, 548.8, 559.2),
+        // Vec3::new(-556.0, -200.0, 0.0),
+        // Vec3::new(0.0, -200.0, -559.2),
+        Vec3::new(0.0, 548.8, 0.0),
+        Vec3::new(556.0, -200.0, 0.0),
+        Vec3::new(0.0, -200.0, 559.2),
+        &white,
+        None,
     );
 
-    let arena = Arena::default();
-    let dragon = model::obj::parse(
-        "models/dragon.obj",
-        &arena,
-        lamb,
+    let bvh = bvh::Linear::new(
+        &[&floor, &ceiling],
     );
-
-    let surface = bvh::Linear::new(&[&rect, &dragon]);
 
     let scene = scene::Scene::new(
-        background,
+        Vec3::new(0.0, 0.0, 0.0),
         camera,
-        vec![&rect],
-        &surface,
+        &[],
+        &bvh,
     );
 
-    render::<integrator::Light>(nx, ny, ns, &camera, &scene);
+    render::<integrator::Normal>(nx, ny, ns, &camera, &scene);
 
     Ok(())
 }

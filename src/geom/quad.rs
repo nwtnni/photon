@@ -5,7 +5,7 @@ use crate::math;
 
 #[readonly::make]
 #[derive(Copy, Clone, Debug)]
-pub struct Rect<'scene> {
+pub struct Quad<'scene> {
     pub p: math::Vec3,
     pub u: math::Vec3,
     pub v: math::Vec3,
@@ -15,7 +15,7 @@ pub struct Rect<'scene> {
     pub emit: Option<math::Vec3>,
 }
 
-impl<'scene> Rect<'scene> {
+impl<'scene> Quad<'scene> {
     pub fn new(
         p: math::Vec3,
         u: math::Vec3,
@@ -23,10 +23,12 @@ impl<'scene> Rect<'scene> {
         bxdf: &'scene dyn bxdf::BxDF,
         emit: Option<math::Vec3>
     ) -> Self {
-        Rect {
+        Quad {
             p, u, v,
             n: u.cross(&v).normalize(),
-            bound: geom::Box3::new(p, p + u).union_v(&(p + v)),     
+            bound: geom::Box3::new(p, p + u + v)
+                .union_v(&(p + u))
+                .union_v(&(p + v)),
             bxdf,
             emit,
         }
@@ -37,7 +39,7 @@ impl<'scene> Rect<'scene> {
     }
 }
 
-impl<'scene> geom::Surface<'scene> for Rect<'scene> {
+impl<'scene> geom::Surface<'scene> for Quad<'scene> {
 
     fn bound(&self) -> geom::Box3 {
         self.bound
@@ -45,17 +47,24 @@ impl<'scene> geom::Surface<'scene> for Rect<'scene> {
 
     fn hit(&self, ray: &mut math::Ray, hit: &mut geom::Record<'scene>) -> bool {
 
-        let t = (self.p - ray.p).dot(&self.n) / ray.d.dot(&self.n);
+        const EPSILON: f32 = 0.0000001;
 
-        if t < ray.min || t > ray.max { return false }
+        let h = ray.d.cross(&self.v);
+        let det = self.u.dot(&h);
 
-        let p = ray.at(t) - self.p;
+        if det > -EPSILON && det < EPSILON { return false }
 
-        let u = p.dot(&self.u) / self.u.len_sq();
+        let inv = 1.0 / det;
+        let s = ray.p - self.p;
+        let u = inv * s.dot(&h);
         if u < 0.0 || u > 1.0 { return false }
 
-        let v = p.dot(&self.v) / self.v.len_sq();
+        let q = s.cross(&self.u);
+        let v = inv * ray.d.dot(&q);
         if v < 0.0 || v > 1.0 { return false }
+
+        let t = inv * self.v.dot(&q);
+        if t < ray.min || t > ray.max { return false }
 
         ray.set_max(t);
         hit.t = t;
@@ -70,14 +79,25 @@ impl<'scene> geom::Surface<'scene> for Rect<'scene> {
     }
 
     fn hit_any(&self, ray: &math::Ray) -> bool {
-        let t = (self.p - ray.p).dot(&self.n) / ray.d.dot(&self.n);
-        let p = ray.at(t) - self.p;
 
-        let u = p.dot(&self.u) / self.u.len_sq();
+        const EPSILON: f32 = 0.0000001;
+
+        let h = ray.d.cross(&self.v);
+        let det = self.u.dot(&h);
+
+        if det > -EPSILON && det < EPSILON { return false }
+
+        let inv = 1.0 / det;
+        let s = ray.p - self.p;
+        let u = inv * s.dot(&h);
         if u < 0.0 || u > 1.0 { return false }
 
-        let v = p.dot(&self.v) / self.v.len_sq();
+        let q = s.cross(&self.u);
+        let v = inv * ray.d.dot(&q);
         if v < 0.0 || v > 1.0 { return false }
+
+        let t = inv * self.v.dot(&q);
+        if t < ray.min || t > ray.max { return false }
 
         true
     }
