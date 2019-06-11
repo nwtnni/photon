@@ -44,7 +44,11 @@ impl<'scene> geom::Surface<'scene> for Rect<'scene> {
     }
 
     fn hit(&self, ray: &mut math::Ray, hit: &mut geom::Record<'scene>) -> bool {
+
         let t = (self.p - ray.p).dot(&self.n) / ray.d.dot(&self.n);
+
+        if t < ray.min || t > ray.max { return false }
+
         let p = ray.at(t) - self.p;
 
         let u = p.dot(&self.u) / self.u.len_sq();
@@ -53,6 +57,7 @@ impl<'scene> geom::Surface<'scene> for Rect<'scene> {
         let v = p.dot(&self.v) / self.v.len_sq();
         if v < 0.0 || v > 1.0 { return false }
 
+        ray.set_max(t);
         hit.t = t;
         hit.p = ray.at(t);
         hit.n = if ray.d.dot(&self.n) < 0.0 { self.n } else { -self.n };

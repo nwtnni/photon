@@ -103,8 +103,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let ns = 1000;  // Samples per pixel
 
     // Camera setup
-    let origin = Vec3::new(1.0, 0.0, 3.0);
-    let toward = Vec3::new(0.0, 0.0, 0.0);
+    let origin = Vec3::new(20.0, 10.0, 12.0);
+    let toward = Vec3::new(0.0, 5.0, 0.0);
     let up = Vec3::new(0.0, 1.0, 0.0);
     let fov = 45.0;
     let aspect = nx as f32 / ny as f32;
@@ -115,12 +115,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let background = Vec3::new(0.0, 0.0, 0.0);
 
     let light = &light::Point::new(
-        Vec3::new(0.0, 0.0, 3.0),
+        Vec3::new(1.0, 1.0, 1.0),
         Vec3::new(100.0, 100.0, 100.0),
     ) as &dyn light::Light;
 
     let lamb = &bxdf::Lambertian::new(
-        Vec3::new(1.0, 0.75, 0.0)
+        Vec3::new(1.0, 1.0, 1.0)
     ) as &dyn bxdf::BxDF;
 
     let blue = &bxdf::Lambertian::new(
@@ -133,11 +133,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     );
       
     let rect = geom::Rect::new(
-        Vec3::new(-0.5, -0.5, 3.0),
-        Vec3::new(1.0, 0.0, 3.0),
-        Vec3::new(0.0, 1.0, 3.0),
+        Vec3::new(-3.5, 2.5, 10.0),
+        Vec3::new(7.0, 0.0, 0.0),
+        Vec3::new(0.0, 5.0, 0.0),
         lamb,
-        Some(Vec3::new(10.0, 10.0, 10.0)),
+        Some(Vec3::new(100.0, 100.0, 100.0)),
     );
 
     let sphere = geom::Sphere::new(
@@ -146,7 +146,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         blue,
     );
 
-    let surface = bvh::Linear::new(&[&rect, &sphere]);
+    let arena = Arena::default();
+    let dragon = model::obj::parse(
+        "models/dragon.obj",
+        &arena,
+        lamb,
+    );
+
+    let surface = bvh::Linear::new(&[&rect, &dragon]);
 
     let scene = scene::Scene::new(
         background,
