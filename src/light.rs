@@ -1,13 +1,27 @@
 use std::fmt;
 
+use crate::math;
+
 mod point;
 
 pub use point::Point;
 
-use crate::math::Vec3;
+pub struct Record {
+    /// Direction
+    pub d: math::Vec3,
+
+    /// Attenuation
+    pub a: f32,
+
+    /// Distance along direction vector
+    pub t: f32,
+
+    /// Probability
+    pub p: f32,
+}
 
 pub trait Light: fmt::Debug + Send + Sync {
-    fn sample(&self, point: &Vec3, wi: &mut Vec3) -> f32;
-
+    fn sample(&self, point: &math::Vec3, record: &mut Record);
+    fn pdf(&self, ray: &math::Ray) -> f32;
     fn downcast_point(&self) -> Option<Point>;
 }

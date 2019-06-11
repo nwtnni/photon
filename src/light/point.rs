@@ -1,35 +1,42 @@
-use crate::math::Vec3;
-use crate::light::Light;
+use crate::math;
+use crate::light;
 
 #[derive(Copy, Clone, Debug)]
 pub struct Point {
     /// Position
-    p: Vec3,
+    p: math::Vec3,
 
     /// Intensity
-    i: Vec3,
+    i: math::Vec3,
 }
 
 impl Point {
-    pub fn new(position: Vec3, intensity: Vec3) -> Self {
+    pub fn new(position: math::Vec3, intensity: math::Vec3) -> Self {
         Point {
             p: position,
             i: intensity,
         }
     }
 
-    pub fn p(&self) -> Vec3 {
+    pub fn p(&self) -> math::Vec3 {
         self.p
     }
 
-    pub fn i(&self) -> Vec3 {
+    pub fn i(&self) -> math::Vec3 {
         self.i
     }
 }
 
-impl Light for Point {
-    fn sample(&self, p: &Vec3, wi: &mut Vec3) -> f32 {
-        *wi = (self.p - p).normalize();
+impl light::Light for Point {
+    fn sample(&self, p: &math::Vec3, r: &mut light::Record) {
+        let wi = self.p - p;
+        r.d = wi.normalize();
+        r.a = 1.0 / wi.len_sq();
+        r.t = wi.len();
+        r.p = 1.0;
+    }
+
+    fn pdf(&self, _: &math::Ray) -> f32 {
         1.0
     }
 
