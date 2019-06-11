@@ -21,8 +21,9 @@ impl<'scene> integrator::Integrator<'scene> for Point {
 
             let l = light.p;
             let wi = (l - p).normalize();
+            let t = (l - p).len();
 
-            if integrator::shadowed(scene, &p, &l) || n.dot(&wi) < 0.0 { continue }
+            if integrator::shadowed(scene, &p, &wi, t) || n.dot(&wi) < 0.0 { continue }
 
             color += hit.bxdf.unwrap().eval(&wi, &wr, &n)
                 / l.sub(&p).len_sq()

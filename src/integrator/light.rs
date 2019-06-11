@@ -1,6 +1,5 @@
 use crate::prelude::*;
 use crate::geom;
-use crate::light;
 use crate::math;
 use crate::scene;
 use crate::integrator;
@@ -15,39 +14,31 @@ impl<'scene> integrator::Integrator<'scene> for Light {
         let wr = (ray.p - hit.p).normalize();
 
         let mut color = hit.emit.unwrap_or_default() + scene.background();
-        let mut light_record = light::Record::default();
 
         for light in scene.lights() {
 
-            light.sample(&p, &mut light_record);
+            let ls = light.sample(&p);
 
-            let l = light_record.l;
+            if integrator::shadowed(scene, &p, &ls.d, ls.t) { continue }
 
-            if integrator::shadowed(scene, &p, &l) {
-                continue
-            }
-
-            let wi = (l - p).normalize();
-            let ray = math::Ray::new(p, wi);
-
-            color += light.eval(&ray)
-                * hit.bxdf.unwrap().eval(&wi, &wr, &n)
-                * light_record.a
-                * n.dot(&wi)
-                / if light_record.p > 0.000_01 { light_record.p } else { 1.0 };
+            color += light.eval(&math::Ray::new(p, ls.d))
+                * hit.bxdf.unwrap().eval(&ls.d, &wr, &n)
+                * ls.a
+                * n.dot(&ls.d)
+                / if ls.p > 0.000_01 { ls.p } else { 1.0 };
         }
 
-        let bxdf = hit.bxdf.unwrap().sample(&wr, &n);
+        let bs = hit.bxdf.unwrap().sample(&wr, &n);
 
-        let mut hit_record = geom::Record::default();
-        let mut ray = math::Ray::new(p, bxdf.d);
+        let mut hr = geom::Record::default();
+        let mut recurse = math::Ray::new(p, bs.d);
 
-        if bxdf.delta {
-            if scene.hit(&mut ray, &mut hit_record) {
-                color += Self::shade(scene, &ray, &hit_record, depth + 1)
-                    * bxdf.v
-                    * n.dot(&bxdf.d)
-                    / if bxdf.p > 0.000_01 { bxdf.p } else { 1.0 };
+        if bs.delta {
+            if scene.hit(&mut recurse, &mut hr) {
+                color += Self::shade(scene, &ray, &hr, depth + 1)
+                    * bs.v
+                    * n.dot(&bs.d)
+                    / if bs.p > 0.000_01 { bs.p } else { 1.0 };
             }
         }
 

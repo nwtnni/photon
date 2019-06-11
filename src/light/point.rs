@@ -25,10 +25,13 @@ impl light::Light for Point {
         self.i    
     }
 
-    fn sample(&self, p: &math::Vec3, r: &mut light::Record) {
-        r.l = self.p;
-        r.a = 1.0 / (self.p - p).len_sq();
-        r.p = 1.0;
+    fn sample(&self, p: &math::Vec3) -> light::Sample {
+        light::Sample {
+            d: (self.p - p).normalize(),
+            t: (self.p - p).len(),
+            a: 1.0 / (self.p - p).len_sq(),
+            p: 1.0,
+        }
     }
 
     fn pdf(&self, _: &math::Ray) -> f32 {

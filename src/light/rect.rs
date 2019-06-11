@@ -11,14 +11,17 @@ impl<'scene> light::Light for geom::Rect<'scene> {
         }
     }
 
-    fn sample(&self, p: &math::Vec3, r: &mut light::Record) {
+    fn sample(&self, p: &math::Vec3) -> light::Sample {
         let l = self.p
             + self.u * rand::random::<f32>()
             + self.v * rand::random::<f32>();
-        let wi = l - p;
-        r.l = l;
-        r.a = wi.normalize().dot(&self.n).abs() / wi.len_sq();
-        r.p = 1.0 / (self.u.len() * self.v.len());
+        let wi = (l - p).normalize();
+        light::Sample {
+            d: wi,
+            t: (l - p).len(),
+            a: wi.dot(&self.n).abs() / wi.len_sq(),
+            p: 1.0 / (self.u.len() * self.v.len()),
+        }
     }
 
     fn pdf(&self, _: &math::Ray) -> f32 {
