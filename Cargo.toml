@@ -5,7 +5,7 @@ authors = ["Newton Ni <nwtnni@gmail.com>"]
 edition = "2018"
 
 [features]
-default = ["progress"]
+default = []
 stats = []
 preview = ["sdl2"]
 progress = []

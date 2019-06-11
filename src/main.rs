@@ -96,17 +96,14 @@ fn render<'scene, I: Integrator<'scene>>(
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let nx = 1920; // Width
-    let ny = 1080; // Height
-    let ns = 100;  // Samples per pixel
+    let nx = 200; // Width
+    let ny = 100; // Height
+    let ns = 1;  // Samples per pixel
 
     let arena = Arena::default();
 
     // Camera setup
-    // let origin = Vec3::new(4.0, 6.0, 8.0);
-    // let toward = Vec3::new(-4.0, -6.0, -8.0);
-    // let up = Vec3::new(0.0, 1.0, 0.0);
-    let origin = Vec3::new(-3.0, 0.0, 3.0);
+    let origin = Vec3::new(0.0, 0.0, 3.0);
     let toward = Vec3::new(0.0, 0.0, 0.0);
     let up = Vec3::new(0.0, 1.0, 0.0);
     let fov = 45.0;
@@ -116,19 +113,23 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let camera = Camera::new(origin, toward, up, fov, aspect, aperture, focus);
 
     let light = &light::Point::new(
-        Vec3::new(0.0, 0.0, 0.0),
-        Vec3::new(10.0, 10.0, 10.0),
+        Vec3::new(0.0, 0.0, 3.0),
+        Vec3::new(100.0, 100.0, 100.0),
     ) as &dyn light::Light;
 
     let bxdf = &bxdf::Lambertian::new(
         Vec3::new(1.0, 0.75, 0.0)
     ) as &dyn bxdf::BxDF;
       
-    let ball = geom::Shape::sphere(1.5);
-    let cube = geom::Shape::cube(1.0);
-    let sdf = geom::SDF::new(bxdf, cube.smooth_subtract(ball, 0.1));
+    let rect = geom::Rect::new(
+        Vec3::new(0.0, 0.0, 0.0),
+        Vec3::new(1.0, 0.0, 0.0),
+        Vec3::new(0.0, 1.0, 0.0),
+        bxdf,
+        None,
+    );
 
-    let surface = bvh::Linear::new(&[&sdf]);
+    let surface = bvh::Linear::new(&[&rect]);
 
     let scene = scene::Scene::new(
         camera,

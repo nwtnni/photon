@@ -248,7 +248,7 @@ impl<'scene> geom::Surface<'scene> for Tree {
     fn hit(&self, ray: &mut math::Ray, hit: &mut geom::Record<'scene>) -> bool {
         let mut t = ray.min;
         while t < HORIZON && t < ray.max {
-            let p = ray.origin + ray.dir * t;
+            let p = ray.p + ray.d * t;
             let dt = self.at(&p);
             if dt < EPSILON {
                 ray.set_max(t);
@@ -265,7 +265,7 @@ impl<'scene> geom::Surface<'scene> for Tree {
     fn hit_any(&self, ray: &math::Ray) -> bool {
         let mut t = ray.min;
         while t < HORIZON && t < ray.max {
-            let dt = self.at(&(ray.origin + ray.dir * t));
+            let dt = self.at(&(ray.p + ray.d * t));
             if dt < EPSILON { return true }
             t += dt;
         }

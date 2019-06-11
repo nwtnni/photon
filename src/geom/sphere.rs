@@ -35,9 +35,9 @@ impl<'scene> geom::Surface<'scene> for Sphere<'scene> {
             crate::stats::SPHERE_INTERSECTION_TESTS.inc();
         }
 
-        let o = ray.origin - self.center;
-        let a = ray.dir.len_sq() as f32;
-        let b = o.dot(&ray.dir);
+        let o = ray.p - self.center;
+        let a = ray.d.len_sq() as f32;
+        let b = o.dot(&ray.d);
         let c = o.len_sq() - self.radius * self.radius;
         let d = b * b - a * c;
 
@@ -71,9 +71,9 @@ impl<'scene> geom::Surface<'scene> for Sphere<'scene> {
             crate::stats::INTERSECTION_TESTS.inc();
             crate::stats::SPHERE_INTERSECTION_TESTS.inc();
         }
-        let o = ray.origin - self.center;
-        let a = ray.dir.len_sq() as f32;
-        let b = o.dot(&ray.dir);
+        let o = ray.p - self.center;
+        let a = ray.d.len_sq() as f32;
+        let b = o.dot(&ray.d);
         let c = o.len_sq() - self.radius * self.radius;
         let d = b * b - a * c;
         if d < 0.0 { return false }

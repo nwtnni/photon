@@ -3,8 +3,8 @@ use crate::math::Vec3;
 #[readonly::make]
 #[derive(Copy, Clone, Debug, Default)]
 pub struct Ray {
-    pub origin: Vec3,
-    pub dir: Vec3,
+    pub p: Vec3,
+    pub d: Vec3,
     pub min: f32,
     pub max: f32,
     pub inv: [f32; 3],
@@ -15,8 +15,8 @@ impl Ray {
     pub fn new(origin: Vec3, dir: Vec3) -> Self {
         let dir = dir.normalize();
         Ray {
-            origin,
-            dir,
+            p: origin,
+            d: dir,
             min: 0.001,
             max: std::f32::MAX,
             inv: [1.0 / dir.x(), 1.0 / dir.y(), 1.0 / dir.z()],
@@ -29,11 +29,11 @@ impl Ray {
     }
 
     pub fn with_origin(&self, origin: Vec3) -> Self {
-        Ray { origin, .. *self }
+        Ray { p: origin, .. *self }
     }
 
     pub fn at(&self, t: f32) -> Vec3 {
-        self.origin + self.dir * t
+        self.p + self.d * t
     }
 
     pub fn set_max(&mut self, t: f32) {

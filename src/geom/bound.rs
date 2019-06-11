@@ -116,19 +116,19 @@ impl<'scene> geom::Surface<'scene> for Box3 {
             crate::stats::BOUNDING_BOX_INTERSECTION_TESTS.inc();
         }
 
-        let x_min = (self[    ray.sign[0]][0] - ray.origin[0]) * ray.inv[0];
-        let x_max = (self[1 - ray.sign[0]][0] - ray.origin[0]) * ray.inv[0];
+        let x_min = (self[    ray.sign[0]][0] - ray.p[0]) * ray.inv[0];
+        let x_max = (self[1 - ray.sign[0]][0] - ray.p[0]) * ray.inv[0];
 
-        let y_min = (self[    ray.sign[1]][1] - ray.origin[1]) * ray.inv[1];
-        let y_max = (self[1 - ray.sign[1]][1] - ray.origin[1]) * ray.inv[1];
+        let y_min = (self[    ray.sign[1]][1] - ray.p[1]) * ray.inv[1];
+        let y_max = (self[1 - ray.sign[1]][1] - ray.p[1]) * ray.inv[1];
 
         if x_min > y_max || y_min > x_max { return false }
 
         let min = math::max(x_min, y_min);
         let max = math::min(x_max, y_max);
 
-        let z_min = (self[    ray.sign[2]][2] - ray.origin[2]) * ray.inv[2];
-        let z_max = (self[1 - ray.sign[2]][2] - ray.origin[2]) * ray.inv[2];
+        let z_min = (self[    ray.sign[2]][2] - ray.p[2]) * ray.inv[2];
+        let z_max = (self[1 - ray.sign[2]][2] - ray.p[2]) * ray.inv[2];
 
         if min > z_max || z_min > max { return false }
 
