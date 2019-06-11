@@ -6,9 +6,9 @@ use crate::math;
 use crate::scene;
 use crate::integrator;
 
-pub struct BSDF;
+pub struct BxDF;
 
-impl<'scene> integrator::Integrator<'scene> for BSDF {
+impl<'scene> integrator::Integrator<'scene> for BxDF {
     fn shade(scene: &scene::Scene<'scene>, ray: &math::Ray, hit: &geom::Record<'scene>, depth: usize) -> math::Vec3 {
         let p = hit.p;
         let n = hit.n;  

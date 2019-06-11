@@ -5,12 +5,12 @@ use crate::geom::Surface;
 
 mod normal;
 mod point;
-mod bsdf;
+mod bxdf;
 mod light;
 
 pub use normal::Normal;
 pub use point::Point;
-pub use bsdf::BSDF;
+pub use bxdf::BxDF;
 pub use light::Light;
 
 pub trait Integrator<'scene> {
