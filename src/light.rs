@@ -3,6 +3,7 @@ use std::fmt;
 use crate::math;
 
 mod point;
+mod rect;
 
 pub use point::Point;
 
@@ -21,6 +22,7 @@ pub struct Record {
 }
 
 pub trait Light: fmt::Debug + Send + Sync {
+    fn intensity(&self) -> math::Vec3;
     fn sample(&self, point: &math::Vec3, record: &mut Record);
     fn pdf(&self, ray: &math::Ray) -> f32;
     fn downcast_point(&self) -> Option<Point>;

@@ -28,6 +28,10 @@ impl Point {
 }
 
 impl light::Light for Point {
+    fn intensity(&self) -> math::Vec3 {
+        self.i    
+    }
+
     fn sample(&self, p: &math::Vec3, r: &mut light::Record) {
         let wi = self.p - p;
         r.d = wi.normalize();
