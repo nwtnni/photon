@@ -8,10 +8,10 @@ pub use specular::Specular;
 
 #[derive(Copy, Clone, Debug, Default)]
 pub struct Record {
-    w: math::Vec3,
-    bxdf: math::Vec3,  
-    discrete: bool,
-    probability: f32, 
+    pub w: math::Vec3,
+    pub bxdf: math::Vec3,  
+    pub discrete: bool,
+    pub probability: f32, 
 }
 
 pub trait BxDF: std::fmt::Debug + Send + Sync {

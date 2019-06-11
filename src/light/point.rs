@@ -1,13 +1,14 @@
 use crate::math;
 use crate::light;
 
+#[readonly::make]
 #[derive(Copy, Clone, Debug)]
 pub struct Point {
     /// Position
-    p: math::Vec3,
+    pub p: math::Vec3,
 
     /// Intensity
-    i: math::Vec3,
+    pub i: math::Vec3,
 }
 
 impl Point {
@@ -16,14 +17,6 @@ impl Point {
             p: position,
             i: intensity,
         }
-    }
-
-    pub fn p(&self) -> math::Vec3 {
-        self.p
-    }
-
-    pub fn i(&self) -> math::Vec3 {
-        self.i
     }
 }
 

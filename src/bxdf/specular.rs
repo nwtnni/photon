@@ -7,6 +7,12 @@ pub struct Specular {
     eta: f32,
 }
 
+impl Specular {
+    pub fn new(color: math::Vec3, eta: f32) -> Self {
+        Specular { color, eta }
+    }
+}
+
 impl bxdf::BxDF for Specular {
     fn eval(&self, _: &math::Vec3, _: &math::Vec3, _: &math::Vec3) -> math::Vec3 {
         math::Vec3::default()

@@ -48,6 +48,8 @@ fn render<'scene, I: Integrator<'scene>>(
                 // FIXME: move logic inside Scene?
                 if scene.hit(&mut r, &mut hit) {
                     c += I::shade(scene, &r, &hit, 0);
+                } else {
+                    c += scene.background();
                 }
             }
             c /= ns as f32;
@@ -96,14 +98,12 @@ fn render<'scene, I: Integrator<'scene>>(
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let nx = 200; // Width
-    let ny = 100; // Height
-    let ns = 1;  // Samples per pixel
-
-    let arena = Arena::default();
+    let nx = 800; // Width
+    let ny = 600; // Height
+    let ns = 1000;  // Samples per pixel
 
     // Camera setup
-    let origin = Vec3::new(0.0, 0.0, 3.0);
+    let origin = Vec3::new(1.0, 0.0, 3.0);
     let toward = Vec3::new(0.0, 0.0, 0.0);
     let up = Vec3::new(0.0, 1.0, 0.0);
     let fov = 45.0;
@@ -112,32 +112,50 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let aperture = 0.0001;
     let camera = Camera::new(origin, toward, up, fov, aspect, aperture, focus);
 
+    let background = Vec3::new(0.0, 0.0, 0.0);
+
     let light = &light::Point::new(
         Vec3::new(0.0, 0.0, 3.0),
         Vec3::new(100.0, 100.0, 100.0),
     ) as &dyn light::Light;
 
-    let bxdf = &bxdf::Lambertian::new(
+    let lamb = &bxdf::Lambertian::new(
         Vec3::new(1.0, 0.75, 0.0)
     ) as &dyn bxdf::BxDF;
+
+    let blue = &bxdf::Lambertian::new(
+        Vec3::new(0.0, 0.00, 1.0)
+    ) as &dyn bxdf::BxDF;
+
+    let spec = &bxdf::Specular::new(
+        Vec3::new(1.0, 1.0, 1.0),
+        1.5
+    );
       
     let rect = geom::Rect::new(
-        Vec3::new(0.0, 0.0, 0.0),
-        Vec3::new(1.0, 0.0, 0.0),
-        Vec3::new(0.0, 1.0, 0.0),
-        bxdf,
-        None,
+        Vec3::new(-0.5, -0.5, 3.0),
+        Vec3::new(1.0, 0.0, 3.0),
+        Vec3::new(0.0, 1.0, 3.0),
+        lamb,
+        Some(Vec3::new(10.0, 10.0, 10.0)),
     );
 
-    let surface = bvh::Linear::new(&[&rect]);
+    let sphere = geom::Sphere::new(
+        Vec3::new(0.0, 0.0, 1.0),
+        0.25,
+        blue,
+    );
+
+    let surface = bvh::Linear::new(&[&rect, &sphere]);
 
     let scene = scene::Scene::new(
+        background,
         camera,
-        vec![light],
+        vec![&rect],
         &surface,
     );
 
-    render::<integrator::Point>(nx, ny, ns, &camera, &scene);
+    render::<integrator::BSDF>(nx, ny, ns, &camera, &scene);
 
     Ok(())
 }

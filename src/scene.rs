@@ -1,5 +1,3 @@
-use crate::arena;
-use crate::bvh;
 use crate::camera;
 use crate::geom;
 use crate::light;
@@ -7,14 +5,19 @@ use crate::math;
 
 #[derive(Debug)]
 pub struct Scene<'scene> {
+    background: math::Vec3,
     camera: camera::Camera,
     lights: Vec<&'scene dyn light::Light>,
     surface: &'scene dyn geom::Surface<'scene>,
 }
 
 impl<'scene> Scene<'scene> {
-    pub fn new(camera: camera::Camera, lights: Vec<&'scene dyn light::Light>, surface: &'scene dyn geom::Surface<'scene>) -> Self {
-        Scene { camera, lights, surface }
+    pub fn new(background: math::Vec3, camera: camera::Camera, lights: Vec<&'scene dyn light::Light>, surface: &'scene dyn geom::Surface<'scene>) -> Self {
+        Scene { background, camera, lights, surface }
+    }
+
+    pub fn background(&self) -> math::Vec3 {
+        self.background
     }
 
     pub fn lights(&self) -> &[&'scene dyn light::Light] {
