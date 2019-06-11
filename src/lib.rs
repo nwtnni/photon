@@ -19,12 +19,7 @@ pub mod bxdf;
 /// External models
 pub mod model;
 
-/// Live rendering preview
-#[cfg(feature = "preview")]
-pub mod preview;
-
 /// Progress bar
-#[cfg(feature = "progress")]
 pub mod progress;
 
 /// Geometric primitives

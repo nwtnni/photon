@@ -22,14 +22,6 @@ fn render<'scene, I: Integrator<'scene>>(
     camera: &Camera,
     scene: &scene::Scene<'scene>,
 ) {
-    #[cfg(feature = "preview")]
-    let (tx, preview) = {
-        let (tx, rx) = crossbeam::channel::unbounded();
-        let preview = std::thread::spawn(move || photon::preview::Preview::new(nx, ny, rx).run());
-        (tx, preview)
-    };
-
-    #[cfg(feature = "progress")]
     let progress = std::thread::spawn(move || photon::progress::run(nx * ny));
 
     // Row to pixel buffer map
@@ -55,8 +47,7 @@ fn render<'scene, I: Integrator<'scene>>(
             c /= ns as f32;
             let rgb = (c[0].sqrt(), c[1].sqrt(), c[2].sqrt());
             buffer.push(rgb);
-            #[cfg(feature = "preview")] tx.send((x, y, rgb)).ok();
-            #[cfg(feature = "progress")] photon::stats::PIXELS_RENDERED.inc();
+            photon::stats::PIXELS_RENDERED.inc();
         }
         (y, buffer)
     }));
@@ -79,9 +70,8 @@ fn render<'scene, I: Integrator<'scene>>(
 
     lodepng::encode24_file("out.png", &buffer, nx, ny).unwrap();
 
-    #[cfg(feature = "progress")] {
-        progress.join().unwrap().ok();
-    }
+    progress.join().unwrap().ok();
+
     #[cfg(feature = "stats")] {
         println!("{}", photon::stats::ARENA_MEMORY);
         println!("{}", photon::stats::INTERSECTION_TESTS);
@@ -91,9 +81,6 @@ fn render<'scene, I: Integrator<'scene>>(
         println!("{}", photon::stats::SPHERE_INTERSECTION_TESTS);
         println!("{}", photon::stats::TRI_INTERSECTION_TESTS);
         println!("{}", photon::stats::LIST_INTERSECTION_TESTS);
-    }
-    #[cfg(feature = "preview")] {
-        preview.join().unwrap();
     }
 }
 

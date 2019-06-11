@@ -7,13 +7,10 @@ edition = "2018"
 [features]
 default = []
 stats = []
-preview = ["sdl2"]
-progress = []
 
 [dependencies]
 rand = "0.6.5"
 rayon = "1.0.3"
-sdl2 = { version = "0.32.1", optional = true }
 crossbeam = "0.7.1"
 lodepng = "2.4.2"
 partition = "0.1.1"
