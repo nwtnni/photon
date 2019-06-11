@@ -99,11 +99,11 @@ fn render<'scene, I: Integrator<'scene>>(
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let nx = 800; // Width
-    let ny = 600; // Height
+    let ny = 800; // Height
     let ns = 1;  // Samples per pixel
 
     // Camera setup
-    let origin = Vec3::new(278.0, 273.0, -800.0);
+    let origin = Vec3::new(278.0, 273.0, -270.0);
     let toward = Vec3::new(278.0, 273.0, 0.0);
     let up = Vec3::new(0.0, 1.0, 0.0);
     let fov = 90.0;
@@ -123,9 +123,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         Vec3::new(1.0, 1.0, 1.0)
     );
 
-    let blue = &bxdf::Lambertian::new(
-        Vec3::new(0.0, 0.00, 1.0)
-    ) as &dyn bxdf::BxDF;
+    let red = bxdf::Lambertian::new(
+        Vec3::new(1.0, 0.0, 0.0)
+    );
+
+    let green = bxdf::Lambertian::new(
+        Vec3::new(0.0, 1.0, 0.0)
+    );
 
     let spec = &bxdf::Specular::new(
         Vec3::new(1.0, 1.0, 1.0),
@@ -141,28 +145,59 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     );
 
     let ceiling = geom::Quad::new(
-        // Vec3::new(556.0, 548.8, 559.2),
-        // Vec3::new(-556.0, -200.0, 0.0),
-        // Vec3::new(0.0, -200.0, -559.2),
-        Vec3::new(0.0, 548.8, 0.0),
-        Vec3::new(556.0, -200.0, 0.0),
-        Vec3::new(0.0, -200.0, 559.2),
+        Vec3::new(556.0, 548.8, 559.2),
+        Vec3::new(-556.0, 0.0, 0.0),
+        Vec3::new(0.0, 0.0, -559.2),
         &white,
         None,
     );
 
+    let back = geom::Quad::new(
+        Vec3::new(549.6, 0.0, 559.2),
+        Vec3::new(-549.6, 0.0, 0.0),
+        Vec3::new(0.0, 548.8, 0.0),
+        &white,
+        None,
+    );
+
+    let left = geom::Quad::new(
+        Vec3::new(549.6, 0.0, 0.0),
+        Vec3::new(0.0, 0.0, 559.2),
+        Vec3::new(0.0, 548.8, 0.0),
+        &red,
+        None,
+    );
+
+    let right = geom::Quad::new(
+        Vec3::new(0.0, 0.0, 559.2),
+        Vec3::new(0.0, 0.0, -559.2),
+        Vec3::new(0.0, 548.8, 0.0),
+        &green,
+        None,
+    );
+
+    let light = geom::Quad::new(
+        Vec3::new(343.0, 548.0, 227.0),
+        Vec3::new(0.0, 0.0, 105.0),
+        Vec3::new(-130.0, 0.0, 0.0),
+        &white,
+        Some(Vec3::new(1000.0, 1000.0, 1000.0)),
+    );
+
+    let lights = [&light as &dyn light::Light];
+
     let bvh = bvh::Linear::new(
-        &[&floor, &ceiling],
+        &[&floor, &ceiling, &back, &left, &right, &light],
     );
 
     let scene = scene::Scene::new(
         Vec3::new(0.0, 0.0, 0.0),
         camera,
-        &[],
+        &lights[..],
         &bvh,
     );
 
-    render::<integrator::Normal>(nx, ny, ns, &camera, &scene);
+    render::<integrator::Light>(nx, ny, ns, &camera, &scene);
 
     Ok(())
 }
