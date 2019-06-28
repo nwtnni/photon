@@ -9,6 +9,8 @@ pub struct Light;
 impl<'scene> integrator::Integrator<'scene> for Light {
     fn shade(scene: &scene::Scene<'scene>, ray: &math::Ray, hit: &geom::Record<'scene>, depth: usize) -> math::Vec3 {
 
+        if depth > 5 { return math::Vec3::default() }
+
         let p = hit.p;
         let n = hit.n;  
         let wr = (ray.p - hit.p).normalize();
@@ -25,21 +27,21 @@ impl<'scene> integrator::Integrator<'scene> for Light {
                 * hit.bxdf.unwrap().eval(&ls.d, &wr, &n)
                 * ls.a
                 * n.dot(&ls.d)
-                / if ls.p > 0.000_01 { ls.p } else { 1.0 };
+                / ls.p;
         }
 
         let bs = hit.bxdf.unwrap().sample(&wr, &n);
 
-        let mut hr = geom::Record::default();
-        let mut recurse = math::Ray::new(p, bs.d);
+        if bs.delta && bs.p > 0.001 {
+            let mut hr = geom::Record::default();
+            let mut recurse = math::Ray::new(p, bs.d);
 
-        if bs.delta {
-            if scene.hit(&mut recurse, &mut hr) {
-                color += Self::shade(scene, &ray, &hr, depth + 1)
-                    * bs.v
-                    * n.dot(&bs.d)
-                    / if bs.p > 0.000_01 { bs.p } else { 1.0 };
-            }
+            if !scene.hit(&mut recurse, &mut hr) { return color }
+
+            color += Self::shade(scene, &recurse, &hr, depth + 1)
+                * bs.v
+                * n.dot(&bs.d).abs()
+                / bs.p
         }
 
         color

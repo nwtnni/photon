@@ -8,9 +8,8 @@ use photon::bxdf;
 use photon::bvh;
 use photon::geom;
 use photon::integrator;
-use photon::math::{Ray, Vec3};
-use photon::model;
-use photon::geom::{Sphere, Translate, Record};
+use photon::math;
+use photon::math::Vec3;
 use photon::camera::Camera;
 use photon::light;
 use photon::scene;
@@ -25,12 +24,12 @@ fn render<'scene, I: Integrator<'scene>>(
     let progress = std::thread::spawn(move || photon::progress::run(nx * ny));
 
     // Row to pixel buffer map
-    let mut buffers: HashMap<usize, Vec<(f32, f32, f32)>> = HashMap::with_capacity(ny);
+    let mut buffers: HashMap<usize, Vec<(u8, u8, u8)>> = HashMap::with_capacity(ny);
 
     // Allow each thread exclusive access to a single row 
     buffers.par_extend((0..ny).into_par_iter().map(move |y| {
         let mut buffer = Vec::with_capacity(nx);
-        let mut hit = Record::default();
+        let mut hit = geom::Record::default();
         for x in 0..nx {
             let mut c = Vec3::default();
             for _ in 0..ns {
@@ -45,7 +44,11 @@ fn render<'scene, I: Integrator<'scene>>(
                 }
             }
             c /= ns as f32;
-            let rgb = (c[0].sqrt(), c[1].sqrt(), c[2].sqrt());
+            let rgb = (
+                (math::clamp(c[0].sqrt(), 0.0, 1.0) * 255.99) as u8 ,
+                (math::clamp(c[1].sqrt(), 0.0, 1.0) * 255.99) as u8 ,
+                (math::clamp(c[2].sqrt(), 0.0, 1.0) * 255.99) as u8 ,
+            );
             buffer.push(rgb);
             photon::stats::PIXELS_RENDERED.inc();
         }
@@ -57,17 +60,6 @@ fn render<'scene, I: Integrator<'scene>>(
         .flat_map(|y| buffers.remove(&y).unwrap().into_iter())
         .collect::<Vec<_>>();
     
-    let max = buffer.iter()
-        .fold(std::f32::NEG_INFINITY, |max, pixel| max.max(pixel.0).max(pixel.1).max(pixel.2));
-
-    let buffer = buffer.into_iter()
-        .map(|pixel| (
-            (pixel.0 / max * 255.99) as u8,
-            (pixel.1 / max * 255.99) as u8,
-            (pixel.2 / max * 255.99) as u8,
-        ))
-        .collect::<Vec<_>>();
-
     lodepng::encode24_file("out.png", &buffer, nx, ny).unwrap();
 
     progress.join().unwrap().ok();
@@ -87,7 +79,7 @@ fn render<'scene, I: Integrator<'scene>>(
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let nx = 800; // Width
     let ny = 800; // Height
-    let ns = 1;  // Samples per pixel
+    let ns = 1024;  // Samples per pixel
 
     // Camera setup
     let origin = Vec3::new(278.0, 273.0, -270.0);
@@ -101,11 +93,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let background = Vec3::new(0.0, 0.0, 0.0);
 
-    let light = &light::Point::new(
-        Vec3::new(1.0, 1.0, 1.0),
-        Vec3::new(100.0, 100.0, 100.0),
-    ) as &dyn light::Light;
-
     let white = bxdf::Lambertian::new(
         Vec3::new(1.0, 1.0, 1.0)
     );
@@ -118,7 +105,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         Vec3::new(0.0, 1.0, 0.0)
     );
 
-    let spec = &bxdf::Specular::new(
+    let blue = bxdf::Lambertian::new(
+        Vec3::new(0.0, 0.0, 1.0)
+    );
+
+    let spec = bxdf::Specular::new(
         Vec3::new(1.0, 1.0, 1.0),
         1.5
     );
@@ -168,17 +159,23 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         Vec3::new(0.0, 0.0, 105.0),
         Vec3::new(-130.0, 0.0, 0.0),
         &white,
-        Some(Vec3::new(1000.0, 1000.0, 1000.0)),
+        Some(Vec3::new(100.0,100.0,100.0)),
     );
 
     let lights = [&light as &dyn light::Light];
 
+    let ball = geom::Sphere::new(
+        Vec3::new(228.0, 100.0, 229.5),
+        100.0,
+        &spec,
+    );
+
     let bvh = bvh::Linear::new(
-        &[&floor, &ceiling, &back, &left, &right, &light],
+        &[&floor, &ceiling, &back, &left, &right, &light, &ball],
     );
 
     let scene = scene::Scene::new(
-        Vec3::new(0.0, 0.0, 0.0),
+        background,
         camera,
         &lights[..],
         &bvh,

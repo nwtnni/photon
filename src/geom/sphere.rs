@@ -79,6 +79,6 @@ impl<'scene> geom::Surface<'scene> for Sphere<'scene> {
         let d = b * b - a * c;
         if d < 0.0 { return false }
         let (t_a, t_b) = ((-b - d.sqrt()) / a, (-b + d.sqrt()) / a);
-        t_a > ray.min && t_a < ray.max || t_b > ray.min && t_a < ray.max
+        t_a > ray.min && t_a < ray.max || t_b > ray.min && t_b < ray.max
     }
 }

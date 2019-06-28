@@ -42,10 +42,6 @@ pub fn uniform_disk() -> Vec3 {
     }
 }
 
-pub fn reflect(v: Vec3, n: Vec3) -> Vec3 {
-    -v + n * 2.0 * v.dot(&n)
-}
-
 pub fn cosine_sphere() -> Vec3 {
     let u = random::<f32>();
     let v = random::<f32>();

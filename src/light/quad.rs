@@ -15,10 +15,12 @@ impl<'scene> light::Light for geom::Quad<'scene> {
         let l = self.p
             + self.u * rand::random::<f32>()
             + self.v * rand::random::<f32>();
+        let delta = l - p;
+        let wi = delta.normalize();
         light::Sample {
-            d: (l - p).normalize(),
-            t: (l - p).len(),
-            a: (l - p).normalize().dot(&self.n).abs() / (l - p).len_sq(),
+            d: wi,
+            t: delta.len(),
+            a: wi.dot(&self.n).abs() / delta.len_sq(),
             p: 1.0 / (self.u.len() * self.v.len()),
         }
     }
