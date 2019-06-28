@@ -109,10 +109,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         Vec3::new(0.0, 0.0, 1.0)
     );
 
-    let spec = bxdf::Glazed::new(
-        &blue,
-        1.5
-    );
+    let spec = bxdf::Mirror;
 
     let floor = geom::Quad::new(
         Vec3::new(0.0, 0.0, 0.0),

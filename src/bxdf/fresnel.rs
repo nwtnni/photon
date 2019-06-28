@@ -52,6 +52,7 @@ impl Fresnel {
             d: *d,
             n: *n,
             cos_i: d.dot(n).abs(),
+            reflect: 1.0,
             .. Default::default()
         }
     }
