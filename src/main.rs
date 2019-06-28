@@ -77,15 +77,15 @@ fn render<'scene, I: Integrator<'scene>>(
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let nx = 800; // Width
-    let ny = 800; // Height
-    let ns = 128;  // Samples per pixel
+    let nx = 1920; // Width
+    let ny = 1080; // Height
+    let ns = 1024;  // Samples per pixel
 
     // Camera setup
-    let origin = Vec3::new(278.0, 273.0, -270.0);
-    let toward = Vec3::new(278.0, 273.0, 0.0);
+    let origin = Vec3::new(15.0, 15.0, -15.0);
+    let toward = Vec3::new(0.0, 0.0, 0.0);
     let up = Vec3::new(0.0, 1.0, 0.0);
-    let fov = 90.0;
+    let fov = 45.0;
     let aspect = nx as f32 / ny as f32;
     let focus = 0.035;
     let aperture = 0.0001;
@@ -109,66 +109,26 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         Vec3::new(0.0, 0.0, 1.0)
     );
 
-    let spec = bxdf::Mirror;
-
     let floor = geom::Quad::new(
-        Vec3::new(0.0, 0.0, 0.0),
-        Vec3::new(549.6, 0.0, 0.0),
-        Vec3::new(0.0, 0.0, 559.2),
+        Vec3::new(-7.5, 0.0, 7.5),
+        Vec3::new(0.0, 0.0, -15.0),
+        Vec3::new(15.0, 0.0, 0.0),
         &white,
-        None,
-    );
-
-    let ceiling = geom::Quad::new(
-        Vec3::new(556.0, 548.8, 559.2),
-        Vec3::new(-556.0, 0.0, 0.0),
-        Vec3::new(0.0, 0.0, -559.2),
-        &white,
-        None,
-    );
-
-    let back = geom::Quad::new(
-        Vec3::new(549.6, 0.0, 559.2),
-        Vec3::new(-549.6, 0.0, 0.0),
-        Vec3::new(0.0, 548.8, 0.0),
-        &white,
-        None,
-    );
-
-    let left = geom::Quad::new(
-        Vec3::new(549.6, 0.0, 0.0),
-        Vec3::new(0.0, 0.0, 559.2),
-        Vec3::new(0.0, 548.8, 0.0),
-        &red,
-        None,
-    );
-
-    let right = geom::Quad::new(
-        Vec3::new(0.0, 0.0, 559.2),
-        Vec3::new(0.0, 0.0, -559.2),
-        Vec3::new(0.0, 548.8, 0.0),
-        &green,
         None,
     );
 
     let light = geom::Quad::new(
-        Vec3::new(343.0, 548.0, 227.0),
-        Vec3::new(0.0, 0.0, 105.0),
-        Vec3::new(-130.0, 0.0, 0.0),
+        Vec3::new(-2.5, 0.0, 2.5),
+        Vec3::new(0.0, 0.0, -5.0),
+        Vec3::new(0.0, 5.0, 0.0),
         &white,
-        Some(Vec3::new(100.0,100.0,100.0)),
+        Some(Vec3::new(1.0, 1.0, 1.0)),
     );
 
     let lights = [&light as &dyn light::Light];
 
-    let ball = geom::Sphere::new(
-        Vec3::new(228.0, 100.0, 229.5),
-        100.0,
-        &spec,
-    );
-
     let bvh = bvh::Linear::new(
-        &[&floor, &ceiling, &back, &left, &right, &light, &ball],
+        &[&floor, &light],
     );
 
     let scene = scene::Scene::new(
