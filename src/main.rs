@@ -79,7 +79,7 @@ fn render<'scene, I: Integrator<'scene>>(
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let nx = 800; // Width
     let ny = 800; // Height
-    let ns = 1024;  // Samples per pixel
+    let ns = 128;  // Samples per pixel
 
     // Camera setup
     let origin = Vec3::new(278.0, 273.0, -270.0);
@@ -109,8 +109,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         Vec3::new(0.0, 0.0, 1.0)
     );
 
-    let spec = bxdf::Specular::new(
-        Vec3::new(1.0, 1.0, 1.0),
+    let spec = bxdf::Glazed::new(
+        &blue,
         1.5
     );
 

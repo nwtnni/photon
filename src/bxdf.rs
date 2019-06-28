@@ -2,9 +2,15 @@ use crate::math;
 
 mod lambertian;
 mod specular;
+mod fresnel;
+mod glazed;
+mod mirror;
 
 pub use lambertian::Lambertian;
 pub use specular::Specular;
+pub use fresnel::Fresnel;
+pub use glazed::Glazed;
+pub use mirror::Mirror;
 
 #[readonly::make]
 #[derive(Copy, Clone, Debug, Default)]
