@@ -5,11 +5,13 @@ use crate::geom::Surface;
 
 mod normal;
 mod point;
+mod path;
 mod bxdf;
 mod light;
 
 pub use normal::Normal;
 pub use point::Point;
+pub use path::Path;
 pub use bxdf::BxDF;
 pub use light::Light;
 
