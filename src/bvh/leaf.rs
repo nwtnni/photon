@@ -4,14 +4,14 @@ use crate::geom;
 
 pub const LEAF_SIZE: usize = 16;
 
-#[derive(Copy, Clone, Debug, Default)]
-pub struct Leaf<'scene> {
+#[derive(Copy, Clone, Debug)]
+pub struct Leaf<'scene, S> {
     bound: geom::Box3,
-    surfaces: [Option<&'scene dyn Surface<'scene>>; LEAF_SIZE],
+    surfaces: [Option<&'scene S>; LEAF_SIZE],
 }
 
-impl<'scene> Leaf<'scene> {
-    pub fn set(&mut self, index: usize, surface: &'scene dyn Surface<'scene>) {
+impl<'scene, S> Leaf<'scene, S> where S: Surface<'scene> {
+    pub fn set(&mut self, index: usize, surface: &'scene S) {
         self.bound = self.bound.union_b(&surface.bound());
         self.surfaces[index] = Some(surface);
     }
@@ -23,7 +23,7 @@ impl<'scene> Leaf<'scene> {
     }
 }
 
-impl<'scene> Surface<'scene> for Leaf<'scene> {
+impl<'scene, S> Surface<'scene> for Leaf<'scene, S> where S: Surface<'scene> {
     fn bound(&self) -> geom::Box3 {
         self.bound
     }
@@ -44,5 +44,14 @@ impl<'scene> Surface<'scene> for Leaf<'scene> {
         self.surfaces.into_iter()
             .filter_map(|surface| *surface)
             .any(|surface| surface.hit_any(ray))
+    }
+}
+
+impl<'scene, S> Default for Leaf<'scene, S> {
+    fn default() -> Self {
+        Leaf {
+            bound: geom::Box3::smallest(),
+            surfaces: [None; LEAF_SIZE],
+        }
     }
 }

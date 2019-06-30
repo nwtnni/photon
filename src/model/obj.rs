@@ -57,7 +57,7 @@ pub fn parse<'scene, P>(
 
     let ts = fs.into_iter()
         .map(|(a, b, c)| {
-            arena.alloc(geom::Tri::new([vs[a], vs[b], vs[c]], [ns[a], ns[b], ns[c]])) as &'scene dyn geom::Surface
+            arena.alloc(geom::Tri::new([vs[a], vs[b], vs[c]], [ns[a], ns[b], ns[c]]))
         })
         .collect::<Vec<_>>();
 
