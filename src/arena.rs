@@ -1,10 +1,9 @@
 use std::alloc;
 use std::cell;
-use std::slice;
 
 use crate::stats;
 
-const DEFAULT_CAPACITY: usize = 64 * 1024 * 1024;
+const DEFAULT_CAPACITY: usize = 512 * 1024 * 1024;
 const DEFAULT_ALIGNMENT: usize = 8;
 
 #[derive(Debug)]

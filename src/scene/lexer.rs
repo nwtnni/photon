@@ -50,7 +50,7 @@ impl<R> Iterator for Lexer<R> where R: io::Read {
 
             self.fill();      
             
-            let token = if c.is_digit(10) {
+            let token = if c.is_digit(10) || c == '-' {
                 self.buffer.parse::<i32>()
                     .map(scene::Token::Int)
                     .or_else(|_| self.buffer.parse::<f32>().map(scene::Token::Float))
