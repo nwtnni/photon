@@ -61,5 +61,5 @@ pub fn parse<'scene, P>(
         })
         .collect::<Vec<_>>();
 
-    geom::Mesh::new(material, &ts)
+    geom::Mesh::new(arena, material, &ts)
 }

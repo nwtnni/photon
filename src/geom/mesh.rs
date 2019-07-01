@@ -1,20 +1,22 @@
+use crate::arena;
 use crate::bvh;
 use crate::bxdf;
 use crate::geom;
 use crate::math;
 
-#[derive(Clone, Debug)]
+#[derive(Copy, Clone, Debug)]
 pub struct Mesh<'scene> {
     bxdf: &'scene dyn bxdf::BxDF,
-    internal: bvh::Linear<geom::Tri<'scene>>,
+    internal: bvh::Linear<'scene, geom::Tri<'scene>>,
 }
 
 impl<'scene> Mesh<'scene> {
     pub fn new(
+        arena: &'scene arena::Arena,
         bxdf: &'scene dyn bxdf::BxDF,
         triangles: &[geom::Tri<'scene>],
     ) -> Self {
-        let internal = bvh::Linear::new(triangles);
+        let internal = bvh::Linear::new(arena, triangles);
         Mesh { bxdf, internal }
     }
 }

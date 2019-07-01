@@ -1,23 +1,26 @@
 use crate::prelude::*;
+use crate::arena;
 use crate::bvh;
 use crate::geom;
 use crate::math;
 
-#[derive(Clone, Debug)]
-pub struct Linear<S>(Vec<Tree<S>>);
+#[derive(Copy, Clone, Debug)]
+pub struct Linear<'scene, S>(&'scene [Tree<S>]);
 
-impl<'scene, S> Linear<S> where S: Surface<'scene> + Copy {
-    pub fn new(surfaces: &[S]) -> Self {
-        let tree = bvh::Tree::new(surfaces);
-        let mut nodes = Vec::with_capacity(tree.len());
-        tree.flatten(&mut nodes);
-        Linear(nodes)
+impl<'scene, S> Linear<'scene, S> where S: Surface<'scene> + Copy {
+    pub fn new(arena: &'scene arena::Arena, surfaces: &[S]) -> Self {
+        unsafe {
+            let tree = bvh::Tree::new(surfaces);
+            let mut nodes = arena.alloc_slice_mut(tree.len());
+            tree.flatten(&mut nodes, &mut 0);
+            Linear(nodes)
+        }
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Copy, Clone, Debug)]
 pub enum Tree<S> {
-    Leaf(Box<bvh::Leaf<S>>),
+    Leaf(bvh::Leaf<S>),
     Node {
         axis: math::Axis,
         bound: geom::Box3,
@@ -35,21 +38,23 @@ impl<'scene, S> Tree<S> where S: Surface<'scene> {
 }
 
 impl<'scene, S> bvh::Tree<S> {
-    fn flatten(self, nodes: &mut Vec<Tree<S>>) {
+    fn flatten(self, nodes: &'scene mut [Tree<S>], index: &mut usize) {
         match self {
         | bvh::Tree::Leaf(surfaces) => {
-            nodes.push(Tree::Leaf(Box::new(surfaces)));
+            nodes[*index] = Tree::Leaf(surfaces);
+            *index += 1;
         }
         | bvh::Tree::Node { bound, axis, l, r } => {
-            nodes.push(Tree::Node { axis, bound, offset: l.len() as u32 + 1, });
-            l.flatten(nodes);
-            r.flatten(nodes);
+            nodes[*index] = Tree::Node { axis, bound, offset: l.len() as u32 + 1, };
+            *index += 1;
+            l.flatten(nodes, index);
+            r.flatten(nodes, index);
         }
         }
     }
 }
 
-impl<'scene, S> Surface<'scene> for Linear<S> where S: Surface<'scene> {
+impl<'scene, S> Surface<'scene> for Linear<'scene, S> where S: Surface<'scene> {
     fn bound(&self) -> geom::Box3 {
         match &self.0[0] {
         | Tree::Leaf(surface) => surface.bound(),

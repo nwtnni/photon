@@ -1,5 +1,6 @@
 use std::alloc;
 use std::cell;
+use std::slice;
 
 use crate::stats;
 
@@ -28,7 +29,7 @@ impl Arena {
     pub fn alloc<T: Copy>(&self, item: T) -> &T {
         let size = self.align(std::mem::size_of::<T>());
         let len = self.len.get();
-        if len + size >= self.cap { panic!("[INTERNAL ERROR]: Arena ran out of memory"); }
+        if len + size >= self.cap { panic!("[INTERNAL ERROR]: arena ran out of memory"); }
         self.len.set(len + size);
         stats::ARENA_MEMORY.inc(size);
         unsafe {
@@ -36,6 +37,17 @@ impl Arena {
             ptr.write(item);
             &*ptr
         }
+    }
+
+    pub unsafe fn alloc_slice_mut<T: Copy>(&self, count: usize) -> &mut [T] {
+        let size = self.align(std::mem::size_of::<T>()) * count; 
+        let len = self.len.get();
+        if len + size >= self.cap { panic!("[INTERNAL ERROR]: arena ran out of memory"); }
+        self.len.set(len + size);
+        stats::ARENA_MEMORY.inc(size);
+        let ptr = self.buf.add(len) as *mut T;
+        let len = count;
+        std::slice::from_raw_parts_mut(ptr, len)
     }
 
     fn align(&self, addr: usize) -> usize {
