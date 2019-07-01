@@ -30,7 +30,7 @@ impl<'scene, S> Tree<S> where S: Surface<'scene> + Copy {
     }
 }
 
-impl<'scene, S> Tree<S> where S: Surface<'scene> {
+impl<'scene, S> Tree<S> {
     pub fn len(&self) -> usize {
         match self {
         | Tree::Leaf(_) => 1,

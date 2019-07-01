@@ -34,7 +34,7 @@ impl<'scene, S> Tree<S> where S: Surface<'scene> {
     }
 }
 
-impl<'scene, S> bvh::Tree<S> where S: Surface<'scene> {
+impl<'scene, S> bvh::Tree<S> {
     fn flatten(self, nodes: &mut Vec<Tree<S>>) {
         match self {
         | bvh::Tree::Leaf(surfaces) => {
