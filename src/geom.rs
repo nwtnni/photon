@@ -48,3 +48,15 @@ pub trait Surface<'scene>: std::fmt::Debug + Send + Sync {
     fn hit(&self, ray: &mut math::Ray, record: &mut Record<'scene>) -> bool;
     fn hit_any(&self, ray: &math::Ray) -> bool;
 }
+
+impl<'scene, T> Surface<'scene> for &T where T: Surface<'scene> {
+    fn bound(&self) -> Box3 {
+        (*self).bound()
+    }
+    fn hit(&self, ray: &mut math::Ray, record: &mut Record<'scene>) -> bool {
+        (*self).hit(ray, record)
+    }
+    fn hit_any(&self, ray: &math::Ray) -> bool {
+        (*self).hit_any(ray)
+    }
+}

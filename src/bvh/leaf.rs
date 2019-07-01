@@ -4,26 +4,26 @@ use crate::geom;
 
 pub const LEAF_SIZE: usize = 16;
 
-#[derive(Copy, Clone, Debug, Default)]
-pub struct Leaf<'scene> {
+#[derive(Copy, Clone, Debug)]
+pub struct Leaf<S> {
     bound: geom::Box3,
-    surfaces: [Option<&'scene dyn Surface<'scene>>; LEAF_SIZE],
+    surfaces: [Option<S>; LEAF_SIZE],
 }
 
-impl<'scene> Leaf<'scene> {
-    pub fn set(&mut self, index: usize, surface: &'scene dyn Surface<'scene>) {
+impl<'scene, S> Leaf<S> where S: Surface<'scene> {
+    pub fn set(&mut self, index: usize, surface: S) {
         self.bound = self.bound.union_b(&surface.bound());
         self.surfaces[index] = Some(surface);
     }
 
     pub fn len(&self) -> usize {
         self.surfaces.into_iter()
-            .filter_map(|surface| *surface)
+            .filter_map(|surface| surface.as_ref())
             .count()
     }
 }
 
-impl<'scene> Surface<'scene> for Leaf<'scene> {
+impl<'scene, S> Surface<'scene> for Leaf<S> where S: Surface<'scene> {
     fn bound(&self) -> geom::Box3 {
         self.bound
     }
@@ -31,7 +31,7 @@ impl<'scene> Surface<'scene> for Leaf<'scene> {
     fn hit(&self, ray: &mut math::Ray, hit: &mut geom::Record<'scene>) -> bool {
         let mut success = false;
         for i in 0..LEAF_SIZE {
-            if let Some(surface) = self.surfaces[i] {
+            if let Some(surface) = &self.surfaces[i] {
                 success |= surface.hit(ray, hit);
             } else {
                 return success
@@ -42,7 +42,16 @@ impl<'scene> Surface<'scene> for Leaf<'scene> {
 
     fn hit_any(&self, ray: &math::Ray) -> bool {
         self.surfaces.into_iter()
-            .filter_map(|surface| *surface)
+            .filter_map(|surface| surface.as_ref())
             .any(|surface| surface.hit_any(ray))
+    }
+}
+
+impl<S> Default for Leaf<S> {
+    fn default() -> Self {
+        Leaf {
+            bound: Default::default(),
+            surfaces: Default::default(),
+        }
     }
 }

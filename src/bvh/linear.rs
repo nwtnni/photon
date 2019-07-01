@@ -4,10 +4,10 @@ use crate::geom;
 use crate::math;
 
 #[derive(Clone, Debug)]
-pub struct Linear<'scene>(Vec<Tree<'scene>>);
+pub struct Linear<S>(Vec<Tree<S>>);
 
-impl<'scene> Linear<'scene> {
-    pub fn new(surfaces: &[&'scene dyn Surface<'scene>]) -> Self {
+impl<'scene, S> Linear<S> where S: Surface<'scene> + Copy {
+    pub fn new(surfaces: &[S]) -> Self {
         let tree = bvh::Tree::new(surfaces);
         let mut nodes = Vec::with_capacity(tree.len());
         tree.flatten(&mut nodes);
@@ -16,8 +16,8 @@ impl<'scene> Linear<'scene> {
 }
 
 #[derive(Clone, Debug)]
-pub enum Tree<'scene> {
-    Leaf(Box<bvh::Leaf<'scene>>),
+pub enum Tree<S> {
+    Leaf(Box<bvh::Leaf<S>>),
     Node {
         axis: math::Axis,
         bound: geom::Box3,
@@ -25,7 +25,7 @@ pub enum Tree<'scene> {
     },
 }
 
-impl<'scene> Tree<'scene> {
+impl<'scene, S> Tree<S> where S: Surface<'scene> {
     fn bound(&self) -> geom::Box3 {
         match self {
         | Tree::Leaf(leaf) => leaf.bound(),
@@ -34,8 +34,8 @@ impl<'scene> Tree<'scene> {
     }
 }
 
-impl<'scene> bvh::Tree<'scene> {
-    fn flatten(self, nodes: &mut Vec<Tree<'scene>>) {
+impl<'scene, S> bvh::Tree<S> where S: Surface<'scene> {
+    fn flatten(self, nodes: &mut Vec<Tree<S>>) {
         match self {
         | bvh::Tree::Leaf(surfaces) => {
             nodes.push(Tree::Leaf(Box::new(surfaces)));
@@ -49,7 +49,7 @@ impl<'scene> bvh::Tree<'scene> {
     }
 }
 
-impl<'scene> Surface<'scene> for Linear<'scene> {
+impl<'scene, S> Surface<'scene> for Linear<S> where S: Surface<'scene> {
     fn bound(&self) -> geom::Box3 {
         match &self.0[0] {
         | Tree::Leaf(surface) => surface.bound(),
