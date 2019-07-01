@@ -7,6 +7,9 @@ mod token;
 mod lexer;
 mod parser;
 
+pub use token::Token;
+pub use lexer::Lexer;
+
 #[derive(Debug)]
 pub struct Scene<'scene> {
     background: math::Vec3,
