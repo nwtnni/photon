@@ -6,10 +6,11 @@ use crate::math;
 use crate::scene;
 use crate::integrator;
 
+#[derive(Copy, Clone, Debug)]
 pub struct BxDF;
 
 impl<'scene> integrator::Integrator<'scene> for BxDF {
-    fn shade(scene: &scene::Scene<'scene>, ray: &math::Ray, hit: &geom::Record<'scene>, depth: usize) -> math::Vec3 {
+    fn shade(&self, scene: &scene::Scene<'scene>, ray: &math::Ray, hit: &geom::Record<'scene>, depth: usize) -> math::Vec3 {
         let p = hit.p;
         let n = hit.n;  
         let wr = (ray.p - hit.p).normalize();
@@ -36,7 +37,7 @@ impl<'scene> integrator::Integrator<'scene> for BxDF {
 
         if scene.hit(&mut ray, &mut hit_record) {
             if bs.delta {
-                color += Self::shade(scene, &ray, &hit_record, depth + 1);
+                color += self.shade(scene, &ray, &hit_record, depth + 1);
             } else if let Some(light) = hit_record.emit {
                 color += light; 
             }

@@ -4,10 +4,11 @@ use crate::math;
 use crate::scene;
 use crate::integrator;
 
+#[derive(Copy, Clone, Debug)]
 pub struct Light;
 
 impl<'scene> integrator::Integrator<'scene> for Light {
-    fn shade(scene: &scene::Scene<'scene>, ray: &math::Ray, hit: &geom::Record<'scene>, depth: usize) -> math::Vec3 {
+    fn shade(&self, scene: &scene::Scene<'scene>, ray: &math::Ray, hit: &geom::Record<'scene>, depth: usize) -> math::Vec3 {
 
         if depth > 5 { return math::Vec3::default() }
 
@@ -38,7 +39,7 @@ impl<'scene> integrator::Integrator<'scene> for Light {
 
             if !scene.hit(&mut recurse, &mut hr) { return color }
 
-            color += Self::shade(scene, &recurse, &hr, depth + 1)
+            color += self.shade(scene, &recurse, &hr, depth + 1)
                 * bs.v
                 * n.dot(&bs.d).abs()
                 / bs.p

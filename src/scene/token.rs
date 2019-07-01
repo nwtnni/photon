@@ -9,6 +9,9 @@ pub enum Token {
     Surface,
     Light,
     BxDF,
+
+    Normal,
+    Path,
  
     Sphere,
     Quad,

@@ -62,6 +62,8 @@ impl<R> Iterator for Lexer<R> where R: io::Read {
                 | "surface" => Surface,
                 | "light" => Light,
                 | "bxdf" => BxDF,
+                | "normal" => Normal,
+                | "path" => Path,
                 | "sphere" => Sphere,
                 | "quad" => Quad,
                 | "point" => Point,

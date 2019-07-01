@@ -20,6 +20,7 @@ fn render<'scene, I: Integrator<'scene>>(
     ns: usize,
     camera: &Camera,
     scene: &scene::Scene<'scene>,
+    mut integrator: I,
 ) {
     let progress = std::thread::spawn(move || photon::progress::run(nx * ny));
 
@@ -38,7 +39,7 @@ fn render<'scene, I: Integrator<'scene>>(
                     let mut r = camera.get(u, v);
                     // FIXME: move logic inside Scene?
                     if scene.hit(&mut r, &mut hit) {
-                        c += I::shade(scene, &r, &hit, 0);
+                        c += integrator.shade(scene, &r, &hit, 0);
                     } else {
                         c += scene.background();
                     }
