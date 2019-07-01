@@ -9,23 +9,27 @@ mod parser;
 
 pub use token::Token;
 pub use lexer::Lexer;
+pub use parser::Parser;
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct Scene<'scene> {
     background: math::Vec3,
     camera: camera::Camera,
-    lights: &'scene [&'scene dyn light::Light],
-    surface: &'scene dyn geom::Surface<'scene>,
+    lights: Vec<&'scene dyn light::Light>,
+    surfaces: Vec<&'scene dyn geom::Surface<'scene>>,
 }
 
 impl<'scene> Scene<'scene> {
-    pub fn new(
-        background: math::Vec3, 
-        camera: camera::Camera,
-        lights: &'scene [&'scene dyn light::Light],
-        surface: &'scene dyn geom::Surface<'scene>
-    ) -> Self {
-        Scene { background, camera, lights, surface }
+    pub fn set_camera(&mut self, camera: camera::Camera) {
+        self.camera = camera;
+    }
+
+    pub fn push_light(&mut self, light: &'scene dyn light::Light) {
+        self.lights.push(light);
+    }
+
+    pub fn push_surface(&mut self, surface: &'scene dyn geom::Surface<'scene>) {
+        self.surfaces.push(surface);
     }
 
     pub fn background(&self) -> math::Vec3 {
@@ -33,20 +37,20 @@ impl<'scene> Scene<'scene> {
     }
 
     pub fn lights(&self) -> &[&'scene dyn light::Light] {
-        &self.lights
+        unimplemented!()
     }
 }
 
 impl<'scene> geom::Surface<'scene> for Scene<'scene> {
     fn bound(&self) -> geom::Box3 {
-        self.surface.bound()
+        unimplemented!()
     }
 
     fn hit(&self, ray: &mut math::Ray, hit: &mut geom::Record<'scene>) -> bool {
-        self.surface.hit(ray, hit)
+        unimplemented!()
     }
 
     fn hit_any(&self, ray: &math::Ray) -> bool {
-        self.surface.hit_any(ray)
+        unimplemented!()
     }
 }

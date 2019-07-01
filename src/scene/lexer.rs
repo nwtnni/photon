@@ -9,6 +9,18 @@ pub struct Lexer<R>  {
 }
 
 impl<R> Lexer<R> where R: io::Read {
+    pub fn new(stream: R) -> Self {
+        let mut stream = stream.bytes();
+        let next = stream.next()
+            .map(Result::unwrap)
+            .map(From::from);
+        Lexer {
+            buffer: String::default(),
+            stream,
+            next,
+        }
+    }
+
     fn skip(&mut self) {
         self.next = self.stream.next()
             .map(Result::unwrap)
@@ -45,11 +57,11 @@ impl<R> Iterator for Lexer<R> where R: io::Read {
             } else {
                 use scene::Token::*;
                 match self.buffer.as_ref() {
-                | "scene" => Scene,
                 | "camera" => Camera,
                 | "integrator" => Integrator,
                 | "surface" => Surface,
                 | "light" => Light,
+                | "bxdf" => BxDF,
                 | "sphere" => Sphere,
                 | "quad" => Quad,
                 | "point" => Point,

@@ -3,12 +3,12 @@ pub enum Token {
     String(String),
     Float(f32),
 
-    Scene,
     Camera,
     Integrator,
 
     Surface,
     Light,
+    BxDF,
  
     Sphere,
     Quad,
