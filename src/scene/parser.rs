@@ -54,7 +54,7 @@ impl<'scene, R> Parser<'scene, R> where R: io::Read {
             }
         }
 
-        scene::Scene::new(camera, lights, surfaces, integrator)
+        scene::Scene::new(self.arena, camera, lights, surfaces, integrator)
     }
 
     fn parse_camera(&mut self) -> camera::Camera {

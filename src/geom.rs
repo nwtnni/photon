@@ -49,7 +49,7 @@ pub trait Surface<'scene>: std::fmt::Debug + Send + Sync {
     fn hit_any(&self, ray: &math::Ray) -> bool;
 }
 
-impl<'scene, T> Surface<'scene> for &T where T: Surface<'scene> {
+impl<'scene, T> Surface<'scene> for &T where T: Surface<'scene> + ?Sized {
     fn bound(&self) -> Box3 {
         (*self).bound()
     }

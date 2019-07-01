@@ -1,3 +1,5 @@
+use crate::arena;
+use crate::bvh;
 use crate::camera;
 use crate::geom;
 use crate::light;
@@ -16,18 +18,20 @@ pub use parser::Parser;
 pub struct Scene<'scene> {
     camera: camera::Camera,
     lights: Vec<&'scene dyn light::Light>,
-    surfaces: Vec<&'scene dyn geom::Surface<'scene>>,
+    surface: bvh::Linear<'scene, &'scene dyn geom::Surface<'scene>>,
     integrator: &'scene dyn integrator::Integrator<'scene>,
 }
 
 impl<'scene> Scene<'scene> {
     pub fn new(
+        arena: &'scene arena::Arena,
         camera: camera::Camera,
         lights: Vec<&'scene dyn light::Light>,
         surfaces: Vec<&'scene dyn geom::Surface<'scene>>,
         integrator: &'scene dyn integrator::Integrator<'scene>
     ) -> Self {
-        Scene { camera, lights, surfaces, integrator }
+        let surface = bvh::Linear::new(arena, &surfaces);
+        Scene { camera, lights, surface, integrator }
     }
 
     pub fn lights(&self) -> &[&'scene dyn light::Light] {
@@ -37,14 +41,14 @@ impl<'scene> Scene<'scene> {
 
 impl<'scene> geom::Surface<'scene> for Scene<'scene> {
     fn bound(&self) -> geom::Box3 {
-        unimplemented!()
+        self.surface.bound()
     }
 
     fn hit(&self, ray: &mut math::Ray, hit: &mut geom::Record<'scene>) -> bool {
-        unimplemented!()
+        self.surface.hit(ray, hit)
     }
 
     fn hit_any(&self, ray: &math::Ray) -> bool {
-        unimplemented!()
+        self.surface.hit_any(ray)
     }
 }
