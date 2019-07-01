@@ -20,7 +20,10 @@ impl<'scene, R> Parser<'scene, R> where R: io::Read {
         Parser { arena, lexer }
     }
 
-    fn parse_scene(&mut self) -> scene::Scene<'scene> {
+    pub fn parse_scene(&mut self) -> scene::Scene<'scene> {
+        let mut width = 200;
+        let mut height = 100;
+        let mut samples = 64;
         let mut camera = camera::Camera::default();
         let mut lights = Vec::default();
         let mut surfaces = Vec::default();
@@ -29,6 +32,9 @@ impl<'scene, R> Parser<'scene, R> where R: io::Read {
         while let Some(item) = self.lexer.next() {
             use scene::Token::*;
             match item {
+            | Width => width = self.parse_int() as usize,
+            | Height => height = self.parse_int() as usize,
+            | Samples => samples = self.parse_int() as usize,
             | Camera => {
                 camera = self.parse_camera();
             }
@@ -54,7 +60,16 @@ impl<'scene, R> Parser<'scene, R> where R: io::Read {
             }
         }
 
-        scene::Scene::new(self.arena, camera, lights, surfaces, integrator)
+        scene::Scene::new(
+            self.arena,
+            width,
+            height,
+            samples,
+            camera,
+            lights,
+            surfaces,
+            integrator
+        )
     }
 
     fn parse_camera(&mut self) -> camera::Camera {
@@ -166,10 +181,18 @@ impl<'scene, R> Parser<'scene, R> where R: io::Read {
         }
     }
 
+    fn parse_int(&mut self) -> i32 {
+        match self.lexer.next() {
+        | Some(scene::Token::Int(i)) => i,
+        | _ => panic!("[SCENE ERROR]: expected integer"),
+        }
+    }
+
     fn parse_float(&mut self) -> f32 {
         match self.lexer.next() {
+        | Some(scene::Token::Int(i)) => i as f32,
         | Some(scene::Token::Float(f)) => f,
-        | _ => panic!("[SCENE ERROR]: expected String"),
+        | _ => panic!("[SCENE ERROR]: expected float"),
         }
     }
 }

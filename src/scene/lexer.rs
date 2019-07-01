@@ -51,12 +51,16 @@ impl<R> Iterator for Lexer<R> where R: io::Read {
             self.fill();      
             
             let token = if c.is_digit(10) {
-                self.buffer.parse::<f32>()
-                    .map(scene::Token::Float)
-                    .expect("[SCENE ERROR]: invalid float")
+                self.buffer.parse::<i32>()
+                    .map(scene::Token::Int)
+                    .or_else(|_| self.buffer.parse::<f32>().map(scene::Token::Float))
+                    .expect("[SCENE ERROR]: invalid numeric literal")
             } else {
                 use scene::Token::*;
                 match self.buffer.as_ref() {
+                | "width" => Width,
+                | "height" => Height,
+                | "samples" => Samples,
                 | "camera" => Camera,
                 | "integrator" => Integrator,
                 | "surface" => Surface,

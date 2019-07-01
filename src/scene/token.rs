@@ -1,7 +1,12 @@
 #[derive(Clone, Debug)]
 pub enum Token {
     String(String),
+    Int(i32),
     Float(f32),
+
+    Width,
+    Height,
+    Samples,
 
     Camera,
     Integrator,

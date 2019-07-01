@@ -16,6 +16,9 @@ pub use parser::Parser;
 
 #[derive(Debug)]
 pub struct Scene<'scene> {
+    width: usize,
+    height: usize,
+    samples: usize,
     camera: camera::Camera,
     lights: Vec<&'scene dyn light::Light>,
     surface: bvh::Linear<'scene, &'scene dyn geom::Surface<'scene>>,
@@ -25,17 +28,25 @@ pub struct Scene<'scene> {
 impl<'scene> Scene<'scene> {
     pub fn new(
         arena: &'scene arena::Arena,
+        width: usize,
+        height: usize,
+        samples: usize,
         camera: camera::Camera,
         lights: Vec<&'scene dyn light::Light>,
         surfaces: Vec<&'scene dyn geom::Surface<'scene>>,
         integrator: &'scene dyn integrator::Integrator<'scene>
     ) -> Self {
         let surface = bvh::Linear::new(arena, &surfaces);
-        Scene { camera, lights, surface, integrator }
+        Scene { width, height, samples, camera, lights, surface, integrator }
     }
 
     pub fn lights(&self) -> &[&'scene dyn light::Light] {
         &self.lights
+    }
+
+    pub fn render(&self) {
+
+
     }
 }
 
