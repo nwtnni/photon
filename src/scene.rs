@@ -3,6 +3,10 @@ use crate::geom;
 use crate::light;
 use crate::math;
 
+mod token;
+mod lexer;
+mod parser;
+
 #[derive(Debug)]
 pub struct Scene<'scene> {
     background: math::Vec3,
