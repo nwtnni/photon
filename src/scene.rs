@@ -1,6 +1,7 @@
 use crate::camera;
 use crate::geom;
 use crate::light;
+use crate::integrator;
 use crate::math;
 
 mod token;
@@ -11,33 +12,26 @@ pub use token::Token;
 pub use lexer::Lexer;
 pub use parser::Parser;
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct Scene<'scene> {
-    background: math::Vec3,
     camera: camera::Camera,
     lights: Vec<&'scene dyn light::Light>,
     surfaces: Vec<&'scene dyn geom::Surface<'scene>>,
+    integrator: &'scene dyn integrator::Integrator<'scene>,
 }
 
 impl<'scene> Scene<'scene> {
-    pub fn set_camera(&mut self, camera: camera::Camera) {
-        self.camera = camera;
-    }
-
-    pub fn push_light(&mut self, light: &'scene dyn light::Light) {
-        self.lights.push(light);
-    }
-
-    pub fn push_surface(&mut self, surface: &'scene dyn geom::Surface<'scene>) {
-        self.surfaces.push(surface);
-    }
-
-    pub fn background(&self) -> math::Vec3 {
-        self.background
+    pub fn new(
+        camera: camera::Camera,
+        lights: Vec<&'scene dyn light::Light>,
+        surfaces: Vec<&'scene dyn geom::Surface<'scene>>,
+        integrator: &'scene dyn integrator::Integrator<'scene>
+    ) -> Self {
+        Scene { camera, lights, surfaces, integrator }
     }
 
     pub fn lights(&self) -> &[&'scene dyn light::Light] {
-        unimplemented!()
+        &self.lights
     }
 }
 

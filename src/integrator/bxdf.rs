@@ -41,8 +41,6 @@ impl<'scene> integrator::Integrator<'scene> for BxDF {
             } else if let Some(light) = hit_record.emit {
                 color += light; 
             }
-        } else {
-            color += scene.background();
         }
 
         color * bs.v

@@ -40,8 +40,6 @@ fn render<'scene, I: Integrator<'scene>>(
                     // FIXME: move logic inside Scene?
                     if scene.hit(&mut r, &mut hit) {
                         c += integrator.shade(scene, &r, &hit, 0);
-                    } else {
-                        c += scene.background();
                     }
                 }
                 c /= ns as f32;

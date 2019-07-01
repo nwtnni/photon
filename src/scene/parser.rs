@@ -1,6 +1,7 @@
 use std::io;
 
 use crate::arena;
+use crate::camera;
 use crate::bxdf;
 use crate::geom;
 use crate::integrator;
@@ -19,7 +20,55 @@ impl<'scene, R> Parser<'scene, R> where R: io::Read {
         Parser { arena, lexer }
     }
 
-    fn parse_integrator(&mut self) -> &'scene dyn integrator::Integrator {
+    fn parse_scene(&mut self) -> scene::Scene<'scene> {
+        let mut camera = camera::Camera::default();
+        let mut lights = Vec::default();
+        let mut surfaces = Vec::default();
+        let mut integrator = &integrator::Normal as &dyn integrator::Integrator;
+
+        while let Some(item) = self.lexer.next() {
+            use scene::Token::*;
+            match item {
+            | Camera => {
+                camera = self.parse_camera();
+            }
+            | Light => {
+                match self.parse_light() {
+                | (light, Some(surface)) => {
+                    lights.push(light);
+                    surfaces.push(surface);
+                }
+                | (light, None) => {
+                    lights.push(light);
+                }
+                }
+            }
+            | Surface => {
+                let surface = self.parse_surface();
+                surfaces.push(surface);
+            }
+            | Integrator => {
+                integrator = self.parse_integrator();
+            }
+            | _ => panic!("[SCENE ERROR]: expected top-level element"),
+            }
+        }
+
+        scene::Scene::new(camera, lights, surfaces, integrator)
+    }
+
+    fn parse_camera(&mut self) -> camera::Camera {
+        let origin = self.parse_vec();
+        let toward = self.parse_vec();
+        let up = self.parse_vec();
+        let fov = self.parse_float();
+        let aspect = self.parse_float();
+        let aperture = self.parse_float();
+        let focus = self.parse_float();
+        camera::Camera::new(origin, toward, up, fov, aspect, aperture, focus)
+    }
+
+    fn parse_integrator(&mut self) -> &'scene dyn integrator::Integrator<'scene> {
         use scene::Token::*;
         match self.lexer.next() {
         | Some(Normal) => self.arena.alloc(integrator::Normal),
@@ -31,7 +80,7 @@ impl<'scene, R> Parser<'scene, R> where R: io::Read {
         }
     }
 
-    fn parse_light(&mut self) -> (&'scene dyn light::Light, Option<&'scene dyn geom::Surface>) {
+    fn parse_light(&mut self) -> (&'scene dyn light::Light, Option<&'scene dyn geom::Surface<'scene>>) {
         use scene::Token::*;
         match self.lexer.next() {
         | Some(Point) => {
@@ -52,7 +101,7 @@ impl<'scene, R> Parser<'scene, R> where R: io::Read {
         }
     }
 
-    fn parse_surface(&mut self) -> &'scene dyn geom::Surface {
+    fn parse_surface(&mut self) -> &'scene dyn geom::Surface<'scene> {
         use scene::Token::*;
         match self.lexer.next() {
         | Some(Sphere) => {

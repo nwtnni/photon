@@ -16,7 +16,7 @@ impl<'scene> integrator::Integrator<'scene> for Light {
         let n = hit.n;  
         let wr = (ray.p - hit.p).normalize();
 
-        let mut color = hit.emit.unwrap_or_default() + scene.background();
+        let mut color = hit.emit.unwrap_or_default();
 
         for light in scene.lights() {
 

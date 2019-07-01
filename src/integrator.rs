@@ -1,3 +1,5 @@
+use std::fmt;
+
 use crate::math;
 use crate::scene;
 use crate::geom;
@@ -15,7 +17,7 @@ pub use path::Path;
 pub use bxdf::BxDF;
 pub use light::Light;
 
-pub trait Integrator<'scene>: Send + Sync {
+pub trait Integrator<'scene>: Send + Sync + fmt::Debug {
     fn shade(&self, scene: &scene::Scene<'scene>, ray: &math::Ray, hit: &geom::Record<'scene>, depth: usize) -> math::Vec3;
 }
 
