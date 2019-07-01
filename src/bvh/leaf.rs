@@ -47,11 +47,11 @@ impl<'scene, S> Surface<'scene> for Leaf<S> where S: Surface<'scene> {
     }
 }
 
-impl<S: Copy> Default for Leaf<S> {
+impl<S> Default for Leaf<S> {
     fn default() -> Self {
         Leaf {
-            bound: geom::Box3::smallest(),
-            surfaces: [None; LEAF_SIZE],
+            bound: Default::default(),
+            surfaces: Default::default(),
         }
     }
 }
