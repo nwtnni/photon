@@ -8,18 +8,18 @@ use crate::geom;
 const BUCKETS: usize = 12;
 
 #[derive(Clone, Debug)]
-pub enum Tree<'scene, S> {
-    Leaf(Leaf<'scene, S>),
+pub enum Tree<S> {
+    Leaf(Leaf<S>),
     Node {
         bound: geom::Box3,
         axis: Axis,
-        l: Box<Tree<'scene, S>>,
-        r: Box<Tree<'scene, S>>,
+        l: Box<Tree<S>>,
+        r: Box<Tree<S>>,
     },
 }
 
-impl<'scene, S> Tree<'scene, S> where S: Surface<'scene> {
-    pub fn new(surfaces: &[&'scene S]) -> Self {
+impl<'scene, S> Tree<S> where S: Surface<'scene> + Copy {
+    pub fn new(surfaces: &[S]) -> Self {
         let lo = 0;
         let hi = surfaces.len();
         let mut info: Vec<Info> = surfaces.iter()
@@ -28,7 +28,9 @@ impl<'scene, S> Tree<'scene, S> where S: Surface<'scene> {
             .collect();
         build(surfaces, &mut info, lo, hi)
     }
+}
 
+impl<'scene, S> Tree<S> where S: Surface<'scene> {
     pub fn len(&self) -> usize {
         match self {
         | Tree::Leaf(_) => 1,
@@ -44,7 +46,7 @@ impl<'scene, S> Tree<'scene, S> where S: Surface<'scene> {
     }
 }
 
-impl<'scene, S> Surface<'scene> for Tree<'scene, S> where S: Surface<'scene> {
+impl<'scene, S> Surface<'scene> for Tree<S> where S: Surface<'scene> {
     fn bound(&self) -> geom::Box3 {
         match self {
         | Tree::Leaf(surfaces) => surfaces.bound(),
@@ -113,12 +115,12 @@ impl Info {
 }
 
 fn build<'scene, S>(
-    surfaces: &[&'scene S],
+    surfaces: &[S],
     info: &mut [Info],
     lo: usize,
     hi: usize
-) -> Tree<'scene, S> 
-    where S: Surface<'scene>
+) -> Tree<S> 
+    where S: Surface<'scene> + Copy
 {
 
     let count = hi - lo;
