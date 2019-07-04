@@ -54,7 +54,7 @@ impl<'scene> integrator::Integrator<'scene> for Path {
                 if integrator::shadowed(scene, &hit.p, &ls.d, ls.t) { continue }
 
                 l += light.eval(&math::Ray::new(hit.p, ls.d))
-                    * hit.bxdf.unwrap().eval(&ls.d, &d, &hit.n)
+                    * hit.bxdf.unwrap().eval(&d, &ls.d, &hit.n)
                     * ls.a
                     * hit.n.dot(&ls.d)
                     / ls.p;
@@ -66,7 +66,7 @@ impl<'scene> integrator::Integrator<'scene> for Path {
 
             let bs = hit.bxdf.unwrap().sample(&d, &hit.n);
 
-            if bs.p == 0.0 {
+            if bs.p < math::EPSILON || bs.v.is_zero() {
                 break
             }
 

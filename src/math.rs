@@ -10,6 +10,7 @@ use rand::random;
 
 pub const PI: f32 = std::f32::consts::PI;
 pub const TAU: f32 = PI * 2.0;
+pub const EPSILON: f32 = 1e-5;
 
 /// Floating point minimum
 pub fn min(a: f32, b: f32) -> f32 {

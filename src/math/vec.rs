@@ -7,7 +7,7 @@ use std::ops::{
     Neg
 };
 
-use crate::math::{min, max};
+use crate::math;
 
 pub const ONES_3D: Vec3 = Vec3([1.0, 1.0, 1.0]);
 pub const ONES_2D: Vec3 = Vec3([1.0, 1.0, 0.0]);
@@ -91,18 +91,24 @@ impl Vec3 {
 
     pub fn min(&self, rhs: &Self) -> Self {
         Vec3([
-            min(self[0], rhs[0]),
-            min(self[1], rhs[1]),
-            min(self[2], rhs[2]),
+            math::min(self[0], rhs[0]),
+            math::min(self[1], rhs[1]),
+            math::min(self[2], rhs[2]),
         ])
     }
 
     pub fn max(&self, rhs: &Self) -> Self {
         Vec3([
-            max(self[0], rhs[0]),
-            max(self[1], rhs[1]),
-            max(self[2], rhs[2]),
+            math::max(self[0], rhs[0]),
+            math::max(self[1], rhs[1]),
+            math::max(self[2], rhs[2]),
         ])
+    }
+
+    pub fn is_zero(&self) -> bool {
+        self[0].abs() < math::EPSILON &&
+        self[1].abs() < math::EPSILON &&
+        self[2].abs() < math::EPSILON
     }
 }
 

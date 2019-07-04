@@ -1,0 +1,130 @@
+width 1024
+height 1024
+samples 1024
+
+integrator
+    path
+        10
+        1.0
+
+camera
+    0.0  1.5 -5.0
+    0.0  1.5  0.0
+    0.0  1.0  0.0
+    45
+    1.0
+    0.0001
+    0.035
+
+light
+    quad
+        -0.5 3.0 -0.5
+         1.0 0.0  0.0
+         0.0 0.0  1.0
+        lambertian
+            1.0 1.0 1.0
+        10.0 10.0 10.0
+
+surface
+    quad
+        -1.5 3.0 -1.5
+         1.0 0.0  0.0
+         0.0 0.0  1.0
+        lambertian
+            1.0 1.0 1.0
+surface
+    quad
+        -1.5 3.0 -0.5
+         1.0 0.0  0.0
+         0.0 0.0  1.0
+        lambertian
+            1.0 1.0 1.0
+surface
+    quad
+        -1.5 3.0  0.5
+         1.0 0.0  0.0
+         0.0 0.0  1.0
+        lambertian
+            1.0 1.0 1.0
+surface
+    quad
+        -0.5 3.0 -1.5
+         1.0 0.0  0.0
+         0.0 0.0  1.0
+        lambertian
+            1.0 1.0 1.0
+surface
+    quad
+        -0.5 3.0  0.5
+         1.0 0.0  0.0
+         0.0 0.0  1.0
+        lambertian
+            1.0 1.0 1.0
+surface
+    quad
+        0.5 3.0 -1.5
+        1.0 0.0  0.0
+        0.0 0.0  1.0
+        lambertian
+            1.0 1.0 1.0
+surface
+    quad
+        0.5 3.0 -0.5
+        1.0 0.0  0.0
+        0.0 0.0  1.0
+        lambertian
+            1.0 1.0 1.0
+surface
+    quad
+        0.5 3.0 0.5
+        1.0 0.0 0.0
+        0.0 0.0 1.0
+        lambertian
+            1.0 1.0 1.0
+
+
+surface
+    quad
+        -1.5 0.0 -1.5
+         0.0 0.0  3.0
+         3.0 0.0  0.0
+         lambertian
+            1.0 1.0 1.0
+
+surface
+    quad
+        -1.5 0.0 1.5
+         3.0 0.0 0.0
+         0.0 3.0 0.0
+        lambertian
+           1.0 1.0 1.0
+
+surface
+    quad
+        -1.5 0.0 -1.5
+         0.0 0.0 3.0
+         0.0 3.0 0.0
+        lambertian
+           0.0 1.0 0.0
+
+surface
+    quad
+         1.5 0.0 -1.5
+         0.0 0.0 3.0
+         0.0 3.0 0.0
+        lambertian
+           1.0 0.0 0.0
+
+surface
+    sphere
+        -0.5 0.5 -0.6
+        0.5
+        specular
+            1.0 1.0 1.0 
+            1.5
+
+surface
+    sphere
+        0.3 0.7 0.6
+        0.7
+        mirror
