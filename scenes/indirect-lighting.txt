@@ -1,0 +1,41 @@
+width 800
+height 600
+samples 1024
+
+integrator
+    path
+        10
+        50.0
+
+camera
+    10.0  0.0 -10.0
+     0.0  5.0   0.0
+     0.0  1.0   0.0
+    45
+    1.333333
+    0.0001
+    0.035
+
+light
+    quad
+        -2.5 5.0 -2.5
+         0.0 0.0  5.0
+         5.0 0.0  0.0
+        lambertian
+            1.0 1.0 1.0
+        1.0 1.0 1.0
+
+surface
+    quad
+        -10.0 7.0 -10.0
+          0.0 0.0  20.0
+         20.0 0.0   0.0
+        lambertian
+            0.8 0.8 1.0
+
+surface
+    sphere
+        0.0 -5.0 0.0
+        8.0
+        lambertian
+            1.0 1.0 1.0

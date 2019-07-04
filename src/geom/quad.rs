@@ -73,7 +73,7 @@ impl<'scene> geom::Surface<'scene> for Quad<'scene> {
         hit.u = u;
         hit.v = v;
         hit.bxdf = Some(self.bxdf);
-        hit.emit = self.emit;
+        hit.emit = if ray.d.dot(&self.n) < 0.0 { self.emit } else { None };
 
         true
     }
