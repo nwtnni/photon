@@ -87,7 +87,11 @@ impl<'scene, R> Parser<'scene, R> where R: io::Read {
         use scene::Token::*;
         match self.lexer.next() {
         | Some(Normal) => self.arena.alloc(integrator::Normal),
-        | Some(Path) => self.arena.alloc(integrator::Path),
+        | Some(Path) => {
+            let depth = self.parse_int() as usize;
+            let threshold = self.parse_float();
+            self.arena.alloc(integrator::Path::new(depth, threshold))
+        }
         | Some(Light) => self.arena.alloc(integrator::Light),
         | Some(BxDF) => self.arena.alloc(integrator::BxDF),
         | Some(Point) => self.arena.alloc(integrator::Point),
