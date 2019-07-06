@@ -28,6 +28,9 @@ pub mod math;
 /// Full scene information
 pub mod scene;
 
+/// Sobol sampling
+pub mod sampler;
+
 /// Intersection and shape models
 pub mod geom;
 
