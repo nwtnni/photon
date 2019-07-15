@@ -22,7 +22,7 @@ impl<'scene> geom::Surface<'scene> for Translate<'scene> {
         )
     }
 
-    fn hit(&self, ray: &mut Ray, hit: &mut geom::Record<'scene>) -> bool {
+    fn hit(&self, ray: &mut Ray, hit: &mut geom::Hit<'scene>) -> bool {
         let mut offset = ray.with_origin(ray.p - self.offset);
         if self.surface.hit(&mut offset, hit) {
             hit.p += self.offset;

@@ -28,7 +28,7 @@ impl<'scene> geom::Surface<'scene> for Sphere<'scene> {
         geom::Box3::new(self.center - r, self.center + r)
     }
 
-    fn hit(&self, ray: &mut Ray, hit: &mut geom::Record<'scene>) -> bool {
+    fn hit(&self, ray: &mut Ray, hit: &mut geom::Hit<'scene>) -> bool {
 
         if cfg!(feature = "stats") {
             crate::stats::INTERSECTION_TESTS.inc();

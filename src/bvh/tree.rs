@@ -54,7 +54,7 @@ impl<'scene, S> Surface<'scene> for Tree<S> where S: Surface<'scene> {
         }
     }
 
-    fn hit(&self, ray: &mut Ray, hit: &mut geom::Record<'scene>) -> bool {
+    fn hit(&self, ray: &mut Ray, hit: &mut geom::Hit<'scene>) -> bool {
 
         if !self.bound().hit_any(ray) {
             #[cfg(feature = "stats")]

@@ -19,7 +19,7 @@ impl<'scene> geom::Surface<'scene> for Tri<'scene> {
             .union_v(self.vertices[2])
     }
 
-    fn hit(&self, ray: &mut Ray, hit: &mut geom::Record<'scene>) -> bool {
+    fn hit(&self, ray: &mut Ray, hit: &mut geom::Hit<'scene>) -> bool {
 
         if cfg!(feature = "stats") {
             crate::stats::INTERSECTION_TESTS.inc();

@@ -101,7 +101,7 @@ impl<'scene> geom::Surface<'scene> for Box3 {
         *self
     }
 
-    fn hit(&self, ray: &mut Ray, _: &mut geom::Record<'scene>) -> bool {
+    fn hit(&self, ray: &mut Ray, _: &mut geom::Hit<'scene>) -> bool {
         self.hit_any(&*ray)
     }
 

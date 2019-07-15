@@ -19,7 +19,7 @@ pub use tri::Tri;
 
 /// Carries information about surface intersections.
 #[derive(Copy, Clone, Debug, Default)]
-pub struct Record<'scene> {
+pub struct Hit<'scene> {
     /// Hit time
     pub t: f32,
 
@@ -45,7 +45,7 @@ pub struct Record<'scene> {
 /// Represents an object that can interact with light rays.
 pub trait Surface<'scene>: std::fmt::Debug + Send + Sync {
     fn bound(&self) -> Box3;
-    fn hit(&self, ray: &mut math::Ray, record: &mut Record<'scene>) -> bool;
+    fn hit(&self, ray: &mut math::Ray, hit: &mut Hit<'scene>) -> bool;
     fn hit_any(&self, ray: &math::Ray) -> bool;
 }
 
@@ -53,8 +53,8 @@ impl<'scene, T> Surface<'scene> for &T where T: Surface<'scene> + ?Sized {
     fn bound(&self) -> Box3 {
         (*self).bound()
     }
-    fn hit(&self, ray: &mut math::Ray, record: &mut Record<'scene>) -> bool {
-        (*self).hit(ray, record)
+    fn hit(&self, ray: &mut math::Ray, hit: &mut Hit<'scene>) -> bool {
+        (*self).hit(ray, hit)
     }
     fn hit_any(&self, ray: &math::Ray) -> bool {
         (*self).hit_any(ray)

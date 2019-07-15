@@ -74,7 +74,7 @@ impl<'scene> Scene<'scene> {
             .enumerate()
             .map(|(y, row)| (self.height - y - 1, row))
             .for_each(|(y, row)| {
-                let mut hit = geom::Record::default();
+                let mut hit = geom::Hit::default();
                 for x in 0..self.width {
                     let mut c = math::Vec3::default();
                     for _ in 0..self.samples {
@@ -102,7 +102,7 @@ impl<'scene> geom::Surface<'scene> for Scene<'scene> {
         self.surface.bound()
     }
 
-    fn hit(&self, ray: &mut math::Ray, hit: &mut geom::Record<'scene>) -> bool {
+    fn hit(&self, ray: &mut math::Ray, hit: &mut geom::Hit<'scene>) -> bool {
         self.surface.hit(ray, hit)
     }
 

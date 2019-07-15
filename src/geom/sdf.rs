@@ -25,7 +25,7 @@ impl<'scene> geom::Surface<'scene> for SDF<'scene> {
         self.shape.bound()
     }
 
-    fn hit(&self, ray: &mut math::Ray, hit: &mut geom::Record<'scene>) -> bool {
+    fn hit(&self, ray: &mut math::Ray, hit: &mut geom::Hit<'scene>) -> bool {
         if self.shape.hit(ray, hit) {
             hit.bxdf = Some(self.bxdf);
             hit.emit = None;
@@ -141,7 +141,7 @@ impl<'scene> geom::Surface<'scene> for Shape {
         self.bound
     }
 
-    fn hit(&self, ray: &mut math::Ray, hit: &mut geom::Record<'scene>) -> bool {
+    fn hit(&self, ray: &mut math::Ray, hit: &mut geom::Hit<'scene>) -> bool {
         self.shape.hit(ray, hit)
     }
 
@@ -246,7 +246,7 @@ impl<'scene> geom::Surface<'scene> for Tree {
         panic!("Bound should be stored in parent Shape")
     }
 
-    fn hit(&self, ray: &mut math::Ray, hit: &mut geom::Record<'scene>) -> bool {
+    fn hit(&self, ray: &mut math::Ray, hit: &mut geom::Hit<'scene>) -> bool {
         let mut t = ray.min;
         while t < HORIZON && t < ray.max {
             let p = ray.p + ray.d * t;

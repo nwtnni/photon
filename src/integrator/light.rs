@@ -8,7 +8,7 @@ use crate::integrator;
 pub struct Light;
 
 impl<'scene> integrator::Integrator<'scene> for Light {
-    fn shade(&self, scene: &scene::Scene<'scene>, ray: &math::Ray, hit: &geom::Record<'scene>, depth: usize) -> math::Vec3 {
+    fn shade(&self, scene: &scene::Scene<'scene>, ray: &math::Ray, hit: &geom::Hit<'scene>, depth: usize) -> math::Vec3 {
 
         if depth > 5 { return math::Vec3::default() }
 
@@ -34,7 +34,7 @@ impl<'scene> integrator::Integrator<'scene> for Light {
         let bs = hit.bxdf.unwrap().sample(&wr, &n);
 
         if bs.delta && bs.p > 0.001 {
-            let mut hr = geom::Record::default();
+            let mut hr = geom::Hit::default();
             let mut recurse = math::Ray::new(p, bs.d);
 
             if !scene.hit(&mut recurse, &mut hr) { return color }

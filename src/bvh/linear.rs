@@ -62,7 +62,7 @@ impl<'scene, S> Surface<'scene> for Linear<'scene, S> where S: Surface<'scene> {
         }
     }
 
-    fn hit(&self, ray: &mut math::Ray, hit: &mut geom::Record<'scene>) -> bool {
+    fn hit(&self, ray: &mut math::Ray, hit: &mut geom::Hit<'scene>) -> bool {
 
         let mut next = 0;
         let mut this = 0;

@@ -24,7 +24,7 @@ impl Path {
 }
 
 impl<'scene> integrator::Integrator<'scene> for Path {
-    fn shade(&self, scene: &scene::Scene<'scene>, ray: &math::Ray, hit: &geom::Record<'scene>, _: usize) -> math::Vec3 {
+    fn shade(&self, scene: &scene::Scene<'scene>, ray: &math::Ray, hit: &geom::Hit<'scene>, _: usize) -> math::Vec3 {
 
         let mut beta = math::Vec3::broadcast(1.0);
         let mut color = math::Vec3::default();

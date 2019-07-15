@@ -26,7 +26,7 @@ impl<'scene> geom::Surface<'scene> for Mesh<'scene> {
         self.internal.bound()
     }
 
-    fn hit(&self, ray: &mut math::Ray, hit: &mut geom::Record<'scene>) -> bool {
+    fn hit(&self, ray: &mut math::Ray, hit: &mut geom::Hit<'scene>) -> bool {
         if self.internal.hit(ray, hit) {
             hit.bxdf = Some(self.bxdf);
             hit.emit = None;

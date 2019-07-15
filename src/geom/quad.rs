@@ -45,7 +45,7 @@ impl<'scene> geom::Surface<'scene> for Quad<'scene> {
         self.bound
     }
 
-    fn hit(&self, ray: &mut math::Ray, hit: &mut geom::Record<'scene>) -> bool {
+    fn hit(&self, ray: &mut math::Ray, hit: &mut geom::Hit<'scene>) -> bool {
 
         const EPSILON: f32 = 0.0000001;
 

@@ -28,7 +28,7 @@ impl<'scene, S> Surface<'scene> for Leaf<S> where S: Surface<'scene> {
         self.bound
     }
 
-    fn hit(&self, ray: &mut math::Ray, hit: &mut geom::Record<'scene>) -> bool {
+    fn hit(&self, ray: &mut math::Ray, hit: &mut geom::Hit<'scene>) -> bool {
         let mut success = false;
         for i in 0..LEAF_SIZE {
             if let Some(surface) = &self.surfaces[i] {

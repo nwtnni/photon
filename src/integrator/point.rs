@@ -9,7 +9,7 @@ use crate::scene;
 pub struct Point;
 
 impl<'scene> integrator::Integrator<'scene> for Point {
-    fn shade(&self, scene: &scene::Scene<'scene>, ray: &Ray, hit: &geom::Record<'scene>, _: usize) -> Vec3 {
+    fn shade(&self, scene: &scene::Scene<'scene>, ray: &Ray, hit: &geom::Hit<'scene>, _: usize) -> Vec3 {
 
         let p = hit.p;
         let n = hit.n;

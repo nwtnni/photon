@@ -10,7 +10,7 @@ use crate::integrator;
 pub struct BxDF;
 
 impl<'scene> integrator::Integrator<'scene> for BxDF {
-    fn shade(&self, scene: &scene::Scene<'scene>, ray: &math::Ray, hit: &geom::Record<'scene>, depth: usize) -> math::Vec3 {
+    fn shade(&self, scene: &scene::Scene<'scene>, ray: &math::Ray, hit: &geom::Hit<'scene>, depth: usize) -> math::Vec3 {
         let p = hit.p;
         let n = hit.n;  
         let wr = (ray.p - hit.p).normalize();
@@ -32,7 +32,7 @@ impl<'scene> integrator::Integrator<'scene> for BxDF {
 
         let bs = hit.bxdf.unwrap().sample(&wr, &n);
 
-        let mut hit_record = geom::Record::default();
+        let mut hit_record = geom::Hit::default();
         let mut ray = math::Ray::new(p, bs.d);
 
         if scene.hit(&mut ray, &mut hit_record) {

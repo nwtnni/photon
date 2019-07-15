@@ -18,7 +18,7 @@ pub use bxdf::BxDF;
 pub use light::Light;
 
 pub trait Integrator<'scene>: Send + Sync + fmt::Debug {
-    fn shade(&self, scene: &scene::Scene<'scene>, ray: &math::Ray, hit: &geom::Record<'scene>, depth: usize) -> math::Vec3;
+    fn shade(&self, scene: &scene::Scene<'scene>, ray: &math::Ray, hit: &geom::Hit<'scene>, depth: usize) -> math::Vec3;
 }
 
 pub fn shadowed<'scene>(scene: &scene::Scene<'scene>, p: &math::Vec3, d: &math::Vec3, t: f32) -> bool {

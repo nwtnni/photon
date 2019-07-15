@@ -7,7 +7,7 @@ use crate::geom;
 pub struct Normal;
 
 impl<'scene> integrator::Integrator<'scene> for Normal {
-    fn shade(&self, _: &scene::Scene<'scene>, _: &Ray, hit: &geom::Record<'scene>, _: usize) -> Vec3 {
+    fn shade(&self, _: &scene::Scene<'scene>, _: &Ray, hit: &geom::Hit<'scene>, _: usize) -> Vec3 {
         Vec3::new(
             (hit.n.x() + 1.0) / 2.0,
             (hit.n.y() + 1.0) / 2.0,
