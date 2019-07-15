@@ -1,6 +1,9 @@
 use std::path;
 use std::fs;
 
+use byteorder::ByteOrder;
+use byteorder::LE;
+
 use crate::arena;
 use crate::bxdf;
 use crate::geom;
@@ -13,10 +16,8 @@ pub fn parse<'scene, P>(
 ) -> geom::Mesh<'scene>
     where P: AsRef<path::Path>
 {
-    let stl = fs::read_to_string(stl)
-        .expect("[INTERNAL ERROR]: could not read STL file");
-
-    if stl.starts_with("solid") {
+    let stl = fs::read(stl).expect("[INTERNAL ERROR]: could not read STL file");
+    if &stl[0..5] == "solid".as_bytes() {
         ascii(stl, arena, material)
     } else {
         binary(stl, arena, material)
@@ -24,11 +25,12 @@ pub fn parse<'scene, P>(
 }
 
 fn ascii<'scene>(
-    stl: String,
+    stl: Vec<u8>,
     arena: &'scene arena::Arena,
     material: &'scene dyn bxdf::BxDF
 ) -> geom::Mesh<'scene> {
 
+    let stl = String::from_utf8(stl).expect("[INTERNAL ERROR]: invalid ASCII STL file");
     let mut tokens = stl.split_whitespace();
     let mut vs = Vec::new();
     let mut ns = Vec::new();
@@ -73,9 +75,43 @@ fn ascii<'scene>(
 }
 
 fn binary<'scene>(
-    stl: String,
+    stl: Vec<u8>,
     arena: &'scene arena::Arena,
     material: &'scene dyn bxdf::BxDF
 ) -> geom::Mesh<'scene> {
-    unimplemented!()
+
+    let mut cursor = 80;
+    let mut ts = Vec::new();
+
+    let count = LE::read_u32(&stl[cursor..]);      
+    cursor += 4;
+
+    macro_rules! float {
+        () => {{
+            let f = LE::read_f32(&stl[cursor..]);
+            cursor += 4;
+            f
+        }}
+    }
+
+    macro_rules! vec3 {
+        () => {{
+            let v = math::Vec3::new(float!(), float!(), float!());
+            let v = arena.alloc(v);
+            v
+        }}
+    }
+
+    for _ in 0..count {
+        let n = vec3!();
+        let a = vec3!();
+        let b = vec3!();
+        let c = vec3!();
+        ts.push(geom::Tri::new([a, b, c], [n, n, n]));
+        cursor += 2;
+    }
+
+    println!("{:?}", ts);
+
+    geom::Mesh::new(arena, material, &ts)
 }
