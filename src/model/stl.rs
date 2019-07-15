@@ -20,7 +20,7 @@ pub fn parse<'scene, P>(
     if &stl[0..5] == "solid".as_bytes() {
         ascii(stl, arena, material)
     } else {
-        binary(stl, arena, material)
+        Binary::new(stl).parse(arena, material)
     }
 }
 
@@ -74,44 +74,54 @@ fn ascii<'scene>(
     geom::Mesh::new(arena, material, &ts)
 }
 
-fn binary<'scene>(
-    stl: Vec<u8>,
-    arena: &'scene arena::Arena,
-    material: &'scene dyn bxdf::BxDF
-) -> geom::Mesh<'scene> {
+/// Binary STL parser. Panics on malformed input.
+struct Binary {
+    buffer: Vec<u8>,
+    cursor: usize,
+}
 
-    let mut cursor = 80;
-    let mut ts = Vec::new();
-
-    let count = LE::read_u32(&stl[cursor..]);      
-    cursor += 4;
-
-    macro_rules! float {
-        () => {{
-            let f = LE::read_f32(&stl[cursor..]);
-            cursor += 4;
-            f
-        }}
+impl Binary {
+    fn new(buffer: Vec<u8>) -> Self {
+        Binary {
+            buffer,
+            cursor: 76,
+        }
     }
 
-    macro_rules! vec3 {
-        () => {{
-            let v = math::Vec3::new(float!(), float!(), float!());
-            let v = arena.alloc(v);
-            v
-        }}
+    fn parse_u32(&mut self) -> u32 {
+        self.cursor += 4;
+        LE::read_u32(&self.buffer[self.cursor..])
     }
 
-    for _ in 0..count {
-        let n = vec3!();
-        let a = vec3!();
-        let b = vec3!();
-        let c = vec3!();
-        ts.push(geom::Tri::new([a, b, c], [n, n, n]));
-        cursor += 2;
+    fn parse_f32(&mut self) -> f32 {
+        self.cursor += 4;
+        LE::read_f32(&self.buffer[self.cursor..])
     }
 
-    println!("{:?}", ts);
+    fn parse_vec3(&mut self) -> math::Vec3 {
+        let x = self.parse_f32();
+        let y = self.parse_f32();
+        let z = self.parse_f32();
+        math::Vec3::new(x, y, z)
+    }
 
-    geom::Mesh::new(arena, material, &ts)
+    fn parse<'scene>(
+        mut self,
+        arena: &'scene arena::Arena,
+        material: &'scene dyn bxdf::BxDF
+    ) -> geom::Mesh<'scene> {
+
+        let mut ts = Vec::new();
+        let count = self.parse_u32();
+        for _ in 0..count {
+            let n = arena.alloc(self.parse_vec3());
+            let a = arena.alloc(self.parse_vec3());
+            let b = arena.alloc(self.parse_vec3());
+            let c = arena.alloc(self.parse_vec3());
+            ts.push(geom::Tri::new([a, b, c], [n, n, n]));
+            self.cursor += 2;
+        }
+
+        geom::Mesh::new(arena, material, &ts)
+    }
 }
