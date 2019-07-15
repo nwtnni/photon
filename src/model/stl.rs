@@ -1,4 +1,5 @@
 use std::path;
+use std::str;
 use std::fs;
 
 use byteorder::ByteOrder;
@@ -18,60 +19,68 @@ pub fn parse<'scene, P>(
 {
     let stl = fs::read(stl).expect("[INTERNAL ERROR]: could not read STL file");
     if &stl[0..5] == "solid".as_bytes() {
-        ascii(stl, arena, material)
+        str::from_utf8(&stl)
+            .map(ASCII::new)
+            .expect("[STL ERROR]: invalid ASCII STL file")
+            .parse(arena, material)
     } else {
-        Binary::new(stl).parse(arena, material)
+        Binary::new(stl)
+            .parse(arena, material)
     }
 }
 
-fn ascii<'scene>(
-    stl: Vec<u8>,
-    arena: &'scene arena::Arena,
-    material: &'scene dyn bxdf::BxDF
-) -> geom::Mesh<'scene> {
+/// ASCII STL parser. Panics on malformed input.
+struct ASCII<'str>(str::SplitWhitespace<'str>);
 
-    let stl = String::from_utf8(stl).expect("[INTERNAL ERROR]: invalid ASCII STL file");
-    let mut tokens = stl.split_whitespace();
-    let mut vs = Vec::new();
-    let mut ns = Vec::new();
-
-    macro_rules! go {
-        () => {
-            match tokens.next() {
-            | Some(s) => s.parse::<f32>().expect("[INTERNAL ERROR]: invalid STL file"),
-            | None => panic!("[INTERNAL ERROR]: invalid STL file"),
-            }
-        }
+impl<'str> ASCII<'str> {
+    fn new(string: &'str str) -> Self {
+        ASCII(string.split_whitespace()) 
     }
 
-    while let Some(token) = tokens.next() {
-        if token != "facet" { continue }
-
-        assert!(tokens.next() == Some("normal"));
-
-        let n = math::Vec3::new(go!(), go!(), go!());
-        let n = arena.alloc(n);
-        ns.push(n);
-
-        assert!(tokens.next() == Some("outer"));
-        assert!(tokens.next() == Some("loop"));
-
-        for _ in 0..3 {
-            assert!(tokens.next() == Some("vertex"));
-            let v = math::Vec3::new(go!(), go!(), go!());
-            let v = arena.alloc(v);
-            vs.push(v);
+    fn parse<'scene>(
+        mut self,
+        arena: &'scene arena::Arena,
+        material: &'scene dyn bxdf::BxDF
+    ) -> geom::Mesh<'scene> {
+        let mut ts = Vec::new();
+        while let Some(token) = self.0.next() {
+            if token != "facet" { continue }
+            ts.push(self.parse_tri(arena));
         }
-
-        assert!(tokens.next() == Some("endloop"));
+        geom::Mesh::new(arena, material, &ts)
     }
 
-    let ts = ns.into_iter()
-        .enumerate()
-        .map(|(i, n)| geom::Tri::new([vs[i * 3 + 0], vs[i * 3 + 1], vs[i * 3 + 2]], [n, n, n]))
-        .collect::<Vec<_>>();
+    fn parse_tri<'scene>(&mut self, arena: &'scene arena::Arena) -> geom::Tri<'scene> {
+        self.verify("normal");
+        let n = arena.alloc(self.parse_vec3());
+        self.verify("outer");
+        self.verify("loop");
+        self.verify("vertex");
+        let a = arena.alloc(self.parse_vec3());
+        self.verify("vertex");
+        let b = arena.alloc(self.parse_vec3());
+        self.verify("vertex");
+        let c = arena.alloc(self.parse_vec3());
+        self.verify("endloop");
+        geom::Tri::new([a, b, c], [n, n, n])
+    }
 
-    geom::Mesh::new(arena, material, &ts)
+    fn parse_vec3(&mut self) -> math::Vec3 {
+        let x = self.parse_f32(); 
+        let y = self.parse_f32(); 
+        let z = self.parse_f32(); 
+        math::Vec3::new(x, y, z)
+    }
+
+    fn parse_f32(&mut self) -> f32 {
+        self.0.next()
+            .and_then(|s| s.parse::<f32>().ok())
+            .expect("[STL ERROR]: invalid STL file")
+    }
+
+    fn verify(&mut self, tag: &'static str) {
+        assert!(self.0.next() == Some(tag))
+    }
 }
 
 /// Binary STL parser. Panics on malformed input.
