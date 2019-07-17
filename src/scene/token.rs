@@ -22,6 +22,8 @@ pub enum Token {
     Quad,
     Point,
     Mesh,
+    OBJ,
+    STL,
 
     Glazed,
     Mirror,

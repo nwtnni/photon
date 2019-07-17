@@ -137,14 +137,22 @@ impl<'scene, R> Parser<'scene, R> where R: io::Read {
             let emit = None;
             self.arena.alloc(geom::Quad::new(p, u, v, bxdf, emit)) 
         }
-        | Some(Mesh) => {
-            let path = self.parse_string();
-            let bxdf = self.parse_bxdf();
-            let mesh = model::obj::parse(path, &self.arena, bxdf);
-            self.arena.alloc(mesh)
-        }
+        | Some(Mesh) => self.parse_mesh(),
         | _ => panic!("[SCENE ERROR]: expected surface"),
         }
+    }
+
+    fn parse_mesh(&mut self) -> &'scene dyn geom::Surface<'scene> {
+        use scene::Token::*;
+        let format = self.lexer.next();
+        let path = self.parse_string();
+        let bxdf = self.parse_bxdf();
+        let mesh = match format {
+        | Some(OBJ) => model::obj::parse(path, &self.arena, bxdf),
+        | Some(STL) => model::stl::parse(path, &self.arena, bxdf),
+        | _ => panic!("[SCENE ERROR]: expected mesh"),
+        };
+        self.arena.alloc(mesh)
     }
 
     fn parse_bxdf(&mut self) -> &'scene dyn bxdf::BxDF {
