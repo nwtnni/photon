@@ -72,6 +72,8 @@ impl<R> Iterator for Lexer<R> where R: io::Read {
                 | "quad" => Quad,
                 | "point" => Point,
                 | "mesh" => Mesh,
+                | "obj" => OBJ,
+                | "stl" => STL,
                 | "glazed" => Glazed,
                 | "mirror" => Mirror,
                 | "lambertian" => Lambertian,
