@@ -41,9 +41,14 @@ impl<'scene, S> Surface<'scene> for Leaf<S> where S: Surface<'scene> {
     }
 
     fn hit_any(&self, ray: &math::Ray) -> bool {
-        self.surfaces.into_iter()
-            .filter_map(|surface| surface.as_ref())
-            .any(|surface| surface.hit_any(ray))
+        for i in 0..LEAF_SIZE {
+            if let Some(surface) = &self.surfaces[i] {
+                if surface.hit_any(ray) { return true }
+            } else {
+                return false
+            }
+        }
+        false
     }
 }
 
