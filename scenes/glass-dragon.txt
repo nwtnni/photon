@@ -17,14 +17,14 @@ camera
 light
     quad
         -8.0 0.0   8.0
-         0.0 0.0 -16.0
         16.0 0.0   0.0
+         0.0 0.0 -16.0
         lambertian
             1.0 1.0 1.0
         1.0 1.0 1.0
 
 surface
-    mesh
+    mesh obj
         models/dragon.obj
         specular 
             0.8 0.8 1.0
