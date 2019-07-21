@@ -1,222 +1,125 @@
-use std::collections::HashMap;
-
-use crate::prelude::*;
-use crate::math::{Axis, Ray, Vec3};
-use crate::bvh::{Leaf, LEAF_SIZE};
+use crate::bvh;
+use crate::math;
 use crate::geom;
 
-const BUCKETS: usize = 12;
+#[derive(Copy, Clone, Debug)]
+pub struct Tree<'scene, S>(pub &'scene [Node<S>]);
 
-#[derive(Clone, Debug)]
-pub enum Tree<S> {
-    Leaf(Leaf<S>),
-    Node {
-        bound: geom::Box3,
-        axis: Axis,
-        l: Box<Tree<S>>,
-        r: Box<Tree<S>>,
-    },
-}
-
-impl<'scene, S> Tree<S> where S: Surface<'scene> + Copy {
-    pub fn new(surfaces: &[S]) -> Self {
-        let lo = 0;
-        let hi = surfaces.len();
-        let mut info: Vec<Info> = surfaces.iter()
-            .enumerate()
-            .map(|(i, surface)| Info::new(i, surface.bound()))
-            .collect();
-        build(surfaces, &mut info, lo, hi)
-    }
-}
-
-impl<'scene, S> Tree<S> {
-    pub fn len(&self) -> usize {
-        match self {
-        | Tree::Leaf(_) => 1,
-        | Tree::Node { l, r, .. } => 1 + l.len() + r.len(),
-        }
-    }
-
-    pub fn depth(&self) -> usize {
-        match self {
-        | Tree::Leaf(_) => 1,
-        | Tree::Node { l, r, .. } => 1 + std::cmp::max(l.depth(), r.depth()),
-        }
-    }
-}
-
-impl<'scene, S> Surface<'scene> for Tree<S> where S: Surface<'scene> {
+impl<'scene, S> geom::Surface<'scene> for Tree<'scene, S> where S: geom::Surface<'scene> {
     fn bound(&self) -> geom::Box3 {
-        match self {
-        | Tree::Leaf(surfaces) => surfaces.bound(),
-        | Tree::Node { bound, .. } => *bound,
-        }
+        self.0[0].bound()
     }
 
-    fn hit(&self, ray: &mut Ray, hit: &mut geom::Hit<'scene>) -> bool {
+    fn hit(&self, ray: &mut math::Ray, hit: &mut geom::Hit<'scene>) -> bool {
+        let mut next = 0;
+        let mut this = 0;
+        let mut visit = [0; 32];
+        let mut success = false;
 
-        if !self.bound().hit_any(ray) {
+        macro_rules! push { ($i:expr) => {{
+            visit[next] = $i;
+            next += 1;
+        }}}
+
+        macro_rules! pop { () => {{
+            if next == 0 { break success }
+            next -= 1;
+            this = visit[next];
+        }}}
+
+        loop {
+
+            if !self.0[this].bound().hit_any(ray) {
+                #[cfg(feature = "stats")]
+                crate::stats::BVH_MISSES.inc();
+                pop!();
+                continue
+            }
+
             #[cfg(feature = "stats")]
-            crate::stats::BVH_MISSES.inc();
-            return false
-        }
+            crate::stats::BVH_HITS.inc();
 
-        #[cfg(feature = "stats")]
-        crate::stats::BVH_HITS.inc();
-
-        match self {
-        | Tree::Leaf(surfaces) => {
-            surfaces.hit(ray, hit)
-        }
-        | Tree::Node { l, r, .. } => {
-            let mut success = false;
-            success |= l.hit(ray, hit);
-            success |= r.hit(ray, hit);
-            success
-        },
+            match &self.0[this] {
+            | Node::Leaf(leaf) => {
+                success |= leaf.hit(ray, hit);
+                pop!();
+            }
+            | Node::Node { child, axis, .. } => {
+                if ray.sign[*axis as usize] == 1 {
+                    push!(this + 1);
+                    this = *child as usize;
+                } else {
+                    push!(*child as usize);
+                    this += 1;
+                }
+            }
+            }
         }
     }
 
-    fn hit_any(&self, ray: &Ray) -> bool {
+    fn hit_any(&self, ray: &math::Ray) -> bool {
+        let mut next = 0;
+        let mut this = 0;
+        let mut visit = [0; 32];
 
-        if !self.bound().hit_any(ray) {
+        macro_rules! push { ($i:expr) => {{
+            visit[next] = $i;
+            next += 1;
+        }}}
+
+        macro_rules! pop { () => {{
+            if next == 0 { return false }
+            next -= 1;
+            this = visit[next];
+        }}}
+
+        loop {
+
+            if !self.0[this].bound().hit_any(ray) {
+                #[cfg(feature = "stats")]
+                crate::stats::BVH_MISSES.inc();
+                pop!();
+                continue
+            }
+
             #[cfg(feature = "stats")]
-            crate::stats::BVH_MISSES.inc();
-            return false
+            crate::stats::BVH_HITS.inc();
+
+            match &self.0[this] {
+            | Node::Leaf(leaf) => {
+                if leaf.hit_any(ray) { return true }
+                pop!();
+            }
+            | Node::Node { axis, child, .. } => {
+                if ray.sign[*axis as usize] == 1 {
+                    push!(this + 1);
+                    this = *child as usize;
+                } else {
+                    push!(*child as usize);
+                    this += 1;
+                }
+            }
+            }
         }
+    }
+}
 
-        #[cfg(feature = "stats")]
-        crate::stats::BVH_HITS.inc();
+#[derive(Copy, Clone, Debug)]
+pub enum Node<S> {
+    Leaf(bvh::Leaf<S>),
+    Node {
+        axis: math::Axis,
+        bound: geom::Box3,
+        child: u32,
+    }
+}
 
+impl<'scene, S> Node<S> where S: geom::Surface<'scene> {
+    pub fn bound(&self) -> geom::Box3 {
+        use geom::Surface;
         match self {
-        | Tree::Leaf(surfaces) => {
-            surfaces.hit_any(ray)
+        | Node::Leaf(leaf) => leaf.bound(),
+        | Node::Node { bound, .. } => *bound,
         }
-        | Tree::Node { l, r, .. } => {
-            l.hit_any(ray) || r.hit_any(ray)
-        },
-        }
-    }
-}
-
-#[derive(Clone, Debug)]
-struct Info {
-    index: usize,
-    bound: geom::Box3,
-    centroid: Vec3,
-}
-
-impl Info {
-    fn new(index: usize, bound: geom::Box3) -> Self {
-        let centroid = bound.min * 0.5 + bound.max * 0.5;
-        Info { index, bound, centroid }
-    }
-}
-
-fn build<'scene, S>(
-    surfaces: &[S],
-    info: &mut [Info],
-    lo: usize,
-    hi: usize
-) -> Tree<S> 
-    where S: Surface<'scene> + Copy
-{
-
-    let count = hi - lo;
-    let bound = info[lo..hi].iter()
-        .map(|info| info.bound)
-        .fold(geom::Box3::smallest(), |a, b| a.union_b(&b));
-
-    if count == 1 {
-        let mut leaf = Leaf::default();
-        leaf.set(0, surfaces[info[lo].index]);
-        return Tree::Leaf(leaf)
-    }
-
-    let centroid_bound = info[lo..hi].iter()
-        .map(|info| info.centroid)
-        .fold(geom::Box3::smallest(), |a, b| a.union_v(&b));
-
-    let dim = centroid_bound.max_extent();
-
-    let mid = if count <= 4 {
-
-        info[lo..hi].sort_unstable_by(|a, b| {
-            a.centroid[dim as usize]
-                .partial_cmp(&b.centroid[dim as usize])
-                .unwrap()
-        });
-
-        (lo + hi) / 2
-
-    } else {
-
-        let mut buckets = [(0, geom::Box3::smallest()); BUCKETS];
-        let mut assignment: HashMap<usize, usize> = HashMap::default();
-        for i in lo..hi {
-            let o = centroid_bound.offset(&info[i].centroid)[dim as usize];
-            let b = (BUCKETS as f32 * o) as usize;
-            let b = std::cmp::min(b, BUCKETS - 1);
-            buckets[b].0 += 1;
-            buckets[b].1 = buckets[b].1.union_b(&info[i].bound);
-            assignment.insert(info[i].index, b);
-        }
-
-        let mut cost = [0.0; BUCKETS - 1];
-        for i in 0..BUCKETS - 1 {
-            let mut left_bound = geom::Box3::smallest();
-            let mut left_count = 0;
-            for j in 0..=i {
-                left_count += buckets[j].0;
-                left_bound = left_bound.union_b(&buckets[j].1);
-            }
-
-            let mut right_bound = geom::Box3::smallest();
-            let mut right_count = 0;
-            for j in i + 1..BUCKETS {
-                right_count += buckets[j].0;
-                right_bound = right_bound.union_b(&buckets[j].1);
-            }
-
-            cost[i] = 1.0 + ( 
-                left_count as f32 * left_bound.surface_area() +
-                right_count as f32 * right_bound.surface_area()
-            ) / bound.surface_area();
-        }
-
-        let mut min_cost = cost[0];
-        let mut min_bucket = 0;
-        for i in 1..BUCKETS - 1 {
-            if cost[i] < min_cost {
-                min_cost = cost[i];
-                min_bucket = i;
-            }
-        }
-
-        if count > LEAF_SIZE || min_cost < count as f32 {
-
-            lo + partition::partition(
-                &mut info[lo..hi],
-                |info| assignment[&info.index] <= min_bucket
-            ).0.len()
-        
-        } else {
-            let mut leaf = Leaf::default();
-            for (i, j) in (lo..hi).enumerate() {
-                leaf.set(i, surfaces[info[j].index]);
-            }
-            return Tree::Leaf(leaf)
-        }
-    };
-
-    let l = build(surfaces, info, lo, mid);
-    let r = build(surfaces, info, mid, hi);
-
-    Tree::Node {
-        axis: dim,
-        bound: l.bound().union_b(&r.bound()),
-        l: Box::new(l),
-        r: Box::new(r),
     }
 }

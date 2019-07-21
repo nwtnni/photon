@@ -30,7 +30,7 @@ pub struct Scene<'scene> {
     samples: usize,
     camera: camera::Camera,
     lights: Vec<&'scene dyn light::Light>,
-    surface: bvh::Linear<'scene, &'scene dyn geom::Surface<'scene>>,
+    surface: bvh::Tree<'scene, &'scene dyn geom::Surface<'scene>>,
     integrator: &'scene dyn integrator::Integrator<'scene>,
 }
 
@@ -52,7 +52,7 @@ impl<'scene> Scene<'scene> {
         surfaces: Vec<&'scene dyn geom::Surface<'scene>>,
         integrator: &'scene dyn integrator::Integrator<'scene>
     ) -> Self {
-        let surface = bvh::Linear::new(arena, &surfaces);
+        let surface = bvh::Tree::new(arena, &surfaces);
         Scene { width, height, samples, camera, lights, surface, integrator }
     }
 
