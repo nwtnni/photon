@@ -9,6 +9,7 @@ pub use vec::Vec3;
 use rand::random;
 
 pub const PI: f32 = std::f32::consts::PI;
+pub const FRAC_PI_2: f32 = std::f32::consts::FRAC_PI_2;
 pub const TAU: f32 = PI * 2.0;
 pub const EPSILON: f32 = 1e-5;
 

@@ -1,13 +1,13 @@
 use crate::bxdf;
-use crate::math::{Ray, Vec3};
 use crate::geom;
+use crate::math;
 
 /// Basic sphere.
 #[readonly::make]
 #[derive(Copy, Clone, Debug)]
 pub struct Sphere<'scene> {
     /// Center
-    pub center: Vec3,
+    pub center: math::Vec3,
 
     /// Radius
     pub radius: f32,
@@ -17,18 +17,18 @@ pub struct Sphere<'scene> {
 }
 
 impl<'scene> Sphere<'scene> {
-    pub fn new(center: Vec3, radius: f32, bxdf: &'scene dyn bxdf::BxDF) -> Self {
+    pub fn new(center: math::Vec3, radius: f32, bxdf: &'scene dyn bxdf::BxDF) -> Self {
         Sphere { center, radius, bxdf }
     }
 }
 
 impl<'scene> geom::Surface<'scene> for Sphere<'scene> {
     fn bound(&self) -> geom::Box3 {
-        let r = Vec3::broadcast(self.radius);
+        let r = math::Vec3::broadcast(self.radius);
         geom::Box3::new(self.center - r, self.center + r)
     }
 
-    fn hit(&self, ray: &mut Ray, hit: &mut geom::Hit<'scene>) -> bool {
+    fn hit(&self, ray: &mut math::Ray, hit: &mut geom::Hit<'scene>) -> bool {
 
         if cfg!(feature = "stats") {
             crate::stats::INTERSECTION_TESTS.inc();
@@ -62,12 +62,12 @@ impl<'scene> geom::Surface<'scene> for Sphere<'scene> {
         hit.emit = None;
         let phi = hit.p.z().atan2(hit.p.x());
         let theta = hit.p.y().asin();
-        hit.u = 1.0 - (phi + std::f32::consts::PI) / (2.0 * std::f32::consts::PI);
-        hit.v = (theta + std::f32::consts::FRAC_PI_2) / std::f32::consts::PI;
+        hit.u = 1.0 - (phi + math::PI) / (2.0 * math::PI);
+        hit.v = (theta + math::FRAC_PI_2) / math::PI;
         true
     }
 
-    fn hit_any(&self, ray: &Ray) -> bool {
+    fn hit_any(&self, ray: &math::Ray) -> bool {
         if cfg!(feature = "stats") {
             crate::stats::INTERSECTION_TESTS.inc();
             crate::stats::SPHERE_INTERSECTION_TESTS.inc();
