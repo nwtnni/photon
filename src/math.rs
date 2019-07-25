@@ -1,10 +1,12 @@
 mod axis;
 mod ray;
 mod vec;
+mod mat;
 
 pub use axis::Axis;
 pub use ray::Ray;
 pub use vec::Vec3;
+pub use mat::Mat4;
 
 use rand::random;
 
