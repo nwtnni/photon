@@ -6,6 +6,11 @@ const BARS: usize = 50;
 const DONE: &'static str = "█";
 const REST: &'static str = "░";
 
+const HIDE: &'static str = "\x1B[?25l";
+const SHOW: &'static str = "\x1B[?25h";
+const SAVE: &'static str = "\x1B[s";
+const RESTORE: &'static str = "\x1B[u";
+
 #[derive(Copy, Clone)]
 enum Spinner {
     A, B, C, D
@@ -41,12 +46,7 @@ pub fn run(total: usize) -> Result<(), std::io::Error> {
     let mut spinner = Spinner::A;
     let mut rendered = 0;
 
-    write!(
-        out,
-        "{}{}",
-        termion::cursor::Hide,
-        termion::cursor::Save,
-    )?;
+    write!(out, "{}{}", HIDE, SAVE)?;
 
     while rendered < total {
         spinner.rotate();
@@ -63,7 +63,7 @@ pub fn run(total: usize) -> Result<(), std::io::Error> {
         write!(
             out,
             "{}[{}] | Elapsed: {:0>2}:{:0>2}:{:0>2} | [{}{}] | {:.2}% | {} out of {} pixels",
-            termion::cursor::Restore,
+            RESTORE,
             spinner,
             h, m, s,
             DONE.repeat(done),
@@ -78,11 +78,7 @@ pub fn run(total: usize) -> Result<(), std::io::Error> {
         );
     }
 
-    write!(
-        out,
-        "{}\n",
-        termion::cursor::Show,
-    )?;
+    writeln!(out, "{}", SHOW)?;
 
     Ok(())
 }
