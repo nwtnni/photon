@@ -1,6 +1,6 @@
 width 800
 height 600
-samples 10
+samples 100
 
 integrator
     normal

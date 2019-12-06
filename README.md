@@ -15,9 +15,25 @@ Initially based off of [Ray Tracing in One Weekend][3], but now modified extensi
 
 # Examples
 
+### Normal Vector Buddha
+
+![Buddha](renders/buddha.png)
+
+### Smooth Area Light
+
+![Area light](renders/area-light.png)
+
+### Indirect Lighting
+
+![Indirect lighting](renders/indirect-lighting.png)
+
+### Glass Dragon
+
+![Glass dragon](renders/glass-dragon.png)
+
 ### Cornell Box
 
-![Cornell box][9]
+![Cornell box](renders/cornell-box.png)
 
 [1]: https://www.pbrt.org/
 [2]: http://www.cs.cornell.edu/courses/cs4620/2018fa/
@@ -27,4 +43,3 @@ Initially based off of [Ray Tracing in One Weekend][3], but now modified extensi
 [6]: src/arena.rs
 [7]: src/bvh/tree.rs
 [8]: https://medium.com/@bromanz/how-to-create-awesome-accelerators-the-surface-area-heuristic-e14b5dec6160
-[9]: renders/cornell-box.png
