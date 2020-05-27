@@ -27,7 +27,7 @@ impl<'scene, R> Parser<'scene, R> where R: io::Read {
         let mut camera = camera::Camera::default();
         let mut lights = Vec::default();
         let mut surfaces = Vec::default();
-        let mut integrator = &integrator::Normal as &dyn integrator::Integrator;
+        let mut integrator = &integrator::Any::Normal(integrator::Normal);
 
         while let Some(item) = self.lexer.next() {
             use scene::Token::*;
@@ -68,7 +68,7 @@ impl<'scene, R> Parser<'scene, R> where R: io::Read {
             camera,
             lights,
             surfaces,
-            integrator
+            integrator,
         )
     }
 
@@ -83,18 +83,20 @@ impl<'scene, R> Parser<'scene, R> where R: io::Read {
         camera::Camera::new(origin, toward, up, fov, aspect, aperture, focus)
     }
 
-    fn parse_integrator(&mut self) -> &'scene dyn integrator::Integrator<'scene> {
+    fn parse_integrator(&mut self) -> &'scene integrator::Any {
         use scene::Token::*;
         match self.lexer.next() {
-        | Some(Normal) => self.arena.alloc(integrator::Normal),
+        | Some(Normal) => self.arena.alloc(integrator::Any::Normal(integrator::Normal)),
         | Some(Path) => {
             let depth = self.parse_int() as usize;
             let threshold = self.parse_float();
-            self.arena.alloc(integrator::Path::new(depth, threshold))
+            self.arena.alloc(integrator::Any::Path(
+                integrator::Path::new(depth, threshold)
+            ))
         }
-        | Some(Light) => self.arena.alloc(integrator::Light),
-        | Some(BxDF) => self.arena.alloc(integrator::BxDF),
-        | Some(Point) => self.arena.alloc(integrator::Point),
+        | Some(Light) => self.arena.alloc(integrator::Any::Light(integrator::Light)),
+        | Some(BxDF) => self.arena.alloc(integrator::Any::BxDF(integrator::BxDF)),
+        | Some(Point) => self.arena.alloc(integrator::Any::Point(integrator::Point)),
         | _ => panic!("[SCENE ERROR]: expected integrator"),
         }
     }
