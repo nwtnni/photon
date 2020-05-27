@@ -13,11 +13,11 @@ pub struct Sphere<'scene> {
     pub radius: f32,
 
     /// BxDF
-    pub bxdf: &'scene dyn bxdf::BxDF,
+    pub bxdf: &'scene bxdf::Any<'scene>,
 }
 
 impl<'scene> Sphere<'scene> {
-    pub fn new(center: math::Vec3, radius: f32, bxdf: &'scene dyn bxdf::BxDF) -> Self {
+    pub fn new(center: math::Vec3, radius: f32, bxdf: &'scene bxdf::Any<'scene>) -> Self {
         Sphere { center, radius, bxdf }
     }
 }

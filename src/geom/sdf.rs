@@ -10,12 +10,12 @@ const DZ: math::Vec3 = math::Vec3::new(0.0, 0.0, EPSILON);
 
 #[derive(Debug)]
 pub struct SDF<'scene> {
-    bxdf: &'scene dyn bxdf::BxDF,
+    bxdf: &'scene bxdf::Any<'scene>,
     shape: Shape,
 }
 
 impl<'scene> SDF<'scene> {
-    pub fn new(bxdf: &'scene dyn bxdf::BxDF, shape: Shape) -> Self {
+    pub fn new(bxdf: &'scene bxdf::Any<'scene>, shape: Shape) -> Self {
         SDF { bxdf, shape }
     }
 }

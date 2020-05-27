@@ -6,14 +6,14 @@ use crate::math;
 
 #[derive(Copy, Clone, Debug)]
 pub struct Mesh<'scene> {
-    bxdf: &'scene dyn bxdf::BxDF,
+    bxdf: &'scene bxdf::Any<'scene>,
     internal: bvh::Tree<'scene, geom::Tri<'scene>>,
 }
 
 impl<'scene> Mesh<'scene> {
     pub fn new(
         arena: &'scene arena::Arena,
-        bxdf: &'scene dyn bxdf::BxDF,
+        bxdf: &'scene bxdf::Any<'scene>,
         triangles: &[geom::Tri<'scene>],
     ) -> Self {
         let internal = bvh::Tree::new(arena, triangles);

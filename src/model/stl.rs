@@ -13,7 +13,7 @@ use crate::math;
 pub fn parse<'scene, P>(
     stl: P,
     arena: &'scene arena::Arena,
-    material: &'scene dyn bxdf::BxDF,
+    material: &'scene bxdf::Any<'scene>,
 ) -> geom::Mesh<'scene>
     where P: AsRef<path::Path>
 {
@@ -40,7 +40,7 @@ impl<'str> ASCII<'str> {
     fn parse<'scene>(
         mut self,
         arena: &'scene arena::Arena,
-        material: &'scene dyn bxdf::BxDF
+        material: &'scene bxdf::Any<'scene>
     ) -> geom::Mesh<'scene> {
         let mut ts = Vec::new();
         while let Some(token) = self.0.next() {
@@ -117,7 +117,7 @@ impl Binary {
     fn parse<'scene>(
         mut self,
         arena: &'scene arena::Arena,
-        material: &'scene dyn bxdf::BxDF
+        material: &'scene bxdf::Any<'scene>
     ) -> geom::Mesh<'scene> {
 
         let mut ts = Vec::new();

@@ -3,12 +3,12 @@ use crate::math;
 
 #[derive(Copy, Clone, Debug)]
 pub struct Glazed<'scene> {
-    bxdf: &'scene dyn bxdf::BxDF, 
+    bxdf: &'scene bxdf::Any<'scene>, 
     eta: f32,
 }
 
 impl<'scene> Glazed<'scene> {
-    pub fn new(bxdf: &'scene dyn bxdf::BxDF, eta: f32) -> Self {
+    pub fn new(bxdf: &'scene bxdf::Any<'scene>, eta: f32) -> Self {
         Glazed { bxdf, eta }
     }
 }

@@ -160,25 +160,31 @@ impl<'scene, R> Parser<'scene, R> where R: io::Read {
         self.arena.alloc(geom::Any::Mesh(mesh))
     }
 
-    fn parse_bxdf(&mut self) -> &'scene dyn bxdf::BxDF {
+    fn parse_bxdf(&mut self) -> &'scene bxdf::Any<'scene> {
         use scene::Token::*;
         match self.lexer.next() {
         | Some(Glazed) => {
             let eta = self.parse_float();
             let bxdf = self.parse_bxdf();
-            self.arena.alloc(bxdf::Glazed::new(bxdf, eta))
+            self.arena.alloc(bxdf::Any::Glazed(
+                bxdf::Glazed::new(bxdf, eta)
+            ))
         }
         | Some(Mirror) => {
-            self.arena.alloc(bxdf::Mirror)
+            self.arena.alloc(bxdf::Any::Mirror(bxdf::Mirror))
         }
         | Some(Lambertian) => {
             let color = self.parse_vec();
-            self.arena.alloc(bxdf::Lambertian::new(color))
+            self.arena.alloc(bxdf::Any::Lambertian(
+                bxdf::Lambertian::new(color)
+            ))
         }
         | Some(Specular) => {
             let color = self.parse_vec();
             let eta = self.parse_float();
-            self.arena.alloc(bxdf::Specular::new(color, eta))
+            self.arena.alloc(bxdf::Any::Specular(
+                bxdf::Specular::new(color, eta)
+            ))
         },
         | _ => panic!("[SCENE ERROR]: expected BxDF"),
         }

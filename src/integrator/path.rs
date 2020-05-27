@@ -1,3 +1,4 @@
+use crate::bxdf::BxDF;
 use crate::geom;
 use crate::math;
 use crate::scene;

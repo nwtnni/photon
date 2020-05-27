@@ -36,7 +36,7 @@ pub struct Hit<'scene> {
     pub n: math::Vec3,
 
     /// BxDF at hit point
-    pub bxdf: Option<&'scene dyn bxdf::BxDF>,
+    pub bxdf: Option<&'scene bxdf::Any<'scene>>,
 
     /// Light emission at hit point
     pub emit: Option<math::Vec3>,

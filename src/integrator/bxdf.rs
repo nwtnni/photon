@@ -1,5 +1,6 @@
 use std::ops::Sub;
 
+use crate::bxdf::BxDF as _;
 use crate::prelude::*;
 use crate::geom;
 use crate::math;

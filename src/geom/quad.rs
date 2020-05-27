@@ -11,7 +11,7 @@ pub struct Quad<'scene> {
     pub v: math::Vec3,
     pub n: math::Vec3,
     pub bound: geom::Box3,
-    pub bxdf: &'scene dyn bxdf::BxDF,
+    pub bxdf: &'scene bxdf::Any<'scene>,
     pub emit: Option<math::Vec3>,
 }
 
@@ -20,7 +20,7 @@ impl<'scene> Quad<'scene> {
         p: math::Vec3,
         u: math::Vec3,
         v: math::Vec3,
-        bxdf: &'scene dyn bxdf::BxDF,
+        bxdf: &'scene bxdf::Any<'scene>,
         emit: Option<math::Vec3>
     ) -> Self {
         Quad {
