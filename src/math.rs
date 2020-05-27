@@ -62,9 +62,9 @@ pub fn basis(w: &Vec3) -> (Vec3, Vec3) {
     let y = w.y().abs();
     let z = w.z().abs();
     let v = if x <= y && x <= z {
-        Vec3::new(1.0, 0.0, 0.0) 
+        Vec3::new(1.0, 0.0, 0.0)
     } else if y <= x && y <= z {
-        Vec3::new(0.0, 1.0, 0.0) 
+        Vec3::new(0.0, 1.0, 0.0)
     } else {
         Vec3::new(0.0, 0.0, 1.0)
     };

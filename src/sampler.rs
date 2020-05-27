@@ -1,7 +1,7 @@
 /// Sobol sampler
 #[derive(Clone, Debug)]
 pub struct Sobol {
-    samples: usize, 
+    samples: usize,
 }
 
 impl Sobol {

@@ -39,7 +39,7 @@ impl Arena {
     }
 
     pub unsafe fn alloc_slice_mut<T: Copy>(&self, count: usize) -> &mut [T] {
-        let size = self.align(std::mem::size_of::<T>()) * count; 
+        let size = self.align(std::mem::size_of::<T>()) * count;
         let len = self.len.get();
         if len + size >= self.cap { panic!("[INTERNAL ERROR]: arena ran out of memory"); }
         self.len.set(len + size);

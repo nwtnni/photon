@@ -33,7 +33,7 @@ impl std::fmt::Display for Spinner {
         | Spinner::A => '-',
         | Spinner::B => '\\',
         | Spinner::C => '|',
-        | Spinner::D => '/', 
+        | Spinner::D => '/',
         };
         write!(fmt, "{}", spinner)
     }

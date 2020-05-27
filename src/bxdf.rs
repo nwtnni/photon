@@ -19,10 +19,10 @@ pub struct Sample {
     pub d: math::Vec3,
 
     /// Value
-    pub v: math::Vec3,  
+    pub v: math::Vec3,
 
     /// Probability
-    pub p: f32, 
+    pub p: f32,
 
     /// Whether this sample came from a delta distribution
     pub delta: bool,
