@@ -99,7 +99,7 @@ impl<'scene, R> Parser<'scene, R> where R: io::Read {
         }
     }
 
-    fn parse_light(&mut self) -> (&'scene dyn light::Light, Option<&'scene dyn geom::Surface<'scene>>) {
+    fn parse_light(&mut self) -> (&'scene dyn light::Light, Option<&'scene geom::Any<'scene>>) {
         use scene::Token::*;
         match self.lexer.next() {
         | Some(Point) => {
@@ -113,21 +113,24 @@ impl<'scene, R> Parser<'scene, R> where R: io::Read {
             let v = self.parse_vec();
             let bxdf = self.parse_bxdf();
             let emit = Some(self.parse_vec());
-            let quad = self.arena.alloc(geom::Quad::new(p, u, v, bxdf, emit));
-            (quad, Some(quad))
+            let light = self.arena.alloc(geom::Quad::new(p, u, v, bxdf, emit));
+            let surface = self.arena.alloc(geom::Any::Quad(geom::Quad::new(p, u, v, bxdf, emit)));
+            (light, Some(surface))
         }
         | _ => panic!("[SCENE ERROR]: expected light"),
         }
     }
 
-    fn parse_surface(&mut self) -> &'scene dyn geom::Surface<'scene> {
+    fn parse_surface(&mut self) -> &'scene geom::Any<'scene> {
         use scene::Token::*;
         match self.lexer.next() {
         | Some(Sphere) => {
             let center = self.parse_vec();
             let radius = self.parse_float();
             let bxdf = self.parse_bxdf();
-            self.arena.alloc(geom::Sphere::new(center, radius, bxdf))
+            self.arena.alloc(geom::Any::Sphere(
+                geom::Sphere::new(center, radius, bxdf)
+            ))
         }
         | Some(Quad) => {
             let p = self.parse_vec();
@@ -135,14 +138,16 @@ impl<'scene, R> Parser<'scene, R> where R: io::Read {
             let v = self.parse_vec();
             let bxdf = self.parse_bxdf();
             let emit = None;
-            self.arena.alloc(geom::Quad::new(p, u, v, bxdf, emit)) 
+            self.arena.alloc(geom::Any::Quad(
+                geom::Quad::new(p, u, v, bxdf, emit)
+            ))
         }
         | Some(Mesh) => self.parse_mesh(),
         | _ => panic!("[SCENE ERROR]: expected surface"),
         }
     }
 
-    fn parse_mesh(&mut self) -> &'scene dyn geom::Surface<'scene> {
+    fn parse_mesh(&mut self) -> &'scene geom::Any<'scene> {
         use scene::Token::*;
         let format = self.lexer.next();
         let path = self.parse_string();
@@ -152,7 +157,7 @@ impl<'scene, R> Parser<'scene, R> where R: io::Read {
         | Some(STL) => model::stl::parse(path, &self.arena, bxdf),
         | _ => panic!("[SCENE ERROR]: expected mesh"),
         };
-        self.arena.alloc(mesh)
+        self.arena.alloc(geom::Any::Mesh(mesh))
     }
 
     fn parse_bxdf(&mut self) -> &'scene dyn bxdf::BxDF {

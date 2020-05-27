@@ -4,11 +4,11 @@ use crate::geom;
 #[derive(Copy, Clone, Debug)]
 pub struct Translate<'scene> {
     offset: Vec3,
-    surface: &'scene dyn geom::Surface<'scene>,
+    surface: &'scene geom::Any<'scene>,
 }
 
 impl<'scene> Translate<'scene> {
-    pub fn new(offset: Vec3, surface: &'scene dyn geom::Surface<'scene>) -> Self {
+    pub fn new(offset: Vec3, surface: &'scene geom::Any<'scene>) -> Self {
         Translate { offset, surface }
     }
 }
