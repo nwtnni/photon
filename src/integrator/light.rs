@@ -1,5 +1,6 @@
 use crate::prelude::*;
 use crate::geom;
+use crate::light::Light as _;
 use crate::math;
 use crate::scene;
 use crate::integrator;

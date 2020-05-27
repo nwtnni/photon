@@ -1,6 +1,7 @@
 use std::ops::Sub;
 
 use crate::bxdf::BxDF;
+use crate::light::Light;
 use crate::geom;
 use crate::integrator;
 use crate::math::{Ray, Vec3};

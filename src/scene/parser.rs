@@ -101,13 +101,13 @@ impl<'scene, R> Parser<'scene, R> where R: io::Read {
         }
     }
 
-    fn parse_light(&mut self) -> (&'scene dyn light::Light, Option<&'scene geom::Any<'scene>>) {
+    fn parse_light(&mut self) -> (&'scene light::Any<'scene>, Option<&'scene geom::Any<'scene>>) {
         use scene::Token::*;
         match self.lexer.next() {
         | Some(Point) => {
             let p = self.parse_vec();
             let i = self.parse_vec();
-            (self.arena.alloc(light::Point::new(p, i)), None)
+            (self.arena.alloc(light::Any::Point(light::Point::new(p, i))), None)
         }
         | Some(Quad) => {
             let p = self.parse_vec();
@@ -115,7 +115,7 @@ impl<'scene, R> Parser<'scene, R> where R: io::Read {
             let v = self.parse_vec();
             let bxdf = self.parse_bxdf();
             let emit = Some(self.parse_vec());
-            let light = self.arena.alloc(geom::Quad::new(p, u, v, bxdf, emit));
+            let light = self.arena.alloc(light::Any::Quad(geom::Quad::new(p, u, v, bxdf, emit)));
             let surface = self.arena.alloc(geom::Any::Quad(geom::Quad::new(p, u, v, bxdf, emit)));
             (light, Some(surface))
         }

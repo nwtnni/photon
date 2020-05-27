@@ -29,7 +29,7 @@ pub struct Scene<'scene> {
     height: usize,
     samples: usize,
     camera: camera::Camera,
-    lights: Vec<&'scene dyn light::Light>,
+    lights: Vec<&'scene light::Any<'scene>>,
     surface: bvh::Tree<'scene, &'scene geom::Any<'scene>>,
     integrator: &'scene integrator::Any,
 }
@@ -48,7 +48,7 @@ impl<'scene> Scene<'scene> {
         height: usize,
         samples: usize,
         camera: camera::Camera,
-        lights: Vec<&'scene dyn light::Light>,
+        lights: Vec<&'scene light::Any>,
         surfaces: Vec<&'scene geom::Any<'scene>>,
         integrator: &'scene integrator::Any,
     ) -> Self {
@@ -56,7 +56,7 @@ impl<'scene> Scene<'scene> {
         Scene { width, height, samples, camera, lights, surface, integrator }
     }
 
-    pub fn lights(&self) -> &[&'scene dyn light::Light] {
+    pub fn lights(&self) -> &[&'scene light::Any<'scene>] {
         &self.lights
     }
 

@@ -34,8 +34,8 @@ impl<'scene> Quad<'scene> {
         }
     }
 
-    pub fn as_light(&self) -> &dyn light::Light {
-        self
+    pub fn as_light(&self) -> light::Any<'scene> {
+        light::Any::Quad(*self)
     }
 }
 

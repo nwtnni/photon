@@ -1,5 +1,6 @@
 use crate::bxdf::BxDF;
 use crate::geom;
+use crate::light::Light;
 use crate::math;
 use crate::scene;
 use crate::integrator;
