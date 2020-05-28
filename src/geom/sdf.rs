@@ -4,9 +4,6 @@ use crate::math;
 
 const HORIZON: f32 = 100.0;
 const EPSILON: f32 = 0.001;
-const DX: math::Vec3 = math::Vec3::new(EPSILON, 0.0, 0.0);
-const DY: math::Vec3 = math::Vec3::new(0.0, EPSILON, 0.0);
-const DZ: math::Vec3 = math::Vec3::new(0.0, 0.0, EPSILON);
 
 #[derive(Debug)]
 pub struct SDF<'scene> {
@@ -234,9 +231,15 @@ impl Tree {
     }
 
     pub fn normal(&self, point: &math::Vec3) -> math::Vec3 {
-        let dx = self.at(&(point + DX)) - self.at(&(point - DX));
-        let dy = self.at(&(point + DY)) - self.at(&(point - DY));
-        let dz = self.at(&(point + DZ)) - self.at(&(point - DZ));
+        let dx = math::Vec3::new(EPSILON, 0.0, 0.0);
+        let dx = self.at(&(point + dx)) - self.at(&(point - dx));
+
+        let dy = math::Vec3::new(0.0, EPSILON, 0.0);
+        let dy = self.at(&(point + dy)) - self.at(&(point - dy));
+
+        let dz = math::Vec3::new(0.0, 0.0, EPSILON);
+        let dz = self.at(&(point + dz)) - self.at(&(point - dz));
+
         math::Vec3::new(dx, dy, dz).normalize()
     }
 }

@@ -1,4 +1,4 @@
-use crate::math::{self, Axis, Ray, Vec3};
+use crate::math::{Axis, Ray, Vec3};
 use crate::geom;
 
 #[readonly::make]
@@ -16,9 +16,10 @@ impl Box3 {
     }
 
     pub fn max_extent(&self) -> Axis {
-        let x = (self.max[0] - self.min[0]).abs();
-        let y = (self.max[1] - self.min[1]).abs();
-        let z = (self.max[2] - self.min[2]).abs();
+        let extent = (self.max - self.min).abs();
+        let x = extent.x();
+        let y = extent.y();
+        let z = extent.z();
         if x > y {
             if x > z { Axis::X } else { Axis::Z }
         } else {
@@ -66,16 +67,13 @@ impl Box3 {
     }
 
     pub fn offset(&self, v: &Vec3) -> Vec3 {
-        let mut o = v - self.min;
-        if self.max[0] > self.min[0] { o[0] /= self.max[0] - self.min[0] }
-        if self.max[1] > self.min[1] { o[1] /= self.max[1] - self.min[1] }
-        if self.max[2] > self.min[2] { o[2] /= self.max[2] - self.min[2] }
-        o
+        let m = self.max.gt(&self.min);
+        let p = v - self.min;
+        m.blend(&p, &(p / (self.max - self.min)))
     }
 
     pub fn surface_area(&self) -> f32 {
-        let d = self.max - self.min;
-        2.0 * (d.x() * d.x() + d.y() * d.y() + d.z() * d.z())
+        2.0 * (self.max - self.min).len_sq()
     }
 }
 
@@ -105,36 +103,19 @@ impl<'scene> geom::Surface<'scene> for Box3 {
         self.hit_any(&*ray)
     }
 
-    /// See [PBRT][0], the [bvh][1] crate, and the [original paper][2].
-    ///
-    /// [0]: https://github.com/mmp/pbrt-v3/blob/3e9dfd72c6a669848616a18c22f347c0810a0b51/src/core/geometry.h#L1411-L1438
-    /// [1]: https://github.com/svenstaro/bvh/blob/15ca10d07e40036135621cd80df2e5ba024a5991/src/ray.rs#L85-L150
-    /// [2]: http://www.cs.utah.edu/~awilliam/box/box.pdf 
+    /// See: https://medium.com/@bromanz/another-view-on-the-classic-ray-aabb-intersection-algorithm-for-bvh-traversal-41125138b525
     fn hit_any(&self, ray: &Ray) -> bool {
         if cfg!(feature = "stats") {
             crate::stats::INTERSECTION_TESTS.inc();
             crate::stats::BOUNDING_BOX_INTERSECTION_TESTS.inc();
         }
 
-        let x_min = (self[    ray.sign[0]][0] - ray.p[0]) * ray.inv[0];
-        let x_max = (self[1 - ray.sign[0]][0] - ray.p[0]) * ray.inv[0];
+        let t_0 = (self.min - ray.p) * ray.inv;
+        let t_1 = (self.max - ray.p) * ray.inv;
 
-        let y_min = (self[    ray.sign[1]][1] - ray.p[1]) * ray.inv[1];
-        let y_max = (self[1 - ray.sign[1]][1] - ray.p[1]) * ray.inv[1];
+        let t_min = t_0.min(&t_1).max_horizontal();
+        let t_max = t_0.max(&t_1).min_horizontal();
 
-        if x_min > y_max || y_min > x_max { return false }
-
-        let min = math::max(x_min, y_min);
-        let max = math::min(x_max, y_max);
-
-        let z_min = (self[    ray.sign[2]][2] - ray.p[2]) * ray.inv[2];
-        let z_max = (self[1 - ray.sign[2]][2] - ray.p[2]) * ray.inv[2];
-
-        if min > z_max || z_min > max { return false }
-
-        let min = math::max(min, z_min);
-        let max = math::min(max, z_max);
-
-        min < ray.max && max > ray.min
+        t_min < t_max && t_min < ray.max && t_max > ray.min
     }
 }

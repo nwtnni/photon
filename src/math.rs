@@ -33,7 +33,7 @@ pub fn clamp(a: f32, lo: f32, hi: f32) -> f32 {
 /// Generate a point in the unit sphere with uniform probability.
 pub fn uniform_sphere() -> Vec3 {
     loop {
-        let p = Vec3::new(random(), random(), random()) * 2.0 - vec::ONES_3D;
+        let p = Vec3::new(random(), random(), random()) * 2.0 - Vec3::new(1.0, 1.0, 1.0);
         if p.len_sq() < 1.0 { break p }
     }
 }
@@ -41,7 +41,7 @@ pub fn uniform_sphere() -> Vec3 {
 /// Generate a point in the unit X-Y disk with uniform probability.
 pub fn uniform_disk() -> Vec3 {
     loop {
-        let p = Vec3::new(random(), random(), 0.0) * 2.0 - vec::ONES_2D;
+        let p = Vec3::new(random(), random(), 0.0) * 2.0 - Vec3::new(1.0, 1.0, 0.0);
         if p.len_sq() < 1.0 { break p }
     }
 }

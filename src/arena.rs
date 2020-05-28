@@ -4,7 +4,7 @@ use std::cell;
 use crate::stats;
 
 const DEFAULT_CAPACITY: usize = 512 * 1024 * 1024;
-const DEFAULT_ALIGNMENT: usize = 8;
+const DEFAULT_ALIGNMENT: usize = 16;
 
 #[derive(Debug)]
 pub struct Arena {
