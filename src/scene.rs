@@ -85,10 +85,13 @@ impl<'scene> Scene<'scene> {
                             c += self.integrator.shade(self, &r, &hit, 0);
                         }
                     }
+
                     c /= self.samples as f32;
-                    row[x * 3 + 0] = (math::clamp(c[0].sqrt(), 0.0, 1.0) * 255.99) as u8;
-                    row[x * 3 + 1] = (math::clamp(c[1].sqrt(), 0.0, 1.0) * 255.99) as u8;
-                    row[x * 3 + 2] = (math::clamp(c[2].sqrt(), 0.0, 1.0) * 255.99) as u8;
+                    c = c.sqrt();
+
+                    row[x * 3 + 0] = (math::clamp(c.r(), 0.0, 1.0) * 255.99) as u8;
+                    row[x * 3 + 1] = (math::clamp(c.g(), 0.0, 1.0) * 255.99) as u8;
+                    row[x * 3 + 2] = (math::clamp(c.b(), 0.0, 1.0) * 255.99) as u8;
                     stats::PIXELS_RENDERED.inc();
                 }
             });

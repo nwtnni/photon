@@ -75,8 +75,8 @@ fn build<'scene, S>(
     let mid = if count <= 4 {
 
         info[lo..hi].sort_unstable_by(|a, b| {
-            a.center[dim as usize]
-                .partial_cmp(&b.center[dim as usize])
+            a.center.get(dim as usize)
+                .partial_cmp(&b.center.get(dim as usize))
                 .unwrap()
         });
 
@@ -87,7 +87,7 @@ fn build<'scene, S>(
         let mut buckets = [(0, geom::Box3::smallest()); BUCKETS];
         let mut assignment: HashMap<usize, usize> = HashMap::default();
         for i in lo..hi {
-            let o = centroid_bound.offset(&info[i].center)[dim as usize];
+            let o = centroid_bound.offset(&info[i].center).get(dim as usize);
             let b = (BUCKETS as f32 * o) as usize;
             let b = std::cmp::min(b, BUCKETS - 1);
             buckets[b].0 += 1;

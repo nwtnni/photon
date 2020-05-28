@@ -17,7 +17,8 @@ impl<'scene, S> Leaf<S> where S: Surface<'scene> {
     }
 
     pub fn len(&self) -> usize {
-        self.surfaces.into_iter()
+        self.surfaces
+            .iter()
             .filter_map(|surface| surface.as_ref())
             .count()
     }
