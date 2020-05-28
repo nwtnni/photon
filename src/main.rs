@@ -2,14 +2,20 @@ use std::env;
 
 use photon::arena;
 use photon::scene;
+
+#[cfg(feature = "progress")]
 use photon::progress;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = env::args().collect::<Vec<_>>();
     let arena = arena::Arena::default();
     let scene = scene::Scene::load(&arena, &args[1])?;
-    let pixels = scene.width() * scene.height();
-    let progress = std::thread::spawn(move || progress::run(pixels));
+
+    #[cfg(feature = "progress")]
+    let progress = std::thread::spawn({
+        let pixels = scene.width() * scene.height();
+        move || progress::run(pixels)
+    });
 
     scene.render();
 
@@ -24,6 +30,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         println!("{}", photon::stats::LIST_INTERSECTION_TESTS);
     }
 
+    #[cfg(feature = "progress")]
     progress.join().unwrap().ok();
     Ok(())
 }
