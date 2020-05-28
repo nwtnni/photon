@@ -17,3 +17,12 @@ Measurements collected by rendering `scenes/` directory with `hyperfine`.
 | buddha.txt          |   3.401s |
 | cornell-box.txt     |  31.108s |
 | sphere.txt          |   2.810s |
+
+- SIMD
+
+| Scene               | Time     |
+|---------------------|----------|
+| area-light.txt      |   5.840s |
+| buddha.txt          |   2.865s |
+| cornell-box.txt     |  12.751s |
+| sphere.txt          |   2.040s |
