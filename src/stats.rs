@@ -57,9 +57,9 @@ pub struct Memory {
     value: AtomicUsize,
 }
 
-const GB: usize = 1_073_741_824;
-const MB: usize = 1_048_576;
-const KB: usize = 1_024;
+const GB: usize = 1 * 1024 * 1024 * 1024;
+const MB: usize = 1 * 1024 * 1024;
+const KB: usize = 1 * 1024;
 
 impl Memory {
     pub fn inc(&self, value: usize) {
@@ -73,16 +73,16 @@ impl std::fmt::Display for Memory {
         let gb = bytes / GB; bytes %= GB;
         let mb = bytes / MB; bytes %= MB;
         let kb = bytes / KB; bytes %= KB;
-        let mut format = String::new();
+        write!(fmt, "{}: ", self.name)?;
         if gb > 0 {
-            format += &format!("{}GB ", gb);
+            write!(fmt, "{}GB", gb)?;
         } else if mb > 0 {
-            format += &format!("{}MB ", mb);
+            write!(fmt, "{}MB", mb)?;
         } else if kb > 0 {
-            format += &format!("{}KB ", kb);
+            write!(fmt, "{}KB", kb)?;
         } else if bytes > 0{
-            format += &format!("{}B ", bytes);
+            write!(fmt, "{}B", bytes)?;
         }
-        write!(fmt, "{}: {}", self.name, format)
+        Ok(())
     }
 }
