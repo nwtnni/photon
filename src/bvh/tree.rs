@@ -11,20 +11,19 @@ impl<'scene, S> geom::Surface<'scene> for Tree<'scene, S> where S: geom::Surface
     }
 
     fn hit(&self, ray: &mut math::Ray, hit: &mut geom::Hit<'scene>) -> bool {
-        let mut next = 0;
         let mut this = 0;
-        let mut visit = [0; 32];
+        let mut visit = Vec::with_capacity(256);
         let mut success = false;
 
         macro_rules! push { ($i:expr) => {{
-            visit[next] = $i;
-            next += 1;
+            visit.push($i);
         }}}
 
         macro_rules! pop { () => {{
-            if next == 0 { break success }
-            next -= 1;
-            this = visit[next];
+            match visit.pop() {
+            | None => break success,
+            | Some(next) => this = next,
+            }
         }}}
 
         loop {
@@ -44,33 +43,29 @@ impl<'scene, S> geom::Surface<'scene> for Tree<'scene, S> where S: geom::Surface
                 success |= leaf.hit(ray, hit);
                 pop!();
             }
-            | Node::Node { child, axis, .. } => {
-                if ray.sign[*axis as usize] == 1 {
-                    push!(this + 1);
-                    this = *child as usize;
-                } else {
+            | Node::Node { children, .. } => {
+                for child in children {
                     push!(*child as usize);
-                    this += 1;
                 }
+                pop!();
             }
             }
         }
     }
 
     fn hit_any(&self, ray: &math::Ray) -> bool {
-        let mut next = 0;
         let mut this = 0;
-        let mut visit = [0; 32];
+        let mut visit = Vec::with_capacity(256);
 
         macro_rules! push { ($i:expr) => {{
-            visit[next] = $i;
-            next += 1;
+            visit.push($i);
         }}}
 
         macro_rules! pop { () => {{
-            if next == 0 { return false }
-            next -= 1;
-            this = visit[next];
+            match visit.pop() {
+            | None => return false,
+            | Some(next) => this = next,
+            }
         }}}
 
         loop {
@@ -90,14 +85,11 @@ impl<'scene, S> geom::Surface<'scene> for Tree<'scene, S> where S: geom::Surface
                 if leaf.hit_any(ray) { return true }
                 pop!();
             }
-            | Node::Node { axis, child, .. } => {
-                if ray.sign[*axis as usize] == 1 {
-                    push!(this + 1);
-                    this = *child as usize;
-                } else {
+            | Node::Node { children, .. } => {
+                for child in children {
                     push!(*child as usize);
-                    this += 1;
                 }
+                pop!();
             }
             }
         }
@@ -108,9 +100,8 @@ impl<'scene, S> geom::Surface<'scene> for Tree<'scene, S> where S: geom::Surface
 pub enum Node<S> {
     Leaf(bvh::Leaf<S>),
     Node {
-        axis: math::Axis,
         bound: geom::Box3,
-        child: u32,
+        children: [u32; 8],
     }
 }
 

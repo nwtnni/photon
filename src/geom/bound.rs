@@ -30,16 +30,16 @@ impl Box3 {
         Box3 { min, max }
     }
 
-    pub fn max_extent(&self) -> Axis {
+    pub fn max_extent(&self) -> [Axis; 3] {
         let extent = (self.max - self.min).abs();
-        let x = extent.x();
-        let y = extent.y();
-        let z = extent.z();
-        if x > y {
-            if x > z { Axis::X } else { Axis::Z }
-        } else {
-            if y > z { Axis::Y } else { Axis::Z }
-        }
+        let mut order = [Axis::X, Axis::Y, Axis::Z];
+        order.sort_unstable_by(|a, b| {
+            extent
+                .get(*b as usize)
+                .partial_cmp(&extent.get(*a as usize))
+                .unwrap()
+        });
+        order
     }
 
     pub fn intersect(&self, rhs: &Self) -> Self {
