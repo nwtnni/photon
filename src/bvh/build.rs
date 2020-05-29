@@ -1,3 +1,4 @@
+use std::arch::x86_64;
 use std::cmp;
 use std::collections::HashMap;
 use std::iter;
@@ -69,7 +70,7 @@ fn build<'scene, S>(
     info: &mut [Info],
 ) where S: geom::Surface<'scene> + Copy,
 {
-    if info.len() < bvh::LEAF_SIZE {
+    if info.len() < 4 {
         let mut leaf = bvh::Leaf::default();
         for (leaf_index, Info { index: surface_index, .. }) in info.iter().enumerate() {
             leaf.set(leaf_index, surfaces[*surface_index]);
@@ -112,6 +113,7 @@ fn build<'scene, S>(
     bvh.push(
         bvh::Node::Node {
             bound: geom::Box3::default(),
+            bounds: bvh::tree::Box3SoA::default(),
             children,
         }
     );
@@ -134,14 +136,88 @@ fn build<'scene, S>(
         build(bvh, surfaces, &mut info[range]);
     }
 
-    let bound = children
-        .iter()
-        .copied()
-        .map(|child| bvh[child as usize].bound())
-        .collect::<geom::Box3>();
+    let (bound, bounds) = unsafe {
+        let child_0 = bvh[children[0] as usize].bound();
+        let child_1 = bvh[children[1] as usize].bound();
+        let child_2 = bvh[children[2] as usize].bound();
+        let child_3 = bvh[children[3] as usize].bound();
+        let child_4 = bvh[children[4] as usize].bound();
+        let child_5 = bvh[children[5] as usize].bound();
+        let child_6 = bvh[children[6] as usize].bound();
+        let child_7 = bvh[children[7] as usize].bound();
+
+        let bound = child_0 | child_1 | child_2 | child_3 | child_4 | child_5 | child_6 | child_7;
+
+        let bounds = bvh::tree::Box3SoA {
+            min_x: x86_64::_mm256_set_ps(
+                child_7.min.x(),
+                child_6.min.x(),
+                child_5.min.x(),
+                child_4.min.x(),
+                child_3.min.x(),
+                child_2.min.x(),
+                child_1.min.x(),
+                child_0.min.x(),
+            ),
+            min_y: x86_64::_mm256_set_ps(
+                child_7.min.y(),
+                child_6.min.y(),
+                child_5.min.y(),
+                child_4.min.y(),
+                child_3.min.y(),
+                child_2.min.y(),
+                child_1.min.y(),
+                child_0.min.y(),
+            ),
+            min_z: x86_64::_mm256_set_ps(
+                child_7.min.z(),
+                child_6.min.z(),
+                child_5.min.z(),
+                child_4.min.z(),
+                child_3.min.z(),
+                child_2.min.z(),
+                child_1.min.z(),
+                child_0.min.z(),
+            ),
+
+            max_x: x86_64::_mm256_set_ps(
+                child_7.max.x(),
+                child_6.max.x(),
+                child_5.max.x(),
+                child_4.max.x(),
+                child_3.max.x(),
+                child_2.max.x(),
+                child_1.max.x(),
+                child_0.max.x(),
+            ),
+            max_y: x86_64::_mm256_set_ps(
+                child_7.max.y(),
+                child_6.max.y(),
+                child_5.max.y(),
+                child_4.max.y(),
+                child_3.max.y(),
+                child_2.max.y(),
+                child_1.max.y(),
+                child_0.max.y(),
+            ),
+            max_z: x86_64::_mm256_set_ps(
+                child_7.max.z(),
+                child_6.max.z(),
+                child_5.max.z(),
+                child_4.max.z(),
+                child_3.max.z(),
+                child_2.max.z(),
+                child_1.max.z(),
+                child_0.max.z(),
+            ),
+        };
+
+        (bound, bounds)
+    };
 
     bvh[parent] = bvh::Node::Node {
         bound,
+        bounds,
         children,
     };
 }
