@@ -1,3 +1,7 @@
+use std::iter;
+use std::ops::BitOr;
+use std::ops::BitOrAssign;
+
 use crate::math::{Axis, Ray, Vec3};
 use crate::geom;
 
@@ -6,6 +10,17 @@ use crate::geom;
 pub struct Box3 {
     pub min: Vec3, 
     pub max: Vec3,
+}
+
+impl Default for Box3 {
+    fn default() -> Self {
+        let min = std::f32::NEG_INFINITY;
+        let max = std::f32::INFINITY;
+        Box3 {
+            min: Vec3::new(max, max, max),
+            max: Vec3::new(min, min, min),
+        }
+    }
 }
 
 impl Box3 {
@@ -45,15 +60,6 @@ impl Box3 {
         Box3 { min, max }
     }
 
-    pub fn smallest() -> Self {
-        let min = std::f32::NEG_INFINITY;
-        let max = std::f32::INFINITY;
-        Box3 {
-            min: Vec3::new(max, max, max),
-            max: Vec3::new(min, min, min),
-        }
-    }
-
     pub fn scale(&self, c: f32) -> Self {
         let min = self.min * c;
         let max = self.max * c;
@@ -74,12 +80,6 @@ impl Box3 {
 
     pub fn surface_area(&self) -> f32 {
         2.0 * (self.max - self.min).len_sq()
-    }
-}
-
-impl Default for Box3 {
-    fn default() -> Self {
-        Box3::smallest()
     }
 }
 
@@ -117,5 +117,84 @@ impl<'scene> geom::Surface<'scene> for Box3 {
         let t_max = t_0.max(&t_1).min_horizontal();
 
         t_min < t_max && t_min < ray.max && t_max > ray.min
+    }
+}
+
+impl iter::FromIterator<Box3> for Box3 {
+    fn from_iter<T>(iter: T) -> Self where T: IntoIterator<Item = Box3> {
+        iter.into_iter().fold(Box3::default(), |a, b| a.union_b(&b))
+    }
+}
+
+impl<'b> iter::FromIterator<&'b Box3> for Box3 {
+    fn from_iter<T>(iter: T) -> Self where T: IntoIterator<Item = &'b Box3> {
+        iter.into_iter().fold(Box3::default(), |a, b| a.union_b(b))
+    }
+}
+
+impl iter::FromIterator<Vec3> for Box3 {
+    fn from_iter<T>(iter: T) -> Self where T: IntoIterator<Item = Vec3> {
+        iter.into_iter().fold(Box3::default(), |a, b| a.union_v(&b))
+    }
+}
+
+impl<'v> iter::FromIterator<&'v Vec3> for Box3 {
+    fn from_iter<T>(iter: T) -> Self where T: IntoIterator<Item = &'v Vec3> {
+        iter.into_iter().fold(Box3::default(), |a, b| a.union_v(b))
+    }
+}
+
+impl BitOr<Box3> for Box3 {
+    type Output = Box3;
+    fn bitor(self, rhs: Box3) -> Self::Output {
+        self.union_b(&rhs) 
+    }
+}
+
+impl BitOrAssign<Box3> for Box3 {
+    fn bitor_assign(&mut self, rhs: Box3) {
+        *self = self.union_b(&rhs);
+    }
+}
+
+impl BitOrAssign<Box3> for &'_ mut Box3 {
+    fn bitor_assign(&mut self, rhs: Box3) {
+        **self = self.union_b(&rhs);
+    }
+}
+
+impl BitOrAssign<&'_ Box3> for Box3 {
+    fn bitor_assign(&mut self, rhs: &'_ Box3) {
+        *self = self.union_b(rhs);
+    }
+}
+
+impl BitOrAssign<&'_ Box3> for &'_ mut Box3 {
+    fn bitor_assign(&mut self, rhs: &'_ Box3) {
+        **self = self.union_b(rhs);
+    }
+}
+
+impl BitOrAssign<Vec3> for Box3 {
+    fn bitor_assign(&mut self, rhs: Vec3) {
+        *self = self.union_v(&rhs);
+    }
+}
+
+impl BitOrAssign<Vec3> for &'_ mut Box3 {
+    fn bitor_assign(&mut self, rhs: Vec3) {
+        **self = self.union_v(&rhs);
+    }
+}
+
+impl BitOrAssign<&'_ Vec3> for Box3 {
+    fn bitor_assign(&mut self, rhs: &'_ Vec3) {
+        *self = self.union_v(rhs);
+    }
+}
+
+impl BitOrAssign<&'_ Vec3> for &'_ mut Box3 {
+    fn bitor_assign(&mut self, rhs: &'_ Vec3) {
+        **self = self.union_v(rhs);
     }
 }

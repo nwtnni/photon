@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::iter;
 
 use crate::arena;
 use crate::bvh;
@@ -19,6 +20,25 @@ struct Info {
     center: math::Vec3,
 }
 
+#[derive(Copy, Clone, Debug, Default)]
+struct Bucket {
+    /// Bounding box
+    bound: geom::Box3,
+
+    /// Surfaces in bucket
+    count: usize,
+}
+
+impl<'b> iter::FromIterator<&'b Bucket>  for Bucket {
+    fn from_iter<T>(iter: T) -> Self where T: IntoIterator<Item = &'b Bucket> {
+        iter.into_iter()
+            .fold(Bucket::default(), |a, b| Bucket {
+                bound: a.bound | b.bound,
+                count: a.count + b.count,
+            })
+    }
+}
+
 impl<'scene, S> bvh::Tree<'scene, S> where S: geom::Surface<'scene> + Copy, {
     pub fn new(arena: &'scene arena::Arena, surfaces: &[S]) -> Self {
 
@@ -32,10 +52,7 @@ impl<'scene, S> bvh::Tree<'scene, S> where S: geom::Surface<'scene> + Copy, {
             })
             .collect::<Vec<_>>();
 
-        let lo = 0;
-        let hi = surfaces.len();
-
-        build(&mut bvh, surfaces, &mut info, lo, hi);
+        build(&mut bvh, surfaces, &mut info);
 
         unsafe {
             let arr = arena.alloc_slice_mut(bvh.len());
@@ -49,97 +66,93 @@ fn build<'scene, S>(
     bvh: &mut Vec<bvh::Node<S>>, 
     surfaces: &[S],
     info: &mut [Info],
-    lo: usize,
-    hi: usize
-)
-    where S: geom::Surface<'scene> + Copy,
-{
-    let count = hi - lo;
-    let bound = info[lo..hi].iter()
-        .map(|info| info.bound)
-        .fold(geom::Box3::smallest(), |a, b| a.union_b(&b));
+) where S: geom::Surface<'scene> + Copy {
+    let bound = info
+        .iter()
+        .map(|Info { bound, .. }| bound)
+        .collect::<geom::Box3>();
 
-    if count == 1 {
+    if info.len() == 1 {
         let mut leaf = bvh::Leaf::default();
-        leaf.set(0, surfaces[info[lo].index]);
+        leaf.set(0, surfaces[info[0].index]);
         bvh.push(bvh::Node::Leaf(leaf));
         return
     }
 
-    let centroid_bound = info[lo..hi].iter()
-        .map(|info| info.center)
-        .fold(geom::Box3::smallest(), |a, b| a.union_v(&b));
+    let centroid_bound = info
+        .iter()
+        .map(|Info { center, .. }| center)
+        .collect::<geom::Box3>();
 
     let dim = centroid_bound.max_extent();
 
-    let mid = if count <= 4 {
+    let mid = if info.len() <= 4 {
 
-        info[lo..hi].sort_unstable_by(|a, b| {
-            a.center.get(dim as usize)
+        info.sort_unstable_by(|a, b| {
+            a.center
+                .get(dim as usize)
                 .partial_cmp(&b.center.get(dim as usize))
-                .unwrap()
+                .expect("[INTERNAL ERROR]: floating point comparison failed")
         });
 
-        (lo + hi) / 2
+        info.len() / 2
 
     } else {
 
-        let mut buckets = [(0, geom::Box3::smallest()); BUCKETS];
+        let mut buckets = [Bucket::default(); BUCKETS];
         let mut assignment: HashMap<usize, usize> = HashMap::default();
-        for i in lo..hi {
-            let o = centroid_bound.offset(&info[i].center).get(dim as usize);
+
+        for Info { bound, center, index } in info.iter() {
+            let o = centroid_bound.offset(center).get(dim as usize);
             let b = (BUCKETS as f32 * o) as usize;
             let b = std::cmp::min(b, BUCKETS - 1);
-            buckets[b].0 += 1;
-            buckets[b].1 = buckets[b].1.union_b(&info[i].bound);
-            assignment.insert(info[i].index, b);
+            buckets[b].count += 1;
+            buckets[b].bound |= bound;
+            assignment.insert(*index, b);
         }
 
-        let mut cost = [0.0; BUCKETS - 1];
-        for i in 0..BUCKETS - 1 {
-            let mut left_bound = geom::Box3::smallest();
-            let mut left_count = 0;
-            for j in 0..=i {
-                left_count += buckets[j].0;
-                left_bound = left_bound.union_b(&buckets[j].1);
-            }
+        let mut costs = [0.0; BUCKETS - 1];
 
-            let mut right_bound = geom::Box3::smallest();
-            let mut right_count = 0;
-            for j in i + 1..BUCKETS {
-                right_count += buckets[j].0;
-                right_bound = right_bound.union_b(&buckets[j].1);
-            }
+        for (index, cost) in costs.iter_mut().enumerate() {
+            let left = buckets
+                .iter()
+                .take(index + 1)
+                .collect::<Bucket>();
 
-            cost[i] = 1.0 + ( 
-                left_count as f32 * left_bound.surface_area() +
-                right_count as f32 * right_bound.surface_area()
+            let right = buckets
+                .iter()
+                .skip(index + 1)
+                .collect::<Bucket>();
+
+            *cost = 1.0 + ( 
+                left.count as f32 * left.bound.surface_area() +
+                right.count as f32 * right.bound.surface_area()
             ) / bound.surface_area();
         }
 
-        let mut min_cost = cost[0];
-        let mut min_bucket = 0;
-        for i in 1..BUCKETS - 1 {
-            if cost[i] < min_cost {
-                min_cost = cost[i];
-                min_bucket = i;
-            }
-        }
+        let (min_bucket, min_cost) = costs
+            .iter()
+            .copied()
+            .enumerate()
+            .min_by(|(_, a), (_, b)| {
+                a.partial_cmp(b).expect("[INTERNAL ERROR]: floating point comparison failed")
+            })
+            .expect("[INTERNAL ERROR]: no minimum BVH cost");
 
-        if count > bvh::LEAF_SIZE || min_cost < count as f32 {
+        if info.len() > bvh::LEAF_SIZE || min_cost < info.len() as f32 {
 
-            lo + partition::partition(
-                &mut info[lo..hi],
-                |info| assignment[&info.index] <= min_bucket
-            ).0.len()
-        
+            let (half, _) = partition::partition(info, |Info { index, .. }| assignment[index] <= min_bucket);
+            half.len()
+
         } else {
+
             let mut leaf = bvh::Leaf::default();
-            for (i, j) in (lo..hi).enumerate() {
-                leaf.set(i, surfaces[info[j].index]);
+            for (leaf_index, Info { index: surface_index, .. }) in info.iter().enumerate() {
+                leaf.set(leaf_index, surfaces[*surface_index]);
             }
             bvh.push(bvh::Node::Leaf(leaf));
-            return
+            return;
+
         }
     };
 
@@ -154,15 +167,15 @@ fn build<'scene, S>(
         }
     );
 
-    build(bvh, surfaces, info, lo, mid);
+    build(bvh, surfaces, &mut info[..mid]);
 
     let child = bvh.len();
 
-    build(bvh, surfaces, info, mid, hi);
+    build(bvh, surfaces, &mut info[mid..]);
 
     bvh[index] = bvh::Node::Node {
         axis: dim,
-        bound: bvh[index + 1].bound().union_b(&bvh[child].bound()),
+        bound: bvh[index + 1].bound() | bvh[child].bound(),
         child: child as u32, 
     };
 }
