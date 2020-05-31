@@ -29,7 +29,7 @@ pub mod math;
 pub mod scene;
 
 /// Sobol sampling
-pub mod sampler;
+pub mod sample;
 
 /// Intersection and shape models
 pub mod geom;
